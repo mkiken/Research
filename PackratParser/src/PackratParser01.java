@@ -1,5 +1,7 @@
 package parser;
 
+import java.util.Scanner;
+
 /**
  * Grammar for a trivial language
  * 
@@ -36,8 +38,25 @@ public class PackratParser01 {
 
 	public static void main(String[] args) {
 		System.out.println("Packrat Parser start.");
-		parseLine("1 + 1 / abc");
+		Scanner sc = new Scanner(System.in);
+		while(true){
+			String input = sc.nextLine();
+			if(input.equals(":q")) break;
+			parseLine(input);
+		}
+		System.out.println("Packrat Parser end.");
 
+	}
+	static String translateRS(int r){
+		String ret = "";
+		switch(r){
+		case 0: ret = "UNUSED"; break;
+		case -1: ret = "SUCCESS"; break;
+		case -2: ret = "FAIL"; break;
+		case -3: ret = "END"; break;
+		default: ret = String.valueOf(r);
+		}
+		return ret;
 	}
 	static void parseLine(String str){
 		input = str.replaceAll(" ", "").toCharArray(); //remove whitespace
@@ -45,13 +64,14 @@ public class PackratParser01 {
 		memory = new int[NUM_DV][len][NUM_FIELD];
 		System.out.println("input : " + str);
 		int ret = pAdditive(0);
-		System.out.println("ret : " + ret);
+		System.out.println("ret : " + translateRS(ret));
 		System.out.println("semantic value : " + memory[DV_ADD][0][F_SEM]);
-		System.out.println("suffix value : " + memory[DV_ADD][0][F_SUF]);
+		System.out.println("suffix value : " + translateRS(memory[DV_ADD][0][F_SUF]));
 	}
 
 	static int pAdditive(int index){
 		int ret = RS_FAIL;
+		if(len <= index) return ret;
 		if(memory[DV_ADD][index][F_SUF] == RS_UNUSED){
 			memory[DV_ADD][index][F_SUF] = RS_FAIL;
 			ret = pMultitive(index); 
@@ -78,6 +98,7 @@ public class PackratParser01 {
 
 	static int pMultitive(int index){
 		int ret = RS_FAIL;
+		if(len <= index) return ret;
 		if(memory[DV_MUL][index][F_SUF] == RS_UNUSED){
 			memory[DV_MUL][index][F_SUF] = RS_FAIL;
 			ret = pPrimary(index); 
@@ -104,6 +125,7 @@ public class PackratParser01 {
 
 	static int pPrimary(int index){
 		int ret = RS_FAIL;
+		if(len <= index) return ret;
 		if(memory[DV_PRI][index][F_SUF] == RS_UNUSED){
 			memory[DV_PRI][index][F_SUF] = RS_FAIL; 
 			if(index < len){
@@ -135,6 +157,7 @@ public class PackratParser01 {
 	
 	static int pDecimal(int index){
 		int ret = RS_FAIL;
+		if(len <= index) return ret;
 		if(memory[DV_DEC][index][F_SUF] == RS_UNUSED){
 			memory[DV_DEC][index][F_SUF] = RS_FAIL; 
 			if(index < len){
