@@ -1,0 +1,59 @@
+/**
+ * not LR(k) for any k
+ * 
+ * S	<- R | L '=' R
+ * R	<- A | A EQ A | A NE A
+ * A	<- P | P '+' P | P '-' P
+ * P	<- ID | '(' R ')'
+ * L	<- ID | '(' L ')'
+ * ID	<- 'a' | 'a' ID
+ * EQ	<- '=' '='
+ * NE	<- '!' '='
+ * 
+ * 
+ * */
+ 
+
+
+AC
+
+a = a
+a
+aaa
+aaa = aaaaaaa
+a = a + a
+a = a == a
+a = a != a
+((a))
+(aa) = (aaa == aaaa)
+a = (a + a)
+((aaa)) = (a - (a + a))
+a = (a == a) != a
+a = (a == a) + a == a
+a = (a == a) + (a != a)
+(a != a)
+a - (a)
+a = (a == a) == a
+
+
+WA
+
+a !! a
+a = b = c
+a = a = a
+(a + a) = a
+b = a
+a - a = a + a
+a = 
+a == 
+a != 
+==
+I am a boy.
+(a + a) = (a + a)
+(a == a) = (a == a)
+a == a = a
+a =! a
+(a = (a +  a))
+a === a
+a !== b
+a = a == a == a
