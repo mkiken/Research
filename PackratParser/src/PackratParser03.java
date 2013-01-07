@@ -20,6 +20,8 @@ public class PackratParser03 {
 	static int[][][] memory; //[Derivs][LengthOfInput][Field]
 	static char[] input;
 	static int len = 0;
+	static int all = 0;
+	static int part = 0;
 
 	//Constants for Derivs
 	static final int NUM_DV = 8;
@@ -67,6 +69,8 @@ public class PackratParser03 {
 		return ret;
 	}
 	static void parseLine(String str){
+		all = 0;
+		part = 0;
 		input = str.replaceAll(" ", "").toCharArray(); //remove whitespace
 		len = input.length;
 		if(len < 1) return;
@@ -76,12 +80,15 @@ public class PackratParser03 {
 		System.out.println("ret : " + translateRS(ret));
 		System.out.println("semantic value : " + memory[DV_S][0][F_SEM]);
 		System.out.println("suffix value : " + translateRS(memory[DV_S][0][F_SUF]));
+		System.out.println("all :" + all +  " , part : " + part + ", len*NUM_DV : " + len*NUM_DV);
 	}
 
 	static int pS(int index){
 		int ret = RS_FAIL;
 		if(index < 0 || len <= index) return ret;
+		all++;
 		if(memory[DV_S][index][F_SUF] == RS_UNUSED){
+			part++;
 			memory[DV_S][index][F_SUF] = RS_FAIL;
 			if(pR(index) == RS_SUCCESS && memory[DV_R][index][F_SUF] == RS_END){
 				memory[DV_S][index][F_SEM] = DV_R;
@@ -103,7 +110,9 @@ public class PackratParser03 {
 	static int pR(int index){
 		int ret = RS_FAIL;
 		if(index < 0 || len <= index) return ret;
+		all++;
 		if(memory[DV_R][index][F_SUF] == RS_UNUSED){
+			part++;
 			memory[DV_R][index][F_SUF] = RS_FAIL;
 			memory[DV_R][index][F_SEM] = RS_FAIL;
 			ret = pA(index); 
@@ -137,7 +146,9 @@ public class PackratParser03 {
 	static int pA(int index){
 		int ret = RS_FAIL;
 		if(index < 0 || len <= index) return ret;
+		all++;
 		if(memory[DV_A][index][F_SUF] == RS_UNUSED){
+			part++;
 			memory[DV_A][index][F_SUF] = RS_FAIL;
 			memory[DV_A][index][F_SEM] = RS_FAIL;
 			ret = pP(index); 
@@ -172,7 +183,9 @@ public class PackratParser03 {
 	static int pP(int index){
 		int ret = RS_FAIL;
 		if(index < 0 || len <= index) return ret;
+		all++;
 		if(memory[DV_P][index][F_SUF] == RS_UNUSED){
+			part++;
 			memory[DV_P][index][F_SUF] = RS_FAIL;
 			memory[DV_P][index][F_SEM] = RS_FAIL;
 
@@ -205,7 +218,9 @@ public class PackratParser03 {
 	static int pL(int index){
 		int ret = RS_FAIL;
 		if(index < 0 || len <= index) return ret;
+		all++;
 		if(memory[DV_L][index][F_SUF] == RS_UNUSED){
+			part++;
 			memory[DV_L][index][F_SUF] = RS_FAIL;
 			memory[DV_L][index][F_SEM] = RS_FAIL;
 
@@ -238,7 +253,9 @@ public class PackratParser03 {
 	static int pID(int index){
 		int ret = RS_FAIL;
 		if(index < 0 || len <= index) return ret;
+		all++;
 		if(memory[DV_ID][index][F_SUF] == RS_UNUSED){
+			part++;
 			memory[DV_ID][index][F_SUF] = RS_FAIL;
 			memory[DV_ID][index][F_SEM] = RS_FAIL;
 			if(input[index] == 'a'){
@@ -260,7 +277,9 @@ public class PackratParser03 {
 	static int pEQ(int index){
 		int ret = RS_FAIL;
 		if(index < 0 || len <= index + 1) return ret;
+		all++;
 		if(memory[DV_EQ][index][F_SUF] == RS_UNUSED){
+			part++;
 			memory[DV_EQ][index][F_SUF] = RS_FAIL;
 			memory[DV_EQ][index][F_SEM] = RS_FAIL;
 			if(input[index] == '=' && input[index + 1] == '='){
@@ -275,7 +294,9 @@ public class PackratParser03 {
 	static int pNE(int index){
 		int ret = RS_FAIL;
 		if(index < 0 || len <= index + 1) return ret;
+		all++;
 		if(memory[DV_NE][index][F_SUF] == RS_UNUSED){
+			part++;
 			memory[DV_NE][index][F_SUF] = RS_FAIL;
 			memory[DV_NE][index][F_SEM] = RS_FAIL;
 			if(input[index] == '!' && input[index + 1] == '='){
