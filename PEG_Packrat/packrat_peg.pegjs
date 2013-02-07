@@ -4,8 +4,8 @@
 	var ns = {};
 	
 	//定数
-    var consts = {};
-    consts["FAIL_FUNC"] = -1;
+    	var consts = {};
+    	consts["FAIL_FUNC"] = -1;
 	consts["END_INPUT"] = -2;
 	
 	//入力情報
