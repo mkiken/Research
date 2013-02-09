@@ -1,16 +1,19 @@
 /************** Initializer **************/
 {
+	var fs = require("fs");
+	
 	//namespace
 	var ns = {};
 	
 	//定数
-    	var consts = {};
-    	consts["FAIL_FUNC"] = -1;
+	var consts = {};
+	consts["FAIL_FUNC"] = -1;
 	consts["END_INPUT"] = -2;
 	
 	//入力情報
 	var inputs = {};
-	inputs["str"] = "abcabcabc"; //入力文字列
+	//inputs["str"] = "abcabcab"; //入力文字列
+	inputs["str"] = fs.readFileSync( './test001.input' ).toString();
 	inputs["len"] = inputs["str"].length; //入力文字列長
 	inputs["pos"] = 0; //開始位置
 	
@@ -23,14 +26,14 @@
 	template.star = function(f, dname, pos){
 		var cacheKey = dname + "@" + pos;
 		if(memory[cacheKey]) return memory[cacheKey];
-		var ret = pos, backRet = consts["FAIL_FUNC"];
+		var ret = pos, backRet = pos;
 		while(true){
 			ret = f(ret);
-		    //console.log("ret = " + ret);
+			//console.log("ret = " + ret);
 			if(ret == consts["FAIL_FUNC"]){
 				ret = backRet == inputs.len? consts["END_INPUT"] : backRet;
-        		memory[cacheKey] = ret;
-        		return ret;
+				memory[cacheKey] = ret;
+				return ret;
 			}
 			backRet = ret;
 		}
@@ -51,14 +54,14 @@
 		var ret = pos + lit.length - 1;
 		if(ret < inputs["len"] && pos != consts["END_INPUT"]){
 			ret++;
-        	if(inputs["str"].substring(pos, ret) == lit){
-        		ret = ret == inputs.len? consts["END_INPUT"] : ret;
-        		memory[cacheKey] = ret;
-        		return ret;
-        	}
-        }
-	    memory[cacheKey] = consts["FAIL_FUNC"];
-	    return consts["FAIL_FUNC"];
+			if(inputs["str"].substring(pos, ret) == lit){
+				ret = ret == inputs.len? consts["END_INPUT"] : ret;
+				memory[cacheKey] = ret;
+				return ret;
+			}
+		}
+		memory[cacheKey] = consts["FAIL_FUNC"];
+		return consts["FAIL_FUNC"];
 	};
 	
 	//汎用関数
@@ -72,8 +75,8 @@
 	};
 	//form : 位置情報を人間用に修正
 	func.form = function(n){
-	    var str = "";
-	    switch(n){
+		var str = "";
+		switch(n){
 		case consts["FAIL_FUNC"]:
 			str = "FAIL_FUNC";
 			break;
@@ -83,16 +86,14 @@
 		default:
 			str += n;
 			break;
-	    }
-	    return str;
+		}
+		return str;
 	}
 } start
   = Grammar
 
 Grammar
-  = SPACING fd:FirstDefinition Definition* EOF {var a = func.form(ns[fd](inputs["pos"]));
-  //console.log(memory);
-   return a;}
+  = SPACING fd:FirstDefinition Definition* EOF {return func.form(ns[fd](inputs["pos"]));}
   //= SPACING Definition+ EOF
   
 FirstDefinition
