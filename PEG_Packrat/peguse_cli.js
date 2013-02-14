@@ -1,8 +1,10 @@
 var PEG = require("pegjs");
+var files = require("./files");
 
 var fs = require("fs");
 //var args = process.argv;
-var gram = fs.readFileSync( './packrat_peg.pegjs' ).toString();
+var pegfile = files.pp();
+var gram = fs.readFileSync( pegfile ).toString();
 var parser = PEG.buildParser(gram);
 //console.log(parser.parse(args[2]));
 
@@ -12,6 +14,7 @@ var parser = PEG.buildParser(gram);
 //from http://stackoverflow.com/questions/3430939/node-js-readsync-from-stdin
 
 var readline = require('readline');
+console.log("pegfile = " + pegfile);
 
 var rl = readline.createInterface({
   input: process.stdin,

@@ -1,10 +1,9 @@
 var PEG = require("pegjs");
+var files = require("./files");
 
 var fs = require("fs");
-var args = process.argv;
-var gram = fs.readFileSync( './packrat_peg.pegjs' ).toString();
+//var args = process.argv;
+var gram = fs.readFileSync( files.pp() ).toString();
 var parser = PEG.buildParser(gram);
-var contents = fs.readFileSync( './test001.grammar' ).toString();
-//console.log("grammar : " + gram);
-console.log("input : " + fs.readFileSync( './test001.input' ).toString());
+var contents = fs.readFileSync( files.gram() ).toString();
 console.log(parser.parse(contents));

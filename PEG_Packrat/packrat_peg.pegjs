@@ -1,6 +1,7 @@
 /************** Initializer **************/
 {
 	var fs = require("fs");
+	var files = require("/Users/wakitalab/Desktop/repository/Research/PEG_Packrat/files");
 	
 	//namespace
 	var ns = {};
@@ -12,8 +13,7 @@
 	
 	//入力情報
 	var inputs = {};
-	//inputs["str"] = "abcabcab"; //入力文字列
-	inputs["str"] = fs.readFileSync( './test001.input' ).toString();
+	inputs["str"] = fs.readFileSync( files.input() ).toString();
 	inputs["len"] = inputs["str"].length; //入力文字列長
 	inputs["pos"] = 0; //開始位置
 	
@@ -22,6 +22,29 @@
 	
 	//関数テンプレート
 	var template = {};
+	//Prioritized Choiceテンプレート
+	template.pri = function(f1, f2, dname, pos){
+		var cacheKey = dname + "@" + pos;
+		if(memory[cacheKey]) return memory[cacheKey];
+		var ret = f1(pos);
+		if(ret == consts["FAIL_FUNC"]) ret = f2(pos);
+		ret == inputs.len? consts["END_INPUT"] : ret;
+		memory[cacheKey] = ret;
+		return ret;
+	};
+	//Sequenceテンプレート
+	template.seq = function(fary, dname, pos){
+		var cacheKey = dname + "@" + pos;
+		if(memory[cacheKey]) return memory[cacheKey];
+		var ret = pos;
+		for(var i = 0; i < fary.length; i++){
+			ret = fary[i](ret);
+			if(ret == consts["FAIL_FUNC"]) break;
+		}
+		ret == inputs.len? consts["END_INPUT"] : ret;
+		memory[cacheKey] = ret;
+		return ret;
+	};
 	//Starテンプレート
 	template.star = function(f, dname, pos){
 		var cacheKey = dname + "@" + pos;
@@ -29,14 +52,53 @@
 		var ret = pos, backRet = pos;
 		while(true){
 			ret = f(ret);
-			//console.log("ret = " + ret);
-			if(ret == consts["FAIL_FUNC"]){
-				ret = backRet == inputs.len? consts["END_INPUT"] : backRet;
-				memory[cacheKey] = ret;
-				return ret;
-			}
+			if(ret == consts["FAIL_FUNC"]) break;
 			backRet = ret;
 		}
+		ret = backRet == inputs.len? consts["END_INPUT"] : backRet;
+		memory[cacheKey] = ret;
+		return ret;
+	};
+	//Plusテンプレート (syntax sugar)
+	template.plus = function(f, dname, pos){
+		var cacheKey = dname + "@" + pos;
+		if(memory[cacheKey]) return memory[cacheKey];
+		var ret = pos, backRet = consts["FAIL_FUNC"];
+		while(true){
+			ret = f(ret);
+			if(ret == consts["FAIL_FUNC"]) break;
+			backRet = ret;
+		}
+		ret = backRet == inputs.len? consts["END_INPUT"] : backRet;
+		memory[cacheKey] = ret;
+		return ret;
+	};
+	//Questionテンプレート (syntax sugar)
+	template.question = function(f, dname, pos){
+		var cacheKey = dname + "@" + pos;
+		if(memory[cacheKey]) return memory[cacheKey];
+		var ret = f(ret);
+		if(ret == consts["FAIL_FUNC"]) ret = 0;
+		memory[cacheKey] = ret;
+		return ret;
+	};
+	//Andテンプレート (syntax sugar)
+	template.and = function(f, dname, pos){
+		var cacheKey = dname + "@" + pos;
+		if(memory[cacheKey]) return memory[cacheKey];
+		var ret = f(ret);
+		if(ret != consts["FAIL_FUNC"]) ret = pos;
+		memory[cacheKey] = ret;
+		return ret;
+	};
+	//Notテンプレート
+	template.not = function(f, dname, pos){
+		var cacheKey = dname + "@" + pos;
+		if(memory[cacheKey]) return memory[cacheKey];
+		var ret = f(ret);
+		ret = ret == consts["FAIL_FUNC"]? pos : consts["FAIL_FUNC"];
+		memory[cacheKey] = ret;
+		return ret;
 	};
 	//Identifierテンプレート
 	template.identifier = function(dname, pos){
@@ -111,25 +173,32 @@ Definition
   //{ return left + " <- " +  right; }
 
 Expression
-//  = Sequence (SLASH Sequence)*
-  = Sequence
+//  = s1:Sequence (SLASH s2:Sequence)* {console.log(typeof(s1)); return s1;}
+  = s:Sequence SLASH e:Expression {return template["pri"].bind(null, s, e, "pri" + func.idx++);}
+  / s:Sequence {return s;}
+//  = Sequence
 
 Sequence
-//  = p:Prefix*  {return template["star"].bind(null, p[0], "star" + func.idx++);}
-  = Prefix
+  = p:Prefix+ {return template["seq"].bind(null, p, "seq" + func.idx++);}
+//= p:Prefix*
 
 Prefix
 //  = (AND / NOT)? Suffix
-  = Suffix
+  = AND s:Suffix {return template["and"].bind(null, s, "and" + func.idx++);}
+  / NOT s:Suffix {return template["not"].bind(null, s, "not" + func.idx++);}
+  / Suffix
 
 Suffix
 //  = Primary STAR?
   = p:Primary STAR {return template["star"].bind(null, p, "star" + func.idx++);}
+  / p:Primary PLUS {return template["plus"].bind(null, p, "plus" + func.idx++);}
+  / p:Primary QUESTION  {return template["question"].bind(null, p, "question" + func.idx++);}
   / p:Primary {return p;}
 //  = Primary
 
 Primary
   = i:Identifier !LEFTARROW {return template["identifier"].bind(null, i);}
+  / OPEN e:Expression CLOSE {return e;}
   / l:Literal {return l;}
 
 Literal
@@ -153,6 +222,9 @@ Identcont
 STAR
   = "*" SPACING
 
+PLUS
+  = "+" SPACING
+
 SLASH
   = "/" SPACING
 
@@ -162,8 +234,17 @@ AND
 NOT
   = "!" SPACING
 
+QUESTION
+  = "?" SPACING
+
 LEFTARROW
   = "<-" SPACING
+
+OPEN
+  = "(" SPACING
+
+CLOSE
+  = ")" SPACING
 
 SPACING
   = (SPACE)*
