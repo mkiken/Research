@@ -1,6 +1,6 @@
 //パスはパーザールートからの相対パス
 
-var basename = 'test006_cfg';
+var basename = 'test009_comment';
 var parseFile = './packrat_peg.pegjs'; //Packrat_PEGファイル
 var inputFile = './testcase/' + basename + '.input'; //生成したパーザーで解析する入力
 var gramFile = './testcase/' + basename + '.grammar'; //パーザーに与えるPEGの文法ファイル

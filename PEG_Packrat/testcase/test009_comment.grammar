@@ -1,0 +1,4 @@
+#comment
+A <- D #てすと
+D <- 'abc' . #abc と任意の一文字にマッチ.
+#comment test end.
