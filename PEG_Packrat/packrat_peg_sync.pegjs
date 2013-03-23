@@ -1,180 +1,188 @@
 /************** Initializer **************/
 {
-	var fs = require("fs");
-	var files = require("../../../files");
 
 	//namespace
 	var ns = {};
 
 	//定数
-	var consts = {};
-	consts["FAIL_FUNC"] = -1;
-	consts["END_INPUT"] = -2;
-
-	//入力情報
-	var inputs = {};
-	inputs["str"] = fs.readFileSync( files.input() ).toString();
-	inputs["len"] = inputs["str"].length; //入力文字列長
-	inputs["pos"] = 0; //開始位置
-
-	//Packrat Parsingで使うメモリ
-	var memory = {};
+	var consts = {
+		FAIL_FUNC : -1,
+		END_INPUT : -2
+	};
 
 	//関数テンプレート
-	var template = {};
-	//Prioritized Choiceテンプレート
-	template.pri = function(f1, f2, dname, pos){
-		var cacheKey = dname + "@" + pos;
-		if(memory[cacheKey]) return memory[cacheKey];
-		var ret = f1(pos);
-		if(ret == consts["FAIL_FUNC"]) ret = f2(pos);
-		ret == inputs.len? consts["END_INPUT"] : ret;
-		memory[cacheKey] = ret;
-		return ret;
-	};
-	//Sequenceテンプレート
-	template.seq = function(fary, dname, pos){
-		var cacheKey = dname + "@" + pos;
-		if(memory[cacheKey]) return memory[cacheKey];
-		var ret = pos;
-		for(var i = 0; i < fary.length; i++){
-			ret = fary[i](ret);
-			if(ret == consts["FAIL_FUNC"]) break;
-		}
-		ret == inputs.len? consts["END_INPUT"] : ret;
-		memory[cacheKey] = ret;
-		return ret;
-	};
-	//Starテンプレート
-	template.star = function(f, dname, pos){
-		var cacheKey = dname + "@" + pos;
-		if(memory[cacheKey]) return memory[cacheKey];
-		var ret = pos, backRet = pos;
-		while(true){
-			ret = f(ret);
-			if(ret == consts["FAIL_FUNC"]) break;
-			backRet = ret;
-		}
-		ret = backRet == inputs.len? consts["END_INPUT"] : backRet;
-		memory[cacheKey] = ret;
-		return ret;
-	};
-	//Plusテンプレート (syntax sugar)
-	template.plus = function(f, dname, pos){
-		var cacheKey = dname + "@" + pos;
-		if(memory[cacheKey]) return memory[cacheKey];
-		var ret = pos, backRet = consts["FAIL_FUNC"];
-		while(true){
-			ret = f(ret);
-			if(ret == consts["FAIL_FUNC"]) break;
-			backRet = ret;
-		}
-		ret = backRet == inputs.len? consts["END_INPUT"] : backRet;
-		memory[cacheKey] = ret;
-		return ret;
-	};
-	//Questionテンプレート (syntax sugar)
-	template.question = function(f, dname, pos){
-		var cacheKey = dname + "@" + pos;
-		if(memory[cacheKey]) return memory[cacheKey];
-		var ret = f(ret);
-		if(ret == consts["FAIL_FUNC"]) ret = 0;
-		memory[cacheKey] = ret;
-		return ret;
-	};
-	//Andテンプレート (syntax sugar)
-	template.and = function(f, dname, pos){
-		var cacheKey = dname + "@" + pos;
-		if(memory[cacheKey]) return memory[cacheKey];
-		var ret = f(pos);
-		if(ret != consts["FAIL_FUNC"]) ret = pos;
-		memory[cacheKey] = ret;
-		//console.log("ret = " + ret);
-		return ret;
-	};
-	//Notテンプレート
-	template.not = function(f, dname, pos){
-		var cacheKey = dname + "@" + pos;
-		if(memory[cacheKey]) return memory[cacheKey];
-		var ret = f(pos);
-		ret = ret == consts["FAIL_FUNC"]? pos : consts["FAIL_FUNC"];
-		memory[cacheKey] = ret;
-		return ret;
-	};
-	//Identifierテンプレート
-	template.identifier = function(dname, pos){
-		console.log(dname + " invoked.");
-		var cacheKey = dname + "@" + pos;
-		if(memory[cacheKey]) return memory[cacheKey];
-		var ret = ns[dname](pos);
-		memory[cacheKey] = ret;
-		//console.log("ret = " + ret);
-		return ret;
-	}
-	//Literalテンプレート
-	template.literal = function(lit, dname, pos){
-		//console.log("literal = " + lit + ", pos = " + pos);
-		var cacheKey = dname + "@" + pos;
-		if(memory[cacheKey]) return memory[cacheKey];
-		var ret = pos + lit.length - 1;
-		if(ret < inputs["len"] && pos != consts["END_INPUT"]){
-			ret++;
-			if(inputs["str"].substring(pos, ret) == lit){
-				ret = ret == inputs.len? consts["END_INPUT"] : ret;
+	var template = {
+		//Prioritized Choiceテンプレート
+		pri : function(f1, f2, dname, pos, inputs, memory){
+			var cacheKey = dname + "@" + pos;
+			if(memory[cacheKey]) return memory[cacheKey];
+			var ret = f1(pos, inputs, memory);
+			if(ret == consts["FAIL_FUNC"]) ret = f2(pos, inputs, memory);
+			ret == inputs.length? consts["END_INPUT"] : ret;
+			memory[cacheKey] = ret;
+			return ret;
+		},
+
+		//Sequenceテンプレート
+		seq : function(fary, dname, pos, inputs, memory){
+			var cacheKey = dname + "@" + pos;
+			if(memory[cacheKey]) return memory[cacheKey];
+			var ret = pos;
+			for(var i = 0; i < fary.length; i++){
+				ret = fary[i](ret, inputs, memory);
+				if(ret == consts["FAIL_FUNC"]) break;
+			}
+			ret == inputs.length? consts["END_INPUT"] : ret;
+			memory[cacheKey] = ret;
+			return ret;
+		},
+
+		//Starテンプレート
+		star : function(f, dname, pos, inputs, memory){
+			var cacheKey = dname + "@" + pos;
+			if(memory[cacheKey]) return memory[cacheKey];
+			var ret = pos, backRet = pos;
+			while(true){
+				ret = f(ret, inputs, memory);
+				if(ret == consts["FAIL_FUNC"]) break;
+				backRet = ret;
+			}
+			ret = backRet == inputs.length? consts["END_INPUT"] : backRet;
+			memory[cacheKey] = ret;
+			return ret;
+		},
+
+		//Plusテンプレート (syntax sugar)
+		plus : function(f, dname, pos, inputs, memory){
+			var cacheKey = dname + "@" + pos;
+			if(memory[cacheKey]) return memory[cacheKey];
+			var ret = pos, backRet = consts["FAIL_FUNC"];
+			while(true){
+				ret = f(ret, inputs, memory);
+				if(ret == consts["FAIL_FUNC"]) break;
+				backRet = ret;
+			}
+			ret = backRet == inputs.length? consts["END_INPUT"] : backRet;
+			memory[cacheKey] = ret;
+			return ret;
+		},
+
+		//Questionテンプレート (syntax sugar)
+		question : function(f, dname, pos, inputs, memory){
+			var cacheKey = dname + "@" + pos;
+			if(memory[cacheKey]) return memory[cacheKey];
+			var ret = f(ret, inputs, memory);
+			if(ret == consts["FAIL_FUNC"]) ret = 0;
+			memory[cacheKey] = ret;
+			return ret;
+		},
+
+		//Andテンプレート (syntax sugar)
+		and : function(f, dname, pos, inputs, memory){
+			var cacheKey = dname + "@" + pos;
+			if(memory[cacheKey]) return memory[cacheKey];
+			var ret = f(pos, inputs, memory);
+			if(ret != consts["FAIL_FUNC"]) ret = pos;
+			memory[cacheKey] = ret;
+			//console.log("ret = " + ret);
+			return ret;
+		},
+
+		//Notテンプレート
+		not : function(f, dname, pos, inputs, memory){
+			var cacheKey = dname + "@" + pos;
+			if(memory[cacheKey]) return memory[cacheKey];
+			var ret = f(pos, inputs, memory);
+			ret = ret == consts["FAIL_FUNC"]? pos : consts["FAIL_FUNC"];
+			memory[cacheKey] = ret;
+			return ret;
+		},
+
+		//Identifierテンプレート
+		identifier : function(dname, pos, inputs, memory){
+			//console.log(dname + " invoked.");
+			var cacheKey = dname + "@" + pos;
+			if(memory[cacheKey]) return memory[cacheKey];
+			var ret = ns[dname](pos, inputs, memory);
+			memory[cacheKey] = ret;
+			//console.log("ret = " + ret);
+			return ret;
+		},
+
+		//Literalテンプレート
+		literal : function(lit, dname, pos, inputs, memory){
+			//console.log("literal = " + lit + ", pos = " + pos);
+			var cacheKey = dname + "@" + pos;
+			if(memory[cacheKey]) return memory[cacheKey];
+			var ret = pos + lit.length - 1;
+			if(ret < inputs.length && pos != consts["END_INPUT"]){
+				ret++;
+				if(inputs.substring(pos, ret) == lit){
+					ret = ret == inputs.length? consts["END_INPUT"] : ret;
+					memory[cacheKey] = ret;
+					return ret;
+				}
+			}
+			memory[cacheKey] = consts["FAIL_FUNC"];
+			return consts["FAIL_FUNC"];
+		},
+
+
+		//Dotテンプレート
+		dot : function(dname, pos, inputs, memory){
+			var cacheKey = dname + "@" + pos;
+			if(memory[cacheKey]) return memory[cacheKey];
+			var ret = pos;
+			//とりあえずEOF以外全部
+			if(ret < inputs.length && pos != consts["END_INPUT"]){
+				ret++;
+				ret = ret == inputs.length? consts["END_INPUT"] : ret;
 				memory[cacheKey] = ret;
 				return ret;
 			}
+			memory[cacheKey] = consts["FAIL_FUNC"];
+			return consts["FAIL_FUNC"];
 		}
-		memory[cacheKey] = consts["FAIL_FUNC"];
-		return consts["FAIL_FUNC"];
 	};
 
-	//Dotテンプレート
-	template.dot = function(dname, pos){
-		var cacheKey = dname + "@" + pos;
-		if(memory[cacheKey]) return memory[cacheKey];
-		var ret = pos;
-		//とりあえずEOF以外全部
-		if(ret < inputs["len"] && pos != consts["END_INPUT"]){
-			ret++;
-			ret = ret == inputs.len? consts["END_INPUT"] : ret;
-			memory[cacheKey] = ret;
-			return ret;
-		}
-		memory[cacheKey] = consts["FAIL_FUNC"];
-		return consts["FAIL_FUNC"];
-	};
 
 	//汎用関数
-	var func = {};
-	func.idx = 0;
-	//sjoin : 再帰的にjoinして配列を文字列にする
-	func.sjoin = function(ary){
-		if(typeof(ary) == 'string') return ary;
-		for(var i in ary) ary[i] = func.sjoin(ary[i]);
-		return ary.join(deliminator='');
-	};
-	//form : 位置情報を人間用に修正
-	func.form = function(n){
-		var str = "";
-		switch(n){
-		case consts["FAIL_FUNC"]:
-			str = "FAIL_FUNC";
-			break;
-		case consts["END_INPUT"]:
-			str = "END_INPUT [" + inputs["len"] + "]";
-			break;
-		default:
-			str += n;
-			break;
+	var func = {
+		idx : 0,
+
+		//sjoin : 再帰的にjoinして配列を文字列にする
+		sjoin : function(ary){
+			if(typeof(ary) == 'string') return ary;
+			for(var i in ary) ary[i] = func.sjoin(ary[i]);
+			return ary.join(deliminator='');
+		},
+
+		//form : 位置情報を人間用に修正
+		form : function(n){
+			var str = "";
+			switch(n){
+			case consts["FAIL_FUNC"]:
+				str = "FAIL_FUNC";
+				break;
+			case consts["END_INPUT"]:
+				str = "END_INPUT [" + inputs.length + "]";
+				break;
+			default:
+				str += n;
+				break;
+			}
+			return str;
 		}
-		return str;
-	}
+	};
+
+
 } start
 	= Grammar
 
 Grammar
-	= SPACING fd:FirstDefinition Definition* EOF {return ns;}
+	= SPACING fd:FirstDefinition Definition* EOF {
+		return ns;
+	}
 //= SPACING Definition+ EOF
 
 FirstDefinition
@@ -223,8 +231,8 @@ Primary
 Literal
 	= ['] l : (!['] Char)* ['] SPACING {return template["literal"].bind(null, func.sjoin(l), "literal" + func.idx++);}
 
-Char
-= //'\\' [nrt']
+							Char
+							= //'\\' [nrt']
 "\\" [0-2][0-7][0-7]
 	/ "\\" [0-7][0-7]?
 	/ !"\\" .
