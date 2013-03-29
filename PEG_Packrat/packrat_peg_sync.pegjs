@@ -180,9 +180,10 @@
 	= Grammar
 
 Grammar
-	= SPACING fd:FirstDefinition Definition* EOF {
+ = Class SPACING
+/*	= SPACING fd:FirstDefinition Definition* EOF {
 		return ns;
-	}
+	}*/
 //= SPACING Definition+ EOF
 
 FirstDefinition
@@ -226,13 +227,20 @@ Primary
 	= i:Identifier !LEFTARROW {return template["identifier"].bind(null, i);}
 	/ OPEN e:Expression CLOSE {return e;}
 	/ l:Literal {return l;}
+    / c:Class {console.log(c);}
 	/ DOT {return template["dot"].bind(null, "dot" + func.idx++);}
 
 Literal
 	= ['] l : (!['] Char)* ['] SPACING {return template["literal"].bind(null, func.sjoin(l), "literal" + func.idx++);}
 
-							Char
-							= //'\\' [nrt']
+Class
+    = "[" r:(!"]" Range)* "]" SPACING {console.log("r = " + typeof(r[0]) + " " + r[0]);return r[0];}
+
+Range
+    = Char "-" Char / Char
+
+Char
+    = //'\\' [nrt']
 "\\" [0-2][0-7][0-7]
 	/ "\\" [0-7][0-7]?
 	/ !"\\" .
