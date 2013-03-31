@@ -84,7 +84,6 @@
 			var ret = f(pos, inputs, memory);
 			if(ret != consts["FAIL_FUNC"]) ret = pos;
 			memory[cacheKey] = ret;
-			//console.log("ret = " + ret);
 			return ret;
 		},
 
@@ -111,7 +110,6 @@
 
 		//Literalテンプレート
 		literal : function(lit, dname, pos, inputs, memory){
-			//console.log("literal = " + lit + ", pos = " + pos);
 			var cacheKey = dname + "@" + pos;
 			if(memory[cacheKey]) return memory[cacheKey];
 			var ret = pos + lit.length - 1;
@@ -121,6 +119,59 @@
 					ret = ret == inputs.length? consts["END_INPUT"] : ret;
 					memory[cacheKey] = ret;
 					return ret;
+				}
+			}
+			memory[cacheKey] = consts["FAIL_FUNC"];
+			return consts["FAIL_FUNC"];
+		},
+
+		//Classテンプレート
+		cls : function(fary, dname, pos, inputs, memory){
+			var cacheKey = dname + "@" + pos;
+			if(memory[cacheKey]) return memory[cacheKey];
+			var ret = pos;
+			for(var i = 0; i < fary.length; i++){
+				//console.log("class -> " + typeof(fary[0][1]));
+				//pegjsの仕様上、fary[i][1]に関数が入っている
+				ret = fary[i][1](pos, inputs, memory);
+				if(ret != consts["FAIL_FUNC"]) break;
+			}
+			ret == inputs.length? consts["END_INPUT"] : ret;
+			memory[cacheKey] = ret;
+			return ret;
+		},
+
+		//Charテンプレート
+		chr : function(c, dname, pos, inputs, memory){
+			//console.log("chr invoked. [" + typeof(c[1]) + "]");
+			var cacheKey = dname + "@" + pos;
+			if(memory[cacheKey]) return memory[cacheKey];
+			var ret = pos;
+			if(ret < inputs.length && pos != consts["END_INPUT"]){
+				ret++;
+				if(inputs[pos] == c){
+					ret = ret == inputs.length? consts["END_INPUT"] : ret;
+					memory[cacheKey] = ret;
+					return ret;
+				}
+			}
+			memory[cacheKey] = consts["FAIL_FUNC"];
+			return consts["FAIL_FUNC"];
+		},
+
+		//Rangeテンプレート
+		range : function(c1, c2, dname, pos, inputs, memory){
+			var cacheKey = dname + "@" + pos;
+			if(memory[cacheKey]) return memory[cacheKey];
+			var ret = pos;
+			if(ret < inputs.length && pos != consts["END_INPUT"]){
+				ret++;
+				for(var i = c1; i <= c2; i++){
+					if(inputs[pos] == i){
+						ret = ret == inputs.length? consts["END_INPUT"] : ret;
+						memory[cacheKey] = ret;
+						return ret;
+					}
 				}
 			}
 			memory[cacheKey] = consts["FAIL_FUNC"];
@@ -180,10 +231,10 @@
 	= Grammar
 
 Grammar
- = Class SPACING
-/*	= SPACING fd:FirstDefinition Definition* EOF {
+// = c:Class SPACING {return c;}
+	= SPACING fd:FirstDefinition Definition* EOF {
 		return ns;
-	}*/
+	}
 //= SPACING Definition+ EOF
 
 FirstDefinition
@@ -227,17 +278,18 @@ Primary
 	= i:Identifier !LEFTARROW {return template["identifier"].bind(null, i);}
 	/ OPEN e:Expression CLOSE {return e;}
 	/ l:Literal {return l;}
-    / c:Class {console.log(c);}
+    / c:Class {return c;}
 	/ DOT {return template["dot"].bind(null, "dot" + func.idx++);}
 
 Literal
 	= ['] l : (!['] Char)* ['] SPACING {return template["literal"].bind(null, func.sjoin(l), "literal" + func.idx++);}
 
 Class
-    = "[" r:(!"]" Range)* "]" SPACING {console.log("r = " + typeof(r[0]) + " " + r[0]);return r[0];}
+    = "[" r:(!"]" Range)* "]" SPACING {/*console.log(template["cls"](r, "cls" , 0, "abc", {}));*/return template["cls"].bind(null, r, "cls" + func.idx++);}
 
 Range
-    = Char "-" Char / Char
+    = c1:Char "-" c2:Char  {return template["range"].bind(null, c1[1], c2[1], "range" + func.idx++);}
+	/ c:Char {return template["chr"].bind(null, c[1], "chr" + func.idx++);}
 
 Char
     = //'\\' [nrt']
