@@ -99,7 +99,7 @@
 
 		//Identifierテンプレート
 		identifier : function(dname, pos, inputs, memory){
-			//console.log(dname + " invoked.");
+			console.log(dname + " invoked.");
 			var cacheKey = dname + "@" + pos;
 			if(memory[cacheKey]) return memory[cacheKey];
 			var ret = ns[dname](pos, inputs, memory);
@@ -110,14 +110,19 @@
 
 		//Literalテンプレート
 		literal : function(lit, dname, pos, inputs, memory){
+			console.log("literal = " + lit);
+			console.log("literal : pos = " + pos);
 			var cacheKey = dname + "@" + pos;
-			if(memory[cacheKey]) return memory[cacheKey];
+			console.log("lit : cache = " + cacheKey);
+			//if(memory[cacheKey]) return memory[cacheKey];
 			var ret = pos + lit.length - 1;
 			if(ret < inputs.length && pos != consts["END_INPUT"]){
 				ret++;
+				console.log("lit : subs = " + inputs.substring(pos, ret));
 				if(inputs.substring(pos, ret) == lit){
 					ret = ret == inputs.length? consts["END_INPUT"] : ret;
 					memory[cacheKey] = ret;
+					console.log("lit : ret = " + ret);
 					return ret;
 				}
 			}
@@ -143,7 +148,7 @@
 
 		//Charテンプレート
 		chr : function(c, dname, pos, inputs, memory){
-			//console.log("chr invoked. [" + typeof(c[1]) + "]");
+			//console.log("chr invoked. [" + c[1] + "]");
 			var cacheKey = dname + "@" + pos;
 			if(memory[cacheKey]) return memory[cacheKey];
 			var ret = pos;
