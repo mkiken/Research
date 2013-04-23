@@ -99,7 +99,7 @@
 
 		//Identifierテンプレート
 		identifier : function(dname, pos, inputs, memory){
-			//console.log(dname + " invoked.");
+			console.log(dname + " invoked.");
 			var cacheKey = dname + "@" + pos;
 			if(memory[cacheKey]) return memory[cacheKey];
 			var ret = ns[dname](pos, inputs, memory);
@@ -110,19 +110,19 @@
 
 		//Literalテンプレート
 		literal : function(lit, dname, pos, inputs, memory){
-			//console.log("literal = " + lit);
-			//console.log("literal : pos = " + pos);
+			console.log("literal = " + lit);
+			console.log("literal : pos = " + pos);
 			var cacheKey = dname + "@" + pos;
-			//console.log("lit : cache = " + cacheKey);
+			console.log("lit : cache = " + cacheKey);
 			//if(memory[cacheKey]) return memory[cacheKey];
 			var ret = pos + lit.length - 1;
 			if(ret < inputs.length && pos != consts["END_INPUT"]){
 				ret++;
-				//console.log("lit : subs = " + inputs.substring(pos, ret));
+				console.log("lit : subs = " + inputs.substring(pos, ret));
 				if(inputs.substring(pos, ret) == lit){
 					ret = ret == inputs.length? consts["END_INPUT"] : ret;
 					memory[cacheKey] = ret;
-					//console.log("lit : ret = " + ret);
+					console.log("lit : ret = " + ret);
 					return ret;
 				}
 			}
@@ -245,7 +245,6 @@ Grammar
 FirstDefinition
 	= left:Identifier LEFTARROW right:Expression
 {
-	ns["START_SYMBOL"] = left;
   	ns[left] = right;
 }
 
@@ -289,7 +288,6 @@ Primary
 
 Literal
 	= ['] l : (!['] Char)* ['] SPACING {return template["literal"].bind(null, func.sjoin(l), "literal" + func.idx++);}
-	/ ["] l : (!["] Char)* ["] SPACING {return template["literal"].bind(null, func.sjoin(l), "literal" + func.idx++);}
 
 Class
     = "[" r:(!"]" Range)* "]" SPACING {/*console.log(template["cls"](r, "cls" , 0, "abc", {}));*/return template["cls"].bind(null, r, "cls" + func.idx++);}
@@ -305,7 +303,7 @@ Char
 	/ !"\\" .
 
 Identifier
-	= is:Identstart ic:Identcont* SPACING {/*console.log(is + " " + func.sjoin(ic));*/return is + func.sjoin(ic);}
+	= is:Identstart ic:Identcont* SPACING {return is + ic;}
 
 Identstart
 	= [a-zA-Z_]
@@ -332,7 +330,7 @@ QUESTION
 	= "?" SPACING
 
 LEFTARROW
-	= "=" SPACING
+	= "<-" SPACING
 
 OPEN
 	= "(" SPACING
@@ -352,7 +350,6 @@ SPACE
 COMMENT
 //	= '#' (!EOF .)* EOL
 	= '#' (!EOF !EOL .)* (EOL / EOF)
-	/ '/*' (!'*/' .)* '*/'
 
 EOF
 	= !.

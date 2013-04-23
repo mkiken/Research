@@ -4,7 +4,7 @@ var files2 = require("./files2");
 
 var fs = require("fs");
 //var args = process.argv;
-var gram = fs.readFileSync( './packrat_peg_sync.pegjs' ).toString();
+var gram = fs.readFileSync( './_packrat_peg_sync.pegjs' ).toString();
 var parser = PEG.buildParser(gram);
 var contents = fs.readFileSync(  './testcase/test012_plus.grammar' ).toString();
 var ns = parser.parse(contents);
@@ -17,12 +17,11 @@ var memory = {};
 console.log("input = [ " + inputs + " ]");
 console.log(ns["S"](0, inputs, memory, ns));*/
 console.log(ns);
-console.log(ns2);
+/*console.log(ns2);
 ns["B"] = ns2["C"];
 ns["C"] = ns2["C"]
 ns["D"] = ns2["D"];
-console.log(ns);
-
+console.log(ns);*/
 
 var readline = require('readline');
 var rl = readline.createInterface({
@@ -33,5 +32,7 @@ var rl = readline.createInterface({
 
 rl.on('line', function (cmd) {
 	var memory = {};
+	console.log(ns["S"](0, "1+3", memory, ns));
+	memory = {};
 	console.log("res = " + ns["S"](0, cmd, memory, ns));
 });
