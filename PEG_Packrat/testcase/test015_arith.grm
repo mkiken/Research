@@ -9,13 +9,14 @@ additive
   = multiplicative "+" additive
   / multiplicative
 
+//start = integer "*" integer //integer "*" integer
 multiplicative
   = primary "*" multiplicative
   / primary
 
 primary
   = integer
-  / "(" additive ")"
+//  / "(" additive ")"
 
 integer
   = [0-9]+

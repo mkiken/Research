@@ -25,6 +25,7 @@
 
 		//Sequenceテンプレート
 		seq : function(fary, dname, pos, inputs, memory){
+			console.log("seq invoked. |fary| = " + fary.length);
 			var cacheKey = dname + "@" + pos;
 			if(memory[cacheKey]) return memory[cacheKey];
 			var ret = pos;
@@ -99,7 +100,7 @@
 
 		//Identifierテンプレート
 		identifier : function(dname, pos, inputs, memory){
-			//console.log(dname + " invoked.");
+			console.log(dname + " invoked. pos = [" + pos + "]");
 			var cacheKey = dname + "@" + pos;
 			if(memory[cacheKey]) return memory[cacheKey];
 			var ret = ns[dname](pos, inputs, memory);
@@ -110,7 +111,7 @@
 
 		//Literalテンプレート
 		literal : function(lit, dname, pos, inputs, memory){
-			//console.log("literal = " + lit);
+			console.log("literal = " + lit);
 			//console.log("literal : pos = " + pos);
 			var cacheKey = dname + "@" + pos;
 			//console.log("lit : cache = " + cacheKey);
@@ -263,14 +264,20 @@ Expression
 //  = Sequence
 
 Sequence
-	= p:Prefix+ {return template["seq"].bind(null, p, "seq" + func.idx++);}
+	= p:Prefix+ CodeBlock? SPACING {return template["seq"].bind(null, p, "seq" + func.idx++);}
 //= p:Prefix*
+
+CodeBlock
+	= "{" Contents* "}"
+
+Contents
+	= CodeBlock / !"}" .
 
 Prefix
 //  = (AND / NOT)? Suffix
 	= AND s:Suffix {return template["and"].bind(null, s, "and" + func.idx++);}
 	/ NOT s:Suffix {return template["not"].bind(null, s, "not" + func.idx++);}
-	/ Suffix
+	/ s:Suffix {return s;}
 
 Suffix
 //  = Primary STAR?
@@ -281,15 +288,21 @@ Suffix
 //  = Primary
 
 Primary
+	= Valuable? p:Primary2 {return p;}
+
+Valuable
+	= Identifier ":" SPACING
+
+Primary2
 	= i:Identifier !LEFTARROW {return template["identifier"].bind(null, i);}
 	/ OPEN e:Expression CLOSE {return e;}
-	/ l:Literal {return l;}
+	/ l:Literal {console.log("make:pliteral");return l;}
     / c:Class {return c;}
 	/ DOT {return template["dot"].bind(null, "dot" + func.idx++);}
 
 Literal
 	= ['] l : (!['] Char)* ['] SPACING {return template["literal"].bind(null, func.sjoin(l), "literal" + func.idx++);}
-	/ ["] l : (!["] Char)* ["] SPACING {return template["literal"].bind(null, func.sjoin(l), "literal" + func.idx++);}
+	/ ["] l : (!["] Char)* ["] SPACING {/*console.log("make:literal = " + func.sjoin(l));*/return template["literal"].bind(null, func.sjoin(l), "literal" + func.idx++);}
 
 Class
     = "[" r:(!"]" Range)* "]" SPACING {/*console.log(template["cls"](r, "cls" , 0, "abc", {}));*/return template["cls"].bind(null, r, "cls" + func.idx++);}
@@ -299,13 +312,17 @@ Range
 	/ c:Char {return template["chr"].bind(null, c[1], "chr" + func.idx++);}
 
 Char
-    = //'\\' [nrt']
-"\\" [0-2][0-7][0-7]
+//    = "\\" [nrt']
+	= "\\" [0-2][0-7][0-7]
 	/ "\\" [0-7][0-7]?
 	/ !"\\" .
+	/ "\\" .
 
 Identifier
-	= is:Identstart ic:Identcont* SPACING {/*console.log(is + " " + func.sjoin(ic));*/return is + func.sjoin(ic);}
+//	= is:Identstart ic:Identcont* (SPACING Literal)? SPACING {/*console.log(is + " " + func.sjoin(ic));*/return is + func.sjoin(ic);}
+
+	= is:Identstart ic:Identcont* SPACING
+{/*console.log(is + " " + func.sjoin(ic));*/return is + func.sjoin(ic);}
 
 Identstart
 	= [a-zA-Z_]
@@ -352,6 +369,7 @@ SPACE
 COMMENT
 //	= '#' (!EOF .)* EOL
 	= '#' (!EOF !EOL .)* (EOL / EOF)
+	/ '//' (!EOF !EOL .)* (EOL / EOF)
 	/ '/*' (!'*/' .)* '*/'
 
 EOF
