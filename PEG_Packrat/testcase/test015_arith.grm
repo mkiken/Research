@@ -2,21 +2,21 @@
  * Classic example grammar, which recognizes simple arithmetic expressions like
  * "2*(3+4)". The parser generated from this grammar then computes their value.
  */
-start
+start "start!"
   = additive
 
 additive
-  = multiplicative "+" additive
+  = m:multiplicative "+" a:additive
   / multiplicative
 
 //start = integer "*" integer //integer "*" integer
 multiplicative
-  = primary "*" multiplicative
+  = p:primary "*" m:multiplicative {return p*m;}
   / primary
 
 primary
   = integer
-//  / "(" additive ")"
+  / "(" additive ")"
 
-integer
+integer "integer"
   = [0-9]+

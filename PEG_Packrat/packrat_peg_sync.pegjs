@@ -244,14 +244,14 @@ Grammar
 //= SPACING Definition+ EOF
 
 FirstDefinition
-	= left:Identifier LEFTARROW right:Expression
+	= left:Identifier (Literal)? LEFTARROW right:Expression
 {
 	ns["START_SYMBOL"] = left;
   	ns[left] = right;
 }
 
 Definition
-	= left:Identifier LEFTARROW right:Expression
+	= left:Identifier (Literal)? LEFTARROW right:Expression
 {
   	ns[left] = right;
 }
@@ -294,9 +294,12 @@ Valuable
 	= Identifier ":" SPACING
 
 Primary2
-	= i:Identifier !LEFTARROW {return template["identifier"].bind(null, i);}
+	= i:Identifier !(Literal? LEFTARROW / [:]) {return template["identifier"].bind(null, i);}
 	/ OPEN e:Expression CLOSE {return e;}
-	/ l:Literal {console.log("make:pliteral");return l;}
+	/ l:Literal {
+		//console.log("make:pliteral");
+		return l;
+	}
     / c:Class {return c;}
 	/ DOT {return template["dot"].bind(null, "dot" + func.idx++);}
 
@@ -319,10 +322,12 @@ Char
 	/ "\\" .
 
 Identifier
-//	= is:Identstart ic:Identcont* (SPACING Literal)? SPACING {/*console.log(is + " " + func.sjoin(ic));*/return is + func.sjoin(ic);}
+//	= is:Identstart ic:Identcont* (SPACING Literal)? SPACING {console.log(is + " " + func.sjoin(ic));return is + func.sjoin(ic);}
 
 	= is:Identstart ic:Identcont* SPACING
-{/*console.log(is + " " + func.sjoin(ic));*/return is + func.sjoin(ic);}
+{//console.log(is + " " + func.sjoin(ic));
+ return is + func.sjoin(ic);
+}
 
 Identstart
 	= [a-zA-Z_]

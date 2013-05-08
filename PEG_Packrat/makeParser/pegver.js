@@ -7,16 +7,19 @@ names = [
 	'../testcase/test016_json.grm',
 	'../testcase/test017_css.grm',
 	'../testcase/test018_javascript.grm',
-	'../examples/arithmetics.pegjs',
-	'../examples/json.pegjs',
 	'../testcase/test019_json.grm',
-	'../testcase/test020_css.grm'
+	'../testcase/test020_css.grm',
+	'../examples/arithmetics.pegjs', // 6
+	'../examples/json.pegjs',
+	'../examples/css.pegjs',
+	'../examples/javascript.pegjs'
 
 
 ];
-contents = fs.readFileSync(names[0]).toString();
+var grm = names[6];
+contents = fs.readFileSync(grm).toString();
 
-
+console.log("grammar = " + grm);
 console.log("PEG parser build start.");
 start = new Date();
 parser2 = PEG.buildParser(contents);
@@ -42,9 +45,9 @@ var rl = readline.createInterface({
 rl.on('line', function (cmd) {
 	//console.log(cmd.length);
 	cmd = cmd.slice(0, cmd.length-1);
-	console.log(ns["START_SYMBOL"]);
+	//console.log(ns["START_SYMBOL"]);
 	var memory = {};
 	console.log(parser2.parse(cmd));
-	memory = {};
+	//memory = {};
 	console.log("res = " + ns[ns["START_SYMBOL"]](0, cmd, memory, ns));
 });
