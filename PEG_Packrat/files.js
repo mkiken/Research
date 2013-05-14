@@ -1,10 +1,16 @@
 //パスはパーザールートからの相対パス
 
-var prefix = ['test005_priority'];
-var basename = prefix[0];
-var parseFile = './packrat_peg.pegjs'; //Packrat_PEGファイル
+var prefix = [
+	'test002_seq',
+	'test003_plus',
+	'test005_priority',
+	'test021_q',
+	'test022_notclass'
+];
+var basename = prefix[4];
+var parseFile = './packrat_peg_sync.pegjs'; //Packrat_PEGファイル
 var inputFile = './testcase/' + basename + '.input'; //生成したパーザーで解析する入力
-var gramFile = './testcase/' + basename + '.grammar'; //パーザーに与えるPEGの文法ファイル
+var gramFile = './testcase/' + basename + '.grm'; //パーザーに与えるPEGの文法ファイル
 var fs = require("fs");
 
 exports.pp = function(){

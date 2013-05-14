@@ -18,14 +18,13 @@
 			if(memory[cacheKey]) return memory[cacheKey];
 			var ret = f1(pos, inputs, memory);
 			if(ret == consts["FAIL_FUNC"]) ret = f2(pos, inputs, memory);
-			ret = (ret == inputs.length? consts["END_INPUT"] : ret);
 			memory[cacheKey] = ret;
 			return ret;
 		},
 
 		//Sequenceテンプレート
 		seq : function(fary, dname, pos, inputs, memory){
-			console.log("seq invoked. |fary| = " + fary.length);
+			//console.log("seq invoked. |fary| = " + fary.length);
 			var cacheKey = dname + "@" + pos;
 			if(memory[cacheKey]) return memory[cacheKey];
 			var ret = pos;
@@ -33,7 +32,6 @@
 				ret = fary[i](ret, inputs, memory);
 				if(ret == consts["FAIL_FUNC"]) break;
 			}
-			ret = (ret == inputs.length? consts["END_INPUT"] : ret);
 			memory[cacheKey] = ret;
 			return ret;
 		},
@@ -42,13 +40,11 @@
 		star : function(f, dname, pos, inputs, memory){
 			var cacheKey = dname + "@" + pos;
 			if(memory[cacheKey]) return memory[cacheKey];
-			var ret = pos, backRet = pos;
-			while(true){
-				ret = f(ret, inputs, memory);
-				if(ret == consts["FAIL_FUNC"]) break;
-				backRet = ret;
+			var ret, tmp = pos;
+			while(tmp != consts["FAIL_FUNC"]){
+				ret = tmp;
+				tmp = f(ret, inputs, memory);
 			}
-			ret = (backRet == inputs.length? consts["END_INPUT"] : backRet);
 			memory[cacheKey] = ret;
 			return ret;
 		},
@@ -57,13 +53,11 @@
 		plus : function(f, dname, pos, inputs, memory){
 			var cacheKey = dname + "@" + pos;
 			if(memory[cacheKey]) return memory[cacheKey];
-			var ret = pos, backRet = consts["FAIL_FUNC"];
-			while(true){
-				ret = f(ret, inputs, memory);
-				if(ret == consts["FAIL_FUNC"]) break;
-				backRet = ret;
+			var ret = consts["FAIL_FUNC"] , tmp = f(pos, inputs, memory);
+			while(tmp != consts["FAIL_FUNC"]){
+				ret = tmp;
+				tmp = f(ret, inputs, memory);
 			}
-			ret = (backRet == inputs.length? consts["END_INPUT"] : backRet);
 			memory[cacheKey] = ret;
 			return ret;
 		},
@@ -72,8 +66,8 @@
 		question : function(f, dname, pos, inputs, memory){
 			var cacheKey = dname + "@" + pos;
 			if(memory[cacheKey]) return memory[cacheKey];
-			var ret = f(ret, inputs, memory);
-			if(ret == consts["FAIL_FUNC"]) ret = 0;
+			var ret = f(pos, inputs, memory);
+			if(ret == consts["FAIL_FUNC"]) ret = pos;
 			memory[cacheKey] = ret;
 			return ret;
 		},
@@ -116,19 +110,17 @@
 			var cacheKey = dname + "@" + pos;
 			//console.log("lit : cache = " + cacheKey);
 			//if(memory[cacheKey]) return memory[cacheKey];
-			var ret = pos + lit.length - 1;
-			if(ret < inputs.length && pos != consts["END_INPUT"]){
-				ret++;
+			var tmp = pos + lit.length - 1, ret = consts["FAIL_FUNC"];
+			if(tmp < inputs.length && pos != consts["END_INPUT"]){
+				tmp++;
 				//console.log("lit : subs = " + inputs.substring(pos, ret));
-				if(inputs.substring(pos, ret) == lit){
-					ret = (ret == inputs.length? consts["END_INPUT"] : ret);
-					memory[cacheKey] = ret;
+				if(inputs.substring(pos, tmp) == lit){
+					ret = (tmp == inputs.length? consts["END_INPUT"] : tmp);
 					//console.log("lit : ret = " + ret);
-					return ret;
 				}
 			}
-			memory[cacheKey] = consts["FAIL_FUNC"];
-			return consts["FAIL_FUNC"];
+			memory[cacheKey] = ret;
+			return ret;
 		},
 
 		//Classテンプレート
@@ -142,7 +134,7 @@
 				ret = fary[i][1](pos, inputs, memory);
 				if(ret != consts["FAIL_FUNC"]) break;
 			}
-			ret = (ret == inputs.length? consts["END_INPUT"] : ret);
+			if(ret == inputs.length) ret = consts["END_INPUT"];
 			memory[cacheKey] = ret;
 			return ret;
 		},
@@ -152,53 +144,48 @@
 			//console.log("chr invoked. [" + c[1] + "]");
 			var cacheKey = dname + "@" + pos;
 			if(memory[cacheKey]) return memory[cacheKey];
-			var ret = pos;
-			if(ret < inputs.length && pos != consts["END_INPUT"]){
-				ret++;
+			var ret = consts["FAIL_FUNC"];
+			if(pos < inputs.length && pos != consts["END_INPUT"]){
 				if(inputs[pos] == c){
-					ret = (ret == inputs.length? consts["END_INPUT"] : ret);
-					memory[cacheKey] = ret;
-					return ret;
+					ret = (pos+1 == inputs.length? consts["END_INPUT"] : pos+1);
 				}
 			}
-			memory[cacheKey] = consts["FAIL_FUNC"];
-			return consts["FAIL_FUNC"];
+			memory[cacheKey] = ret;
+			return ret;
 		},
 
 		//Rangeテンプレート
 		range : function(c1, c2, dname, pos, inputs, memory){
+			console.log("range: c1 = " + c1 + ", c2 = " + c2);
 			var cacheKey = dname + "@" + pos;
 			if(memory[cacheKey]) return memory[cacheKey];
-			var ret = pos;
-			if(ret < inputs.length && pos != consts["END_INPUT"]){
-				ret++;
+			var ret = consts["FAIL_FUNC"];
+			if(pos < inputs.length && pos != consts["END_INPUT"]){
+				var c = inputs.charCodeAt(pos);
 				for(var i = c1; i <= c2; i++){
-					if(inputs[pos] == i){
-						ret = (ret == inputs.length? consts["END_INPUT"] : ret);
-						memory[cacheKey] = ret;
-						return ret;
+					console.log("i = " + i);
+					if(c == i){
+						ret = (pos+1 == inputs.length? consts["END_INPUT"] : pos+1);
+						break;
 					}
 				}
 			}
-			memory[cacheKey] = consts["FAIL_FUNC"];
-			return consts["FAIL_FUNC"];
+			memory[cacheKey] = ret;
+			return ret;
 		},
-
 
 		//Dotテンプレート
 		dot : function(dname, pos, inputs, memory){
 			var cacheKey = dname + "@" + pos;
 			if(memory[cacheKey]) return memory[cacheKey];
-			var ret = pos;
+			var ret = consts["FAIL_FUNC"];
 			//とりあえずEOF以外全部
-			if(ret < inputs.length && pos != consts["END_INPUT"]){
-				ret++;
-				ret = (ret == inputs.length? consts["END_INPUT"] : ret);
-				memory[cacheKey] = ret;
-				return ret;
+			if(pos < inputs.length && pos != consts["END_INPUT"]){
+				ret = pos + 1;
+				if(ret == inputs.length) ret = consts["END_INPUT"];
 			}
-			memory[cacheKey] = consts["FAIL_FUNC"];
-			return consts["FAIL_FUNC"];
+			memory[cacheKey] = ret;
+			return ret;
 		}
 	};
 
@@ -308,10 +295,14 @@ Literal
 	/ ["] l : (!["] Char)* ["] SPACING {/*console.log("make:literal = " + func.sjoin(l));*/return template["literal"].bind(null, func.sjoin(l), "literal" + func.idx++);}
 
 Class
-    = "[" r:(!"]" Range)* "]" SPACING {/*console.log(template["cls"](r, "cls" , 0, "abc", {}));*/return template["cls"].bind(null, r, "cls" + func.idx++);}
+    = "[" c:ClassContents "]" SPACING {return c;}
+
+ClassContents
+    = [^] r:(!"]" Range)* {return template["cls"].bind(null, r, "cls" + func.idx++);}
+    / r:(!"]" Range)* {return template["cls"].bind(null, r, "cls" + func.idx++);}
 
 Range
-    = c1:Char "-" c2:Char  {return template["range"].bind(null, c1[1], c2[1], "range" + func.idx++);}
+    = c1:Char "-" c2:Char  {return template["range"].bind(null, c1[1].charCodeAt(0), c2[1].charCodeAt(0), "range" + func.idx++);}
 	/ c:Char {return template["chr"].bind(null, c[1], "chr" + func.idx++);}
 
 Char

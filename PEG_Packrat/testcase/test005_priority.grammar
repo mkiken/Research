@@ -1,4 +1,4 @@
-a <- b+ / c (b / d)
-b <- 'e'
-c <- 'f'
-d <- 'cba'
+a = b+ / c (b / d)
+b = 'e'
+c = 'f'
+d = 'cba'
