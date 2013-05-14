@@ -18,7 +18,7 @@
 			if(memory[cacheKey]) return memory[cacheKey];
 			var ret = f1(pos, inputs, memory);
 			if(ret == consts["FAIL_FUNC"]) ret = f2(pos, inputs, memory);
-			ret == inputs.length? consts["END_INPUT"] : ret;
+			ret = (ret == inputs.length? consts["END_INPUT"] : ret);
 			memory[cacheKey] = ret;
 			return ret;
 		},
@@ -33,7 +33,7 @@
 				ret = fary[i](ret, inputs, memory);
 				if(ret == consts["FAIL_FUNC"]) break;
 			}
-			ret == inputs.length? consts["END_INPUT"] : ret;
+			ret = (ret == inputs.length? consts["END_INPUT"] : ret);
 			memory[cacheKey] = ret;
 			return ret;
 		},
@@ -48,7 +48,7 @@
 				if(ret == consts["FAIL_FUNC"]) break;
 				backRet = ret;
 			}
-			ret = backRet == inputs.length? consts["END_INPUT"] : backRet;
+			ret = (backRet == inputs.length? consts["END_INPUT"] : backRet);
 			memory[cacheKey] = ret;
 			return ret;
 		},
@@ -63,7 +63,7 @@
 				if(ret == consts["FAIL_FUNC"]) break;
 				backRet = ret;
 			}
-			ret = backRet == inputs.length? consts["END_INPUT"] : backRet;
+			ret = (backRet == inputs.length? consts["END_INPUT"] : backRet);
 			memory[cacheKey] = ret;
 			return ret;
 		},
@@ -93,7 +93,7 @@
 			var cacheKey = dname + "@" + pos;
 			if(memory[cacheKey]) return memory[cacheKey];
 			var ret = f(pos, inputs, memory);
-			ret = ret == consts["FAIL_FUNC"]? pos : consts["FAIL_FUNC"];
+			ret = (ret == consts["FAIL_FUNC"]? pos : consts["FAIL_FUNC"]);
 			memory[cacheKey] = ret;
 			return ret;
 		},
@@ -111,7 +111,7 @@
 
 		//Literalテンプレート
 		literal : function(lit, dname, pos, inputs, memory){
-			console.log("literal = " + lit);
+			//console.log("literal = " + lit);
 			//console.log("literal : pos = " + pos);
 			var cacheKey = dname + "@" + pos;
 			//console.log("lit : cache = " + cacheKey);
@@ -121,7 +121,7 @@
 				ret++;
 				//console.log("lit : subs = " + inputs.substring(pos, ret));
 				if(inputs.substring(pos, ret) == lit){
-					ret = ret == inputs.length? consts["END_INPUT"] : ret;
+					ret = (ret == inputs.length? consts["END_INPUT"] : ret);
 					memory[cacheKey] = ret;
 					//console.log("lit : ret = " + ret);
 					return ret;
@@ -142,7 +142,7 @@
 				ret = fary[i][1](pos, inputs, memory);
 				if(ret != consts["FAIL_FUNC"]) break;
 			}
-			ret == inputs.length? consts["END_INPUT"] : ret;
+			ret = (ret == inputs.length? consts["END_INPUT"] : ret);
 			memory[cacheKey] = ret;
 			return ret;
 		},
@@ -156,7 +156,7 @@
 			if(ret < inputs.length && pos != consts["END_INPUT"]){
 				ret++;
 				if(inputs[pos] == c){
-					ret = ret == inputs.length? consts["END_INPUT"] : ret;
+					ret = (ret == inputs.length? consts["END_INPUT"] : ret);
 					memory[cacheKey] = ret;
 					return ret;
 				}
@@ -174,7 +174,7 @@
 				ret++;
 				for(var i = c1; i <= c2; i++){
 					if(inputs[pos] == i){
-						ret = ret == inputs.length? consts["END_INPUT"] : ret;
+						ret = (ret == inputs.length? consts["END_INPUT"] : ret);
 						memory[cacheKey] = ret;
 						return ret;
 					}
@@ -193,7 +193,7 @@
 			//とりあえずEOF以外全部
 			if(ret < inputs.length && pos != consts["END_INPUT"]){
 				ret++;
-				ret = ret == inputs.length? consts["END_INPUT"] : ret;
+				ret = (ret == inputs.length? consts["END_INPUT"] : ret);
 				memory[cacheKey] = ret;
 				return ret;
 			}
