@@ -3,7 +3,9 @@
 var prefix = [
 	'test002_seq',
 	'test003_plus',
+	'test004_not',
 	'test005_priority',
+	'test006_cfg',
 	'test021_q',
 	'test022_notclass'
 ];

@@ -36,24 +36,12 @@
 			return ret;
 		},
 
-		//Starテンプレート
-		star : function(f, dname, pos, inputs, memory){
+		//Starテンプレート（Plusテンプレート）
+		star : function(f, bPlus, dname, pos, inputs, memory){
 			var cacheKey = dname + "@" + pos;
 			if(memory[cacheKey]) return memory[cacheKey];
-			var ret, tmp = pos;
-			while(tmp != consts["FAIL_FUNC"]){
-				ret = tmp;
-				tmp = f(ret, inputs, memory);
-			}
-			memory[cacheKey] = ret;
-			return ret;
-		},
-
-		//Plusテンプレート (syntax sugar)
-		plus : function(f, dname, pos, inputs, memory){
-			var cacheKey = dname + "@" + pos;
-			if(memory[cacheKey]) return memory[cacheKey];
-			var ret = consts["FAIL_FUNC"] , tmp = f(pos, inputs, memory);
+			var ret = consts["FAIL_FUNC"], tmp;
+			tmp = (bPlus? f(pos, inputs, memory) : pos);
 			while(tmp != consts["FAIL_FUNC"]){
 				ret = tmp;
 				tmp = f(ret, inputs, memory);
@@ -72,22 +60,15 @@
 			return ret;
 		},
 
-		//Andテンプレート (syntax sugar)
-		and : function(f, dname, pos, inputs, memory){
+		//Notテンプレート（Andテンプレート (syntax sugar)）
+		not : function(f, bAnd, dname, pos, inputs, memory){
 			var cacheKey = dname + "@" + pos;
 			if(memory[cacheKey]) return memory[cacheKey];
 			var ret = f(pos, inputs, memory);
-			if(ret != consts["FAIL_FUNC"]) ret = pos;
-			memory[cacheKey] = ret;
-			return ret;
-		},
-
-		//Notテンプレート
-		not : function(f, dname, pos, inputs, memory){
-			var cacheKey = dname + "@" + pos;
-			if(memory[cacheKey]) return memory[cacheKey];
-			var ret = f(pos, inputs, memory);
-			ret = (ret == consts["FAIL_FUNC"]? pos : consts["FAIL_FUNC"]);
+			if(bAnd){
+				if(ret != consts["FAIL_FUNC"]) ret = pos;
+			}
+			else ret = (ret == consts["FAIL_FUNC"]? pos : consts["FAIL_FUNC"]);
 			memory[cacheKey] = ret;
 			return ret;
 		},
@@ -124,7 +105,7 @@
 		},
 
 		//Classテンプレート
-		cls : function(fary, dname, pos, inputs, memory){
+		cls : function(fary, bHat, dname, pos, inputs, memory){
 			var cacheKey = dname + "@" + pos;
 			if(memory[cacheKey]) return memory[cacheKey];
 			var ret = pos;
@@ -134,6 +115,7 @@
 				ret = fary[i][1](pos, inputs, memory);
 				if(ret != consts["FAIL_FUNC"]) break;
 			}
+			if(bHat) ret = (ret == consts["FAIL_FUNC"]? pos+1 : consts["FAIL_FUNC"]);
 			if(ret == inputs.length) ret = consts["END_INPUT"];
 			memory[cacheKey] = ret;
 			return ret;
@@ -162,13 +144,7 @@
 			var ret = consts["FAIL_FUNC"];
 			if(pos < inputs.length && pos != consts["END_INPUT"]){
 				var c = inputs.charCodeAt(pos);
-				for(var i = c1; i <= c2; i++){
-					console.log("i = " + i);
-					if(c == i){
-						ret = (pos+1 == inputs.length? consts["END_INPUT"] : pos+1);
-						break;
-					}
-				}
+				if(c1 <= c && c <= c2) ret = (pos+1 == inputs.length? consts["END_INPUT"] : pos+1);
 			}
 			memory[cacheKey] = ret;
 			return ret;
@@ -262,14 +238,14 @@ Contents
 
 Prefix
 //  = (AND / NOT)? Suffix
-	= AND s:Suffix {return template["and"].bind(null, s, "and" + func.idx++);}
-	/ NOT s:Suffix {return template["not"].bind(null, s, "not" + func.idx++);}
+	= AND s:Suffix {return template["not"].bind(null, s, true, "and" + func.idx++);}
+	/ NOT s:Suffix {return template["not"].bind(null, s, false, "not" + func.idx++);}
 	/ s:Suffix {return s;}
 
 Suffix
 //  = Primary STAR?
-	= p:Primary STAR {return template["star"].bind(null, p, "star" + func.idx++);}
-	/ p:Primary PLUS {return template["plus"].bind(null, p, "plus" + func.idx++);}
+	= p:Primary STAR {return template["star"].bind(null, p, false, "star" + func.idx++);}
+	/ p:Primary PLUS {return template["star"].bind(null, p, true, "plus" + func.idx++);}
 	/ p:Primary QUESTION  {return template["question"].bind(null, p, "question" + func.idx++);}
 	/ p:Primary {return p;}
 //  = Primary
@@ -298,8 +274,8 @@ Class
     = "[" c:ClassContents "]" SPACING {return c;}
 
 ClassContents
-    = [^] r:(!"]" Range)* {return template["cls"].bind(null, r, "cls" + func.idx++);}
-    / r:(!"]" Range)* {return template["cls"].bind(null, r, "cls" + func.idx++);}
+    = "^" r:(!"]" Range)* {return template["cls"].bind(null, r, true, "notcls" + func.idx++);}
+    / r:(!"]" Range)* {return template["cls"].bind(null, r, false, "cls" + func.idx++);}
 
 Range
     = c1:Char "-" c2:Char  {return template["range"].bind(null, c1[1].charCodeAt(0), c2[1].charCodeAt(0), "range" + func.idx++);}
