@@ -18,5 +18,5 @@ var start = ns["START_SYMBOL"];
 rl.on('line', function (cmd) {
 	var memory = {};
 	cmd = cmd.slice(0, cmd.length - 1);
-	console.log("res = " + ns[start](0, cmd, memory, ns));
+	console.log("res = " + ns[start](0, cmd, memory, 0));
 });

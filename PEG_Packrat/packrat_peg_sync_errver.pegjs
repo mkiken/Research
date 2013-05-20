@@ -13,69 +13,95 @@
 	//関数テンプレート
 	var template = {
 		//Prioritized Choiceテンプレート
-		pri : function(f1, f2, dname, pos, inputs, memory, layer){
-			var ret = f1(pos, inputs, memory, layer+1);
-			if(ret == consts["FAIL_FUNC"]) ret = f2(pos, inputs, memory, layer);
-			if(ret == consts["FAIL_FUNC"] && layer == 0) func.err(dname, pos, "matching at least one prioritized choice", "matching not", "");
-
+		pri : function(f1, f2, dname, pos, inputs, memory){
+			var cacheKey = dname + "@" + pos;
+			if(memory[cacheKey]) return memory[cacheKey];
+			var ret = f1(pos, inputs, memory);
+			if(ret == consts["FAIL_FUNC"]) ret = f2(pos, inputs, memory);
+			memory[cacheKey] = ret;
 			return ret;
 		},
 
 		//Sequenceテンプレート
-		seq : function(fary, dname, pos, inputs, memory, layer){
+		seq : function(fary, dname, pos, inputs, memory){
 			//console.log("seq invoked. |fary| = " + fary.length);
+			var cacheKey = dname + "@" + pos;
+			if(memory[cacheKey]) return memory[cacheKey];
 			var ret = pos;
 			for(var i = 0; i < fary.length; i++){
-				ret = fary[i](ret, inputs, memory, layer);
+				ret = fary[i](ret, inputs, memory);
 				if(ret == consts["FAIL_FUNC"]) break;
 			}
+			memory[cacheKey] = ret;
 			return ret;
 		},
 
 		//Starテンプレート（Plusテンプレート）
-		star : function(f, bPlus, dname, pos, inputs, memory, layer){
-			var ret = consts["FAIL_FUNC"], tmp;
-			tmp = (bPlus? f(pos, inputs, memory, layer) : pos);
-			while(tmp != consts["FAIL_FUNC"]){
-				ret = tmp;
-				tmp = f(ret, inputs, memory, layer+1);
+		star : function(f, bPlus, dname, pos, inputs, memory){
+			//var cacheKey = dname + "@" + pos;
+			//if(memory[cacheKey]) return memory[cacheKey];
+			var ret = consts["FAIL_FUNC"];
+			ret = (bPlus? f(pos, inputs, memory) : pos);
+			while(ret != consts["FAIL_FUNC"]){
+				try{ret = f(ret, inputs, memory);}
+				catch(e){break;}
 			}
+			//memory[cacheKey] = ret;
 			return ret;
 		},
 
 		//Questionテンプレート (syntax sugar)
-		question : function(f, dname, pos, inputs, memory, layer){
-			var ret = f(pos, inputs, memory, layer+1);
-			if(ret == consts["FAIL_FUNC"]) ret = pos;
+		question : function(f, dname, pos, inputs, memory){
+			//var cacheKey = dname + "@" + pos, ret;
+			//if(memory[cacheKey]) return memory[cacheKey];
+			var ret;
+			try{ret = f(pos, inputs, memory);}
+			catch(e){ret = pos;}
+			//memory[cacheKey] = ret;
 			return ret;
 		},
 
 		//Notテンプレート（Andテンプレート (syntax sugar)）
-		not : function(f, bAnd, dname, pos, inputs, memory, layer){
-			var ret = f(pos, inputs, memory, layer+1);
+		not : function(f, bAnd, dname, pos, inputs, memory){
+			//var cacheKey = dname + "@" + pos;
+			//if(memory[cacheKey]) return memory[cacheKey];
+			var ret;
 			if(bAnd){
+				try{ret = f(pos, inputs, memory);}
+				catch(e){
+					throw e;
+				}
 				if(ret != consts["FAIL_FUNC"]) ret = pos;
 			}
-			else ret = (ret == consts["FAIL_FUNC"]? pos : consts["FAIL_FUNC"]);
-			if(ret == consts["FAIL_FUNC"] && layer == 0) func.err(dname, pos, "predicte matching", "matching not", "");
+			else{
+				try{ret = f(pos, inputs, memory);}
+				catch(e){
+					ret = pos;
+				}
+				ret = (ret == consts["FAIL_FUNC"]? pos : consts["FAIL_FUNC"]);
+				}
+			//memory[cacheKey] = ret;
 			return ret;
 		},
 
 		//Identifierテンプレート
-		identifier : function(dname, pos, inputs, memory, layer){
+		identifier : function(dname, pos, inputs, memory){
 			console.log(dname + " invoked. pos = [" + pos + "]");
-			var cacheKey = dname + "@" + pos, ret;
-			if(memory[cacheKey]) ret = memory[cacheKey];
-			else{
-				ret = ns[dname](pos, inputs, memory, layer);
-				memory[cacheKey] = ret;
-			}
+			var cacheKey = dname + "@" + pos;
+			if(memory[cacheKey]) return memory[cacheKey];
+			var ret = ns[dname](pos, inputs, memory);
+			memory[cacheKey] = ret;
 			//console.log("ret = " + ret);
 			return ret;
 		},
 
 		//Literalテンプレート
-		literal : function(lit, dname, pos, inputs, memory, layer){
+		literal : function(lit, dname, pos, inputs, memory){
+			//console.log("literal = " + lit);
+			//console.log("literal : pos = " + pos);
+			//var cacheKey = dname + "@" + pos;
+			//console.log("lit : cache = " + cacheKey);
+			//if(memory[cacheKey]) return memory[cacheKey];
 			var tmp = pos + lit.length - 1, ret = consts["FAIL_FUNC"];
 			if(tmp < inputs.length && pos != consts["END_INPUT"]){
 				tmp++;
@@ -85,58 +111,68 @@
 					//console.log("lit : ret = " + ret);
 				}
 			}
-			if(ret == consts["FAIL_FUNC"] && layer == 0) func.err(dname, pos, lit, inputs.substring(pos, tmp), "");
+			//memory[cacheKey] = ret;
+			if(ret == consts["FAIL_FUNC"]) func.err(dname, pos, lit, inputs.substring(pos, tmp), "");
 			return ret;
 		},
 
 		//Classテンプレート
-		cls : function(fary, bHat, dname, pos, inputs, memory, layer){
+		cls : function(fary, bHat, dname, pos, inputs, memory){
+			var cacheKey = dname + "@" + pos;
+			if(memory[cacheKey]) return memory[cacheKey];
 			var ret = pos;
 			for(var i = 0; i < fary.length; i++){
 				//console.log("class -> " + typeof(fary[0][1]));
 				//pegjsの仕様上、fary[i][1]に関数が入っている
-				ret = fary[i][1](pos, inputs, memory, layer+1);
+				ret = fary[i][1](pos, inputs, memory);
 				if(ret != consts["FAIL_FUNC"]) break;
 			}
 			if(bHat) ret = (ret == consts["FAIL_FUNC"]? pos+1 : consts["FAIL_FUNC"]);
 			if(ret == inputs.length) ret = consts["END_INPUT"];
-			if(ret == consts["FAIL_FUNC"] && layer == 0) func.err(dname, pos, "class", "not match", "");
+			memory[cacheKey] = ret;
 			return ret;
 		},
 
 		//Charテンプレート
-		chr : function(c, dname, pos, inputs, memory, layer){
+		chr : function(c, dname, pos, inputs, memory){
 			//console.log("chr invoked. [" + c[1] + "]");
-			var ret = consts["FAIL_FUNC"];
-			if(pos < inputs.length && pos != consts["END_INPUT"]){
+			var cacheKey = dname + "@" + pos, ret = consts["FAIL_FUNC"];
+			if(memory[cacheKey]) ret = memory[CacheKey];
+			else if(pos < inputs.length && pos != consts["END_INPUT"]){
 				if(inputs[pos] == c){
 					ret = (pos+1 == inputs.length? consts["END_INPUT"] : pos+1);
 				}
 			}
+			memory[cacheKey] = ret;
 			//if(ret == consts["FAIL_FUNC"]) func.err(dname, pos, c, inputs[pos], "");
 			return ret;
 		},
 
 		//Rangeテンプレート
-		range : function(c1, c2, dname, pos, inputs, memory, layer){
+		range : function(c1, c2, dname, pos, inputs, memory){
 			console.log("range: c1 = " + c1 + ", c2 = " + c2);
+			var cacheKey = dname + "@" + pos;
+			if(memory[cacheKey]) return memory[cacheKey];
 			var ret = consts["FAIL_FUNC"];
 			if(pos < inputs.length && pos != consts["END_INPUT"]){
 				var c = inputs.charCodeAt(pos);
 				if(c1 <= c && c <= c2) ret = (pos+1 == inputs.length? consts["END_INPUT"] : pos+1);
 			}
+			memory[cacheKey] = ret;
 			return ret;
 		},
 
 		//Dotテンプレート
-		dot : function(dname, pos, inputs, memory, layer){
+		dot : function(dname, pos, inputs, memory){
+			var cacheKey = dname + "@" + pos;
+			if(memory[cacheKey]) return memory[cacheKey];
 			var ret = consts["FAIL_FUNC"];
 			//とりあえずEOF以外全部
 			if(pos < inputs.length && pos != consts["END_INPUT"]){
 				ret = pos + 1;
 				if(ret == inputs.length) ret = consts["END_INPUT"];
 			}
-			else if(layer == 0) func.err(dname, pos, "any character", "EOF", "");
+			memory[cacheKey] = ret;
 			return ret;
 		}
 	};
@@ -169,8 +205,6 @@
 			}
 			return str;
 		},
-
-		//err : エラーフォーマット
 		err : function(dname, pos, expected, found, msg){
 			throw new SyntaxError("in function [" + dname + "], expected '" + expected + "' , but '" + found + "' found.");
 		}

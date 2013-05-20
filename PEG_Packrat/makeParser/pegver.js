@@ -9,7 +9,8 @@ names = [
 	'../testcase/test018_javascript.grm',
 	'../testcase/test019_json.grm',
 	'../testcase/test020_css.grm',
-	'../examples/arithmetics.pegjs', // 6
+	'../testcase/test021_q.grm',
+	'../examples/arithmetics.pegjs', // 7
 	'../examples/json.pegjs',
 	'../examples/css.pegjs',
 	'../examples/javascript.pegjs'
