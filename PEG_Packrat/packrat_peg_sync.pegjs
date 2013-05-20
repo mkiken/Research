@@ -88,7 +88,7 @@
 		literal : function(lit, dname, pos, inputs, memory){
 			//console.log("literal = " + lit);
 			//console.log("literal : pos = " + pos);
-			var cacheKey = dname + "@" + pos;
+			//var cacheKey = dname + "@" + pos;
 			//console.log("lit : cache = " + cacheKey);
 			//if(memory[cacheKey]) return memory[cacheKey];
 			var tmp = pos + lit.length - 1, ret = consts["FAIL_FUNC"];
@@ -100,7 +100,8 @@
 					//console.log("lit : ret = " + ret);
 				}
 			}
-			memory[cacheKey] = ret;
+			//memory[cacheKey] = ret;
+			if(ret == consts["FAIL_FUNC"]) func.err(dname, pos, lit, inputs.substring(pos, tmp), "");
 			return ret;
 		},
 
@@ -124,15 +125,15 @@
 		//Charテンプレート
 		chr : function(c, dname, pos, inputs, memory){
 			//console.log("chr invoked. [" + c[1] + "]");
-			var cacheKey = dname + "@" + pos;
-			if(memory[cacheKey]) return memory[cacheKey];
-			var ret = consts["FAIL_FUNC"];
-			if(pos < inputs.length && pos != consts["END_INPUT"]){
+			var cacheKey = dname + "@" + pos, ret = consts["FAIL_FUNC"];
+			if(memory[cacheKey]) ret = memory[CacheKey];
+			else if(pos < inputs.length && pos != consts["END_INPUT"]){
 				if(inputs[pos] == c){
 					ret = (pos+1 == inputs.length? consts["END_INPUT"] : pos+1);
 				}
 			}
 			memory[cacheKey] = ret;
+			//if(ret == consts["FAIL_FUNC"]) func.err(dname, pos, c, inputs[pos], "");
 			return ret;
 		},
 
@@ -192,6 +193,9 @@
 				break;
 			}
 			return str;
+		},
+		err : function(dname, pos, expected, found, msg){
+			throw new SyntaxError("in function [" + dname + "], expected '" + expected + "' , but '" + found + "' found.");
 		}
 	};
 
@@ -224,7 +228,6 @@ Expression
 //  = s1:Sequence (SLASH s2:Sequence)* {console.log(typeof(s1)); return s1;}
 	= s:Sequence SLASH e:Expression {return template["pri"].bind(null, s, e, "pri" + func.idx++);}
 	/ s:Sequence {return s;}
-//  = Sequence
 
 Sequence
 	= p:Prefix+ CodeBlock? SPACING {return template["seq"].bind(null, p, "seq" + func.idx++);}
@@ -243,12 +246,10 @@ Prefix
 	/ s:Suffix {return s;}
 
 Suffix
-//  = Primary STAR?
 	= p:Primary STAR {return template["star"].bind(null, p, false, "star" + func.idx++);}
 	/ p:Primary PLUS {return template["star"].bind(null, p, true, "plus" + func.idx++);}
 	/ p:Primary QUESTION  {return template["question"].bind(null, p, "question" + func.idx++);}
 	/ p:Primary {return p;}
-//  = Primary
 
 Primary
 	= Valuable? p:Primary2 {return p;}
@@ -289,8 +290,6 @@ Char
 	/ "\\" .
 
 Identifier
-//	= is:Identstart ic:Identcont* (SPACING Literal)? SPACING {console.log(is + " " + func.sjoin(ic));return is + func.sjoin(ic);}
-
 	= is:Identstart ic:Identcont* SPACING
 {//console.log(is + " " + func.sjoin(ic));
  return is + func.sjoin(ic);
