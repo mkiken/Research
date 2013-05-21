@@ -10,14 +10,15 @@ names = [
 	'../testcase/test019_json.grm',
 	'../testcase/test020_css.grm',
 	'../testcase/test021_q.grm',
-	'../examples/arithmetics.pegjs', // 7
+	'../testcase/test023_code.grm',
+	'../examples/arithmetics.pegjs', // 8
 	'../examples/json.pegjs',
 	'../examples/css.pegjs',
 	'../examples/javascript.pegjs'
 
 
 ];
-var grm = names[6];
+var grm = names[7];
 contents = fs.readFileSync(grm).toString();
 
 console.log("grammar = " + grm);
@@ -50,5 +51,5 @@ rl.on('line', function (cmd) {
 	var memory = {};
 	console.log(parser2.parse(cmd));
 	//memory = {};
-	console.log("res = " + ns[ns["START_SYMBOL"]](0, cmd, memory, ns));
+	console.log("res = " + ns[ns["START_SYMBOL"]](0, cmd, memory, 0));
 });
