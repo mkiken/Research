@@ -106,7 +106,7 @@
 
 		//Charテンプレート
 		chr : function(c, dname, pos, inputs, memory, layer){
-			//console.log("chr invoked. [" + c[1] + "]");
+			console.log("chr invoked. [" + c + "]");
 			var ret = consts["FAIL_FUNC"];
 			if(pos < inputs.length && pos != consts["END_INPUT"]){
 				if(inputs[pos] == c){
@@ -256,15 +256,16 @@ ClassContents
     / r:(!"]" Range)* {return template["cls"].bind(null, r, false, "cls" + func.idx++);}
 
 Range
-    = c1:Char "-" c2:Char  {return template["range"].bind(null, c1[1].charCodeAt(0), c2[1].charCodeAt(0), "range" + func.idx++);}
-	/ c:Char {return template["chr"].bind(null, c[1], "chr" + func.idx++);}
+    = c1:Char "-" c2:Char  {return template["range"].bind(null, c1.charCodeAt(0), c2.charCodeAt(0), "range" + func.idx++);}
+	/ c:Char {return template["chr"].bind(null, c, "chr" + func.idx++);}
 
 Char
 //    = "\\" [nrt']
-	= "\\" [0-2][0-7][0-7]
-	/ "\\" [0-7][0-7]?
-	/ !"\\" .
-	/ "\\" .
+	= "\\" n1:[0-2] n2:[0-7] n3:[0-7] {return String.fromCharCode(parseInt(n1 + n2 + n3));}
+	/ "\\" n1:[0-7] n2:[0-7] {return String.fromCharCode(parseInt(n1 + n2));}
+	/ "\\" n1:[0-7] {return String.fromCharCode(parseInt(n1));}
+	/ !"\\" c:. {return c;}
+//	/ "\\" .
 
 Identifier
 	= is:Identstart ic:Identcont* SPACING
