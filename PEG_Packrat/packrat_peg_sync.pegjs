@@ -256,16 +256,31 @@ ClassContents
     / r:(!"]" Range)* {return template["cls"].bind(null, r, false, "cls" + func.idx++);}
 
 Range
-    = c1:Char "-" c2:Char  {return template["range"].bind(null, c1.charCodeAt(0), c2.charCodeAt(0), "range" + func.idx++);}
+    = c1:Char "-" !"]" c2:Char  {return template["range"].bind(null, c1.charCodeAt(0), c2.charCodeAt(0), "range" + func.idx++);}
 	/ c:Char {return template["chr"].bind(null, c, "chr" + func.idx++);}
 
 Char
-//    = "\\" [nrt']
-	= "\\" n1:[0-2] n2:[0-7] n3:[0-7] {return String.fromCharCode(parseInt(n1 + n2 + n3));}
+//    = "\\" c:[nfbrt'"] {return "\\" + c;}
+	= "\\'"  { return "'";  }
+    / '\\"'  { return '"';  }
+    / "\\\\" { return "\\"; }
+    / "\\/"  { return "/";  }
+    / "\\b"  { return "\b"; }
+    / "\\f"  { return "\f"; }
+    / "\\n"  { return "\n"; }
+    / "\\r"  { return "\r"; }
+    / "\\t"  { return "\t"; }
+    / "\\u" h1:hexDigit h2:hexDigit h3:hexDigit h4:hexDigit {return String.fromCharCode(parseInt("0x" + h1 + h2 + h3 + h4));}
+	/ "\\x" h1:hexDigit h2:hexDigit {return String.fromCharCode(parseInt("0x" + h1 + h2));}
+
+	/ "\\" n1:[0-2] n2:[0-7] n3:[0-7] {return String.fromCharCode(parseInt(n1 + n2 + n3));}
 	/ "\\" n1:[0-7] n2:[0-7] {return String.fromCharCode(parseInt(n1 + n2));}
 	/ "\\" n1:[0-7] {return String.fromCharCode(parseInt(n1));}
 	/ !"\\" c:. {return c;}
 //	/ "\\" .
+
+hexDigit
+	= h:[0-9a-fA-F] {return h;}
 
 Identifier
 	= is:Identstart ic:Identcont* SPACING

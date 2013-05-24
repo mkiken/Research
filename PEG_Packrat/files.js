@@ -10,9 +10,13 @@ var prefix = [
 	'test008_dot',
 	'test019_json',
 	'test021_q',
-	'test022_notclass'
+	'test022_notclass',
+	'test023_code', //10
+	'test024_escape',
+	'test025_investigate',
+	'test026_sclass'
 ];
-var basename = prefix[9];
+var basename = prefix[7];
 var parseFile = './packrat_peg_sync.pegjs'; //Packrat_PEGファイル
 var inputFile = './testcase/' + basename + '.input'; //生成したパーザーで解析する入力
 var gramFile = './testcase/' + basename + '.grm'; //パーザーに与えるPEGの文法ファイル

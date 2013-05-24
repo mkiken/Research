@@ -10,15 +10,16 @@ names = [
 	'../testcase/test019_json.grm',
 	'../testcase/test020_css.grm',
 	'../testcase/test021_q.grm',
-	'../testcase/test023_code.grm',
-	'../examples/arithmetics.pegjs', // 8
+	'../testcase/test023_codeinvestigate.grm',
+	'../testcase/test026_sclass.grm',
+	'../examples/arithmetics.pegjs', // 9
 	'../examples/json.pegjs',
 	'../examples/css.pegjs',
 	'../examples/javascript.pegjs'
 
 
 ];
-var grm = names[7];
+var grm = names[12];
 contents = fs.readFileSync(grm).toString();
 
 console.log("grammar = " + grm);

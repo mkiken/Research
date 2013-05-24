@@ -14,6 +14,7 @@ var rl = readline.createInterface({
   terminal: false
 });
 var start = ns["START_SYMBOL"];
+console.log(ns);
 
 rl.on('line', function (cmd) {
 	var memory = {};

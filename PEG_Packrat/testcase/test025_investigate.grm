@@ -1,0 +1,5 @@
+e
+  = e:[eE] sign:[+-]? { return e + sign; }
+
+digit
+  = [0-9]
