@@ -19,7 +19,7 @@ names = [
 
 
 ];
-var grm = names[12];
+var grm = names[3];
 contents = fs.readFileSync(grm).toString();
 
 console.log("grammar = " + grm);

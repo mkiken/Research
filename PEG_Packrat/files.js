@@ -8,10 +8,11 @@ var prefix = [
 	'test005_priority',
 	'test006_cfg', //5
 	'test008_dot',
+	'test018_javascript',
 	'test019_json',
 	'test021_q',
-	'test022_notclass',
-	'test023_code', //10
+	'test022_notclass', //10
+	'test023_code',
 	'test024_escape',
 	'test025_investigate',
 	'test026_sclass'

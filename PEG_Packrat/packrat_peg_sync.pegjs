@@ -106,7 +106,7 @@
 
 		//Charテンプレート
 		chr : function(c, dname, pos, inputs, memory, layer){
-			console.log("chr invoked. [" + c + "]");
+			//console.log("chr invoked. [" + c + "]");
 			var ret = consts["FAIL_FUNC"];
 			if(pos < inputs.length && pos != consts["END_INPUT"]){
 				if(inputs[pos] == c){
@@ -261,7 +261,8 @@ Range
 
 Char
 //    = "\\" c:[nfbrt'"] {return "\\" + c;}
-	= "\\'"  { return "'";  }
+	= "\\]"  { return "]";  }
+	/ "\\'"  { return "'";  }
     / '\\"'  { return '"';  }
     / "\\\\" { return "\\"; }
     / "\\/"  { return "/";  }
@@ -270,6 +271,7 @@ Char
     / "\\n"  { return "\n"; }
     / "\\r"  { return "\r"; }
     / "\\t"  { return "\t"; }
+    / "\\v"  { return "\v"; }
     / "\\u" h1:hexDigit h2:hexDigit h3:hexDigit h4:hexDigit {return String.fromCharCode(parseInt("0x" + h1 + h2 + h3 + h4));}
 	/ "\\x" h1:hexDigit h2:hexDigit {return String.fromCharCode(parseInt("0x" + h1 + h2));}
 
