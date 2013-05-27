@@ -71,6 +71,7 @@
 				memory[cacheKey] = ret;
 			}
 			//console.log("ret = " + ret);
+			console.log(dname + "[" + pos + "] end. ret = " + ret);
 			return ret;
 		},
 
