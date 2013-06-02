@@ -1,0 +1,3 @@
+
+MyMultiplicativeOperator
+  = operator:("**" / "*" / "/" / "%") !"=" { return operator; }

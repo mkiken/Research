@@ -28,7 +28,6 @@ names = [
 	'../examples/css.pegjs',
 	'../examples/javascript.pegjs'
 
-
 ];
 var grm = names[3];
 contents = fs.readFileSync(grm).toString();
