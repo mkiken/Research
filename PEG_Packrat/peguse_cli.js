@@ -1,7 +1,7 @@
 var PEG = require("pegjs");
 var files = require("./files");
 
-var parser = require('./javascript');
+//var parser = require('./javascript');
 var fs = require("fs");
 //var args = process.argv;
 var gram = fs.readFileSync( files.pp() ).toString();

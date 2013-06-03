@@ -29,7 +29,7 @@ names = [
 	'../examples/javascript.pegjs'
 
 ];
-var grm = names[3];
+var grm = names[2];
 contents = fs.readFileSync(grm).toString();
 
 console.log("grammar = " + grm);

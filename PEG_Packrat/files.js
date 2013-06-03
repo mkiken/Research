@@ -17,7 +17,7 @@ var prefix = [
 	'test025_investigate',
 	'test026_sclass'
 ];
-var basename = prefix[7];
+var basename = prefix[10];
 var parseFile = './packrat_peg_sync.pegjs'; //Packrat_PEGファイル
 var inputFile = './testcase/' + basename + '.input'; //生成したパーザーで解析する入力
 var gramFile = './testcase/' + basename + '.grm'; //パーザーに与えるPEGの文法ファイル

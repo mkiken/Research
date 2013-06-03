@@ -253,7 +253,7 @@ Class
     = "[" c:ClassContents "]" SPACING {return c;}
 
 ClassContents
-    = "^" r:(!"]" Range)* {return template["cls"].bind(null, r, true, "notcls" + func.idx++);}
+    = "^" r:(!"]" Range)+ {return template["cls"].bind(null, r, true, "notcls" + func.idx++);}
     / r:(!"]" Range)* {return template["cls"].bind(null, r, false, "cls" + func.idx++);}
 
 Range
@@ -262,12 +262,12 @@ Range
 
 Char
 //    = "\\" c:[nfbrt'"] {return "\\" + c;}
-	= "\\]"  { return "]";  }
-	/ "\\'"  { return "'";  }
-    / '\\"'  { return '"';  }
-    / "\\\\" { return "\\"; }
-    / "\\/"  { return "/";  }
-    / "\\b"  { return "\b"; }
+//	= "\\]"  { return "]";  }
+//	/ "\\'"  { return "'";  }
+//    / '\\"'  { return '"';  }
+//    / "\\\\" { return "\\"; }
+//    / "\\/"  { return "/";  }
+    = "\\b"  { return "\b"; }
     / "\\f"  { return "\f"; }
     / "\\n"  { return "\n"; }
     / "\\r"  { return "\r"; }
@@ -279,8 +279,9 @@ Char
 	/ "\\" n1:[0-2] n2:[0-7] n3:[0-7] {return String.fromCharCode(parseInt(n1 + n2 + n3));}
 	/ "\\" n1:[0-7] n2:[0-7] {return String.fromCharCode(parseInt(n1 + n2));}
 	/ "\\" n1:[0-7] {return String.fromCharCode(parseInt(n1));}
+	/ "\\" c:. {return c;}
 	/ !"\\" c:. {return c;}
-//	/ "\\" .
+
 
 hexDigit
 	= h:[0-9a-fA-F] {return h;}
