@@ -1,7 +1,7 @@
 var PEG = require("pegjs");
 //var files = require("../files");
 //var files2 = require("../files2");
-var names = [
+names = [
 	'../testcase/test012_plus.grm',
 	'../testcase/test013_multi.grm',
 	'../testcase/test015_arith.grm',
@@ -31,12 +31,12 @@ var fs = require("fs");
 var gram = fs.readFileSync( '../packrat_peg_sync.pegjs' ).toString();
 var parser = PEG.buildParser(gram);
 //console.log(parser);
-var contents = fs.readFileSync(  names[14] ).toString();
+var contents = fs.readFileSync(  names[5] ).toString();
 start = new Date();
 var ns = parser.parse(contents);
 end = new Date();
 console.log("1st file took " + (end - start) / 1000);
-var contents2 = fs.readFileSync(  names[15] ).toString();
+var contents2 = fs.readFileSync(  names[12] ).toString();
 start = new Date();
 var ns2 = parser.parse(contents2);
 end = new Date();
@@ -60,7 +60,7 @@ var parserB = PEG.buildParser(contents2);
 end = new Date();
 console.log("2nd file took(PEG.js) " + (end - start) / 1000);
 
-var contents3 = fs.readFileSync(  names[16] ).toString();
+var contents3 = fs.readFileSync(  names[13] ).toString();
 start = new Date();
 var parserC = PEG.buildParser(contents3);
 end = new Date();

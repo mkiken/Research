@@ -1,0 +1,22 @@
+/*var a = */
+function(a, b){
+	var c = a + b;
+	return c;
+}
+
+function(a, b){
+	var c = a * b;
+	return c;
+}
+
+
+function(a, b){
+	var c = a - b;
+	return c;
+}
+
+
+function(a, b){
+	var c = a / b;
+	return c;
+}

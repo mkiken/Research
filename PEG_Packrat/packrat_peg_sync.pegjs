@@ -63,7 +63,7 @@
 
 		//Identifierテンプレート
 		identifier : function(dname, pos, inputs, memory, layer){
-			console.log(dname + " invoked. pos = [" + pos + "]");
+			//console.log(dname + " invoked. pos = [" + pos + "]");
 			var cacheKey = dname + "@" + pos, ret;
 			if(memory[cacheKey]) ret = memory[cacheKey];
 			else{
@@ -71,7 +71,7 @@
 				memory[cacheKey] = ret;
 			}
 			//console.log("ret = " + ret);
-			console.log(dname + "[" + pos + "] end. ret = " + ret);
+			//console.log(dname + "[" + pos + "] end. ret = " + ret);
 			return ret;
 		},
 
@@ -120,7 +120,7 @@
 
 		//Rangeテンプレート
 		range : function(c1, c2, dname, pos, inputs, memory, layer){
-			console.log("range: c1 = " + c1 + ", c2 = " + c2);
+			//console.log("range: c1 = " + c1 + ", c2 = " + c2);
 			var ret = consts["FAIL_FUNC"];
 			if(pos < inputs.length && pos != consts["END_INPUT"]){
 				var c = inputs.charCodeAt(pos);

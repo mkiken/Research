@@ -1,4 +1,4 @@
-var PEG, contents, start, end, parser, parser2, fs, gram, parser, ns, names, args, arg;
+var PEG, contents, start, end, parser, parser2, fs, gram, ns, names, args, arg, files;
 args = process.argv;
 arg = args[2];
 /*
@@ -30,14 +30,22 @@ names = [
 	'../examples/javascript.pegjs'
 
 ];
-var grm = names[10];
+files = [
+	'../testcase/test018_js.ipt',
+	'../examples/arithmetics.js',
+	'../examples/javascript.js'
+];
+var grm = names[14];
+var file = files[0];
 contents = fs.readFileSync(grm).toString();
 
 console.log("grammar = " + grm);
+console.log("file = " + file);
 if(arg != "2"){
 	console.log("PEG parser build start.");
 	start = new Date();
 	parser2 = PEG.buildParser(contents);
+	//parser2 = PEG.buildParser(contents, true);
 	end = new Date();
 	console.log((end - start) / 1000);
 }
@@ -51,20 +59,19 @@ if(arg != "1"){
 	console.log((end - start) / 1000);
 }
 
-var readline = require('readline');
-var rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-  terminal: false
-});
-console.log("\n\ninput start.\n\n");
-
-rl.on('line', function (cmd) {
-	//console.log(cmd.length);
-	cmd = cmd.slice(0, cmd.length-1);
-	//console.log(ns["START_SYMBOL"]);
-	var memory = {};
-	if(arg != "2") console.log(parser2.parse(cmd));
-	//memory = {};
-	if(arg != "1") console.log("res = " + ns[ns["START_SYMBOL"]](0, cmd, memory, 0));
-});
+var memory = {};
+var cmd = fs.readFileSync(file).toString();
+if(arg != "2"){
+	console.log("PEG parser parse start.");
+	start = new Date();
+	console.log(parser2.parse(cmd));
+	end = new Date();
+	console.log((end - start) / 1000);
+}
+if(arg != "1"){
+	console.log("my parser parse start.");
+	start = new Date();
+	console.log("res = " + ns[ns["START_SYMBOL"]](0, cmd, memory, 0));
+	end = new Date();
+	console.log((end - start) / 1000);
+}
