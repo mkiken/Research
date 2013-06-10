@@ -23,14 +23,15 @@ names = [
 	'../testcase/test023_codeinvestigate.grm',
 	'../testcase/test026_sclass.grm',
 	'../testcase/test027_jsstatement.grm',
-	'../testcase/test033_err.grm',
-	'../examples/arithmetics.pegjs', // 11
+	'../testcase/test033_err.grm', // 10
+	'../testcase/test034_semicolon.grm',
+	'../examples/arithmetics.pegjs', // 12
 	'../examples/json.pegjs',
 	'../examples/css.pegjs',
 	'../examples/javascript.pegjs'
 
 ];
-var grm = names[10];
+var grm = names[11];
 contents = fs.readFileSync(grm).toString();
 
 console.log("grammar = " + grm);
