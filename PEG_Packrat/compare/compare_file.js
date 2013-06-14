@@ -36,22 +36,26 @@ files = [
 	'../examples/javascript.js'
 ];
 var grm = names[14];
-var file = files[0];
-contents = fs.readFileSync(grm).toString();
+var file = files[2];
+contents = fs.readFileSync(grm, 'utf8');
+//console.log(contents);
 
 console.log("grammar = " + grm);
 console.log("file = " + file);
 if(arg != "2"){
 	console.log("PEG parser build start.");
 	start = new Date();
-	parser2 = PEG.buildParser(contents);
-	//parser2 = PEG.buildParser(contents, true);
+	//parser2 = PEG.buildParser(contents);
+	parser2 = PEG.buildParser(contents, {cache: true, trackLineAndColumn: false});
+	//parser2 = require('../examples/javascript_cache.js');
+	//console.log(parser2);
 	end = new Date();
 	console.log((end - start) / 1000);
 }
 if(arg != "1"){
 	console.log("my parser build start.");
-	gram = fs.readFileSync( '../packrat_peg_sync.pegjs' ).toString();
+	//gram = fs.readFileSync( '../packrat_peg_action.pegjs' ).toString();
+	gram = fs.readFileSync( '../back/_packrat_peg_sync_onlypos.pegjs' ).toString();
 	start = new Date();
 	parser = PEG.buildParser(gram);
 	ns = parser.parse(contents);

@@ -24,17 +24,25 @@
 		//Sequenceテンプレート
 		seq : function(fary, dname, pos, inputs, memory, layer){
 			//console.log("seq invoked. |fary| = " + fary.length);
-			var ret = pos;
+			var ret = {pos: pos, val: null}, vals = [], tmp;
 			for(var i = 0; i < fary.length; i++){
-				ret = fary[i](ret, inputs, memory, layer);
-				if(ret == consts["FAIL_FUNC"]) break;
+				tmp = fary[i](ret.pos, inputs, memory, layer);
+				ret.pos = tmp.pos;
+				if(ret.pos == consts["FAIL_FUNC"]) break;
+				vals.push(tmp.val);
+				console.log("seq: tmp.val = " + vals[i]);
 			}
+			if(ret.pos != consts["FAIL_FUNC"]) ret.val = vals;
+			//console.log("seq: ret = " + ret.val);
 			return ret;
 		},
 
 		//Starテンプレート（Plusテンプレート）
 		star : function(f, bPlus, dname, pos, inputs, memory, layer){
 			var ret = consts["FAIL_FUNC"], tmp;
+			if(bPlus){
+
+			}
 			tmp = (bPlus? f(pos, inputs, memory, layer) : pos);
 			while(tmp != consts["FAIL_FUNC"]){
 				ret = tmp;
@@ -46,7 +54,7 @@
 		//Questionテンプレート (syntax sugar)
 		question : function(f, dname, pos, inputs, memory, layer){
 			var ret = f(pos, inputs, memory, layer+1);
-			if(ret == consts["FAIL_FUNC"]) ret = pos;
+			if(ret == consts["FAIL_FUNC"]) ret.pos = pos;
 			return ret;
 		},
 
@@ -54,10 +62,11 @@
 		not : function(f, bAnd, dname, pos, inputs, memory, layer){
 			var ret = f(pos, inputs, memory, layer+1);
 			if(bAnd){
-				if(ret != consts["FAIL_FUNC"]) ret = pos;
+				if(ret.pos != consts["FAIL_FUNC"]) ret.pos = pos;
 			}
-			else ret = (ret == consts["FAIL_FUNC"]? pos : consts["FAIL_FUNC"]);
-			if(ret == consts["FAIL_FUNC"] && layer == 0) func.err(dname, pos, "predicate matching", "matching not", "");
+			else ret.pos = (ret.pos == consts["FAIL_FUNC"]? pos : consts["FAIL_FUNC"]);
+			if(ret.pos == consts["FAIL_FUNC"] && layer == 0) func.err(dname, pos, "predicate matching", "matching not", "");
+			ret.val = null;
 			return ret;
 		},
 
@@ -77,41 +86,43 @@
 
 		//Literalテンプレート
 		literal : function(lit, dname, pos, inputs, memory, layer){
-			var tmp = pos + lit.length - 1, ret = consts["FAIL_FUNC"];
+			var tmp = pos + lit.length - 1, ret = {pos: consts["FAIL_FUNC"], val: null};
 			if(tmp < inputs.length && pos != consts["END_INPUT"]){
 				tmp++;
-				//console.log("lit : subs = " + inputs.substring(pos, ret));
+				//console.log("lit : subs = " + inputs.substring(pos, ret.pos));
 				if(inputs.substring(pos, tmp) == lit){
-					ret = (tmp == inputs.length? consts["END_INPUT"] : tmp);
+					ret.pos = (tmp == inputs.length? consts["END_INPUT"] : tmp);
+					ret.val = lit;
 					//console.log("lit : ret = " + ret);
 				}
 			}
-			if(ret == consts["FAIL_FUNC"] && layer == 0) func.err(dname, pos, lit, inputs.substring(pos, tmp), "");
+			if(ret.pos == consts["FAIL_FUNC"] && layer == 0) func.err(dname, pos, lit, inputs.substring(pos, tmp), "");
 			return ret;
 		},
 
 		//Classテンプレート
 		cls : function(fary, bHat, dname, pos, inputs, memory, layer){
-			var ret = pos;
+			var ret = {pos: consts["FAIL_FUNC"], val: null};
 			for(var i = 0; i < fary.length; i++){
 				//console.log("class -> " + typeof(fary[0][1]));
 				//pegjsの仕様上、fary[i][1]に関数が入っている
 				ret = fary[i][1](pos, inputs, memory, layer+1);
-				if(ret != consts["FAIL_FUNC"]) break;
+				if(ret.pos != consts["FAIL_FUNC"]) break;
 			}
-			if(bHat) ret = (ret == consts["FAIL_FUNC"]? pos+1 : consts["FAIL_FUNC"]);
-			if(ret == inputs.length) ret = consts["END_INPUT"];
-			if(ret == consts["FAIL_FUNC"] && layer == 0) func.err(dname, pos, "class", "not match", "");
+			if(bHat) ret.pos = (ret.pos == consts["FAIL_FUNC"]? pos+1 : consts["FAIL_FUNC"]);
+			if(ret.pos == inputs.length) ret.pos = consts["END_INPUT"];
+			if(ret.pos == consts["FAIL_FUNC"] && layer == 0) func.err(dname, pos, "class", "not match", "");
 			return ret;
 		},
 
 		//Charテンプレート
 		chr : function(c, dname, pos, inputs, memory, layer){
 			//console.log("chr invoked. [" + c + "]");
-			var ret = consts["FAIL_FUNC"];
+			var ret = {pos: consts["FAIL_FUNC"], val: null};
 			if(pos < inputs.length && pos != consts["END_INPUT"]){
 				if(inputs[pos] == c){
-					ret = (pos+1 == inputs.length? consts["END_INPUT"] : pos+1);
+					ret.pos = (pos+1 == inputs.length? consts["END_INPUT"] : pos+1);
+					ret.val = c;
 				}
 			}
 			//if(ret == consts["FAIL_FUNC"]) func.err(dname, pos, c, inputs[pos], "");
@@ -121,21 +132,25 @@
 		//Rangeテンプレート
 		range : function(c1, c2, dname, pos, inputs, memory, layer){
 			//console.log("range: c1 = " + c1 + ", c2 = " + c2);
-			var ret = consts["FAIL_FUNC"];
+			var ret = {pos: consts["FAIL_FUNC"], val: null};
 			if(pos < inputs.length && pos != consts["END_INPUT"]){
 				var c = inputs.charCodeAt(pos);
-				if(c1 <= c && c <= c2) ret = (pos+1 == inputs.length? consts["END_INPUT"] : pos+1);
+				if(c1 <= c && c <= c2){
+					ret.pos = (pos+1 == inputs.length? consts["END_INPUT"] : pos+1);
+					ret.val = inputs[pos];
+				}
 			}
 			return ret;
 		},
 
 		//Dotテンプレート
 		dot : function(dname, pos, inputs, memory, layer){
-			var ret = consts["FAIL_FUNC"];
+			var ret = {pos: consts["FAIL_FUNC"], val: null};
 			//とりあえずEOF以外全部
 			if(pos < inputs.length && pos != consts["END_INPUT"]){
-				ret = pos + 1;
-				if(ret == inputs.length) ret = consts["END_INPUT"];
+				ret.pos = pos + 1;
+				ret.val = inputs[pos];
+				if(ret.pos == inputs.length) ret.pos = consts["END_INPUT"];
 			}
 			else if(layer == 0) func.err(dname, pos, "any character", "EOF", "");
 			return ret;
