@@ -720,7 +720,7 @@ MultiplicativeExpression
     }
 
 MultiplicativeOperator
-  = operator:("*" / "/" / "%") !"=" { return operator; }
+  = operator:("**" / "*" / "/" / "%") !"=" { return operator; }
 
 AdditiveExpression
   = head:MultiplicativeExpression

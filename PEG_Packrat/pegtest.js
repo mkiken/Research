@@ -2,10 +2,10 @@ var PEG = require("pegjs");
 
 var fs = require("fs");
 //var args = process.argv;
-var gram = fs.readFileSync( './packrat_peg_action.pegjs' ).toString();
+var gram = fs.readFileSync( './packrat_peg_action.pegjs', 'utf8');
 var parser = PEG.buildParser(gram);
 //var contents = fs.readFileSync(  './testcase/test015_arith.grm' ).toString();
-var contents = fs.readFileSync(  './testcase/test002_seq.grm' ).toString();
+var contents = fs.readFileSync(  './testcase/test003_plus.grm', 'utf8');
 var ns = parser.parse(contents);
 
 console.log(ns);
@@ -32,4 +32,5 @@ rl.on('line', function (cmd) {
 	cmd = cmd.slice(0, cmd.length - 1);
 	ret = ns[start](0, cmd, memory, 0);
 	console.log(ret);
+	console.log(JSON.stringify(ret));
 });

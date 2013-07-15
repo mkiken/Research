@@ -15,8 +15,8 @@
 		//Prioritized Choiceテンプレート
 		pri : function(f1, f2, dname, pos, inputs, memory, layer){
 			var ret = f1(pos, inputs, memory, layer+1);
-			if(ret == consts["FAIL_FUNC"]) ret = f2(pos, inputs, memory, layer);
-			if(ret == consts["FAIL_FUNC"] && layer == 0) func.err(dname, pos, "matching at least one prioritized choice", "matching not", "");
+			if(ret.pos == consts["FAIL_FUNC"]) ret = f2(pos, inputs, memory, layer);
+			if(ret.pos == consts["FAIL_FUNC"] && layer == 0) func.err(dname, pos, "matching at least one prioritized choice", "matching not", "");
 
 			return ret;
 		},
@@ -30,31 +30,40 @@
 				ret.pos = tmp.pos;
 				if(ret.pos == consts["FAIL_FUNC"]) break;
 				vals.push(tmp.val);
-				console.log("seq: tmp.val = " + vals[i]);
+				//console.log("seq: tmp.val = " + vals[i]);
 			}
-			if(ret.pos != consts["FAIL_FUNC"]) ret.val = vals;
+			if(ret.pos != consts["FAIL_FUNC"]) ret.val = func.remUniAry(vals);
 			//console.log("seq: ret = " + ret.val);
 			return ret;
 		},
 
 		//Starテンプレート（Plusテンプレート）
 		star : function(f, bPlus, dname, pos, inputs, memory, layer){
-			var ret = consts["FAIL_FUNC"], tmp;
-			if(bPlus){
-
+			var ret = {pos: bPlus? consts["FAIL_FUNC"] : pos, val: null}, tmp = f(pos, inputs, memory, bPlus? layer : layer + 1), vals = [];
+			if(bPlus) tmp = {pos: pos, val: null};
+			while(tmp.pos != consts["FAIL_FUNC"]){
+				ret.pos = tmp.pos;
+				vals.push(tmp.val);
+				tmp = f(ret.pos, inputs, memory, layer+1);
 			}
-			tmp = (bPlus? f(pos, inputs, memory, layer) : pos);
-			while(tmp != consts["FAIL_FUNC"]){
-				ret = tmp;
-				tmp = f(ret, inputs, memory, layer+1);
-			}
+			if(ret.pos != consts["FAIL_FUNC"]) ret.val = func.remUniAry(vals);
+			//console.log("star: " + ret.val);
 			return ret;
 		},
+		/* star : function(f, bPlus, dname, pos, inputs, memory, layer){ */
+			/* var ret = {pos: consts["FAIL_FUNC"], val: null}, tmp; */
+			/* tmp = (bPlus? f(pos, inputs, memory, layer) : {pos: pos, val: null}); */
+			/* while(tmp.pos != consts["FAIL_FUNC"]){ */
+				/* ret.pos = tmp.pos; */
+				/* tmp = f(ret.pos, inputs, memory, layer+1); */
+			/* } */
+			/* return ret; */
+		/* }, */
 
 		//Questionテンプレート (syntax sugar)
 		question : function(f, dname, pos, inputs, memory, layer){
 			var ret = f(pos, inputs, memory, layer+1);
-			if(ret == consts["FAIL_FUNC"]) ret.pos = pos;
+			if(ret.pos == consts["FAIL_FUNC"]) ret.pos = pos;
 			return ret;
 		},
 
@@ -80,13 +89,14 @@
 				memory[cacheKey] = ret;
 			}
 			//console.log("ret = " + ret);
-			//console.log(dname + "[" + pos + "] end. ret = " + ret);
+			console.log(dname + "[" + pos + "] end. ret = " + JSON.stringify(ret));
 			return ret;
 		},
 
 		//Literalテンプレート
 		literal : function(lit, dname, pos, inputs, memory, layer){
 			var tmp = pos + lit.length - 1, ret = {pos: consts["FAIL_FUNC"], val: null};
+			//console.log("literal: " + lit);
 			if(tmp < inputs.length && pos != consts["END_INPUT"]){
 				tmp++;
 				//console.log("lit : subs = " + inputs.substring(pos, ret.pos));
@@ -167,6 +177,15 @@
 			if(typeof(ary) == 'string') return ary;
 			for(var i in ary) ary[i] = func.sjoin(ary[i]);
 			return ary.join(deliminator='');
+		},
+
+		//remUniAry : [["a"]] -> "a"
+		remUniAry : function(arg){
+			while(arg instanceof Array && arg.length == 1){
+				arg = arg[0];
+			}
+			if(arg instanceof Array && arg.length == 0) arg = null;
+			return arg;
 		},
 
 		//form : 位置情報を人間用に修正

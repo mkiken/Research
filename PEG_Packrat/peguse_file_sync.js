@@ -24,7 +24,7 @@ names = [
 
 var fs = require("fs");
 //var args = process.argv;
-var gram = fs.readFileSync( './packrat_peg_sync.pegjs' ).toString();
+var gram = fs.readFileSync( './packrat_peg_action.pegjs' ).toString();
 var parser = PEG.buildParser(gram);
 var contents = fs.readFileSync(  names[5] ).toString();
 var ns = parser.parse(contents);
@@ -49,6 +49,6 @@ rl.on('line', function (cmd) {
 	var memory = {};
 	//console.log(ns["START_SYMBOL"](0, "1+3", memory, ns));
 	cmd = cmd.slice(0, cmd.length - 1);
-	console.log("res = " + ns[ns["START_SYMBOL"]](0, cmd, memory, 0));
+	console.log("res = " + JSON.stringify(ns[ns["START_SYMBOL"]](0, cmd, memory, 0)));
 	//console.log("res = " + ns["A"](0, cmd, memory, 0));
 });

@@ -18,39 +18,49 @@ names = [
 	'../testcase/test016_json.grm',
 	'../testcase/test017_css.grm',
 	'../testcase/test018_javascript.grm',
-	'../testcase/test019_json.grm',
+	'../testcase/test019_json.grm', // 5
 	'../testcase/test020_css.grm',
 	'../testcase/test021_q.grm',
 	'../testcase/test023_codeinvestigate.grm',
 	'../testcase/test026_sclass.grm',
-	'../testcase/test027_jsstatement.grm',
-	'../testcase/test033_err.grm', // 11
+	'../testcase/test027_jsstatement.grm', // 10
+	'../testcase/test028_mul.grm',
+	'../testcase/test033_err.grm', // 12
 	'../testcase/test034_semicolon.grm',
-	'../examples/arithmetics.pegjs', // 13
+	'../examples/arithmetics.pegjs', // 14
 	'../examples/json.pegjs',
 	'../examples/css.pegjs',
 	'../examples/javascript.pegjs'
 
 ];
-var grm = names[0];
-contents = fs.readFileSync(grm).toString();
+var grm = names[11];
+contents = fs.readFileSync(grm, 'utf8');
 
 console.log("grammar = " + grm);
 if(arg != "2"){
 	console.log("PEG parser build start.");
-	start = new Date();
-	parser2 = PEG.buildParser(contents);
-	end = new Date();
-	console.log((end - start) / 1000);
+	var sum = 0, rep = 100;
+	for(var i = 0; i < rep; i++){
+		start = new Date();
+		parser2 = PEG.buildParser(contents);
+		end = new Date();
+		sum += end - start;
+	}
+	console.log("time = " + sum / (1000*rep) + ", rep = " + rep);
 }
 if(arg != "1"){
 	console.log("my parser build start.");
-	gram = fs.readFileSync( '../packrat_peg_sync.pegjs' ).toString();
-	start = new Date();
-	parser = PEG.buildParser(gram);
-	ns = parser.parse(contents);
-	end = new Date();
-	console.log((end - start) / 1000);
+	gram = fs.readFileSync( '../back/_packrat_peg_sync_onlypos.pegjs', 'utf8' );
+	var sum = 0, rep = 100;
+	for(var i = 0; i < rep; i++){
+		start = new Date();
+		parser = PEG.buildParser(gram);
+		ns = parser.parse(contents);
+		end = new Date();
+		sum += end - start;
+	}
+	console.log("time = " + sum / (1000*rep) + ", rep = " + rep);
+	//gram = fs.readFileSync( '../packrat_peg_action.pegjs', 'utf8' );
 }
 
 var readline = require('readline');
@@ -59,14 +69,18 @@ var rl = readline.createInterface({
   output: process.stdout,
   terminal: false
 });
-console.log("\n\ninput start.\n\n");
 
+//console.log(JSON.stringify(ns));
+console.log(ns);
+
+console.log("\n\ninput start.\n\n");
 rl.on('line', function (cmd) {
 	//console.log(cmd.length);
 	cmd = cmd.slice(0, cmd.length-1);
 	//console.log(ns["START_SYMBOL"]);
 	var memory = {};
-	if(arg != "2") console.log(parser2.parse(cmd));
+	if(arg != "2") console.log(JSON.stringify(parser2.parse(cmd)));
 	//memory = {};
-	if(arg != "1") console.log("res = " + ns[ns["START_SYMBOL"]](0, cmd, memory, 0));
+	if(arg != "1") console.log("res = " + JSON.stringify(ns[ns["START_SYMBOL"]](0, cmd, memory, 0)));
+	console.log("\n\ninput start.\n\n");
 });
