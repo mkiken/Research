@@ -33,10 +33,28 @@ names = [
 files = [
 	'../testcase/test018_js.ipt',
 	'../examples/arithmetics.js',
+	'../examples/json.js',
+	'../examples/css.js',
 	'../examples/javascript.js'
 ];
+
+function getMean(ary){
+	var ret = 0;
+	for(var i = 0; i < ary.length; i++){
+		ret += ary[i];
+	}
+	return ret / ary.length;
+}
+
+function getSD(ary, m){
+	var ret = 0;
+	for(var i = 0; i < ary.length; i++){
+		ret += (ary[i] - m)*(ary[i] - m);;
+	}
+	return Math.sqrt(ret / ary.length);
+}
 var grm = names[14];
-var file = files[2];
+var file = files[1];
 contents = fs.readFileSync(grm, 'utf8');
 //console.log(contents);
 
@@ -65,17 +83,44 @@ if(arg != "1"){
 
 var memory = {};
 var cmd = fs.readFileSync(file).toString();
+var rep = 1;
 if(arg != "2"){
 	console.log("PEG parser parse start.");
-	start = new Date();
-	console.log(parser2.parse(cmd));
-	end = new Date();
-	console.log((end - start) / 1000);
+	var sum = 0, m, s, res = [], a;
+	for(var i = 0; i < rep; i++){
+		start = new Date();
+		//parser2 = PEG.buildParser(contents);
+		a = parser2.parse(cmd);
+		end = new Date();
+		res.push(end - start);
+	}
+	m = getMean(res);
+	s = getSD(res, m);
+	console.log("res = " + JSON.stringify(a));
+	console.log("time = " + m / 1000 + ", SD = " + s / 1000 + ", rep = " + rep);
+
 }
 if(arg != "1"){
 	console.log("my parser parse start.");
-	start = new Date();
-	console.log("res = " + ns[ns["START_SYMBOL"]](0, cmd, memory, 0));
-	end = new Date();
-	console.log((end - start) / 1000);
+	//start = new Date();
+	//console.log("res = " + ns[ns["START_SYMBOL"]](0, cmd, memory, 0));
+	//end = new Date();
+	//res.push();
+	//console.log((end - start) / 1000);
+
+	var sum = 0, m, s, res = [], a;
+	for(var i = 0; i < rep; i++){
+		memory = {};
+		start = new Date();
+		//parser2 = PEG.buildParser(contents);
+		//parser2.parse(cmd))
+		a = ns[ns["START_SYMBOL"]](0, cmd, memory, 0);
+		end = new Date();
+		res.push(end - start);
+		//console.log(end - start);
+	}
+	m = getMean(res);
+	s = getSD(res, m);
+	console.log("res = " + JSON.stringify(a));
+	console.log("time = " + m / 1000 + ", SD = " + s / 1000 + ", rep = " + rep);
 }

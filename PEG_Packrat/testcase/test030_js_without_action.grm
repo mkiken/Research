@@ -536,7 +536,7 @@ MultiplicativeExpression
     tail:(__ MultiplicativeOperator __ UnaryExpression)*
 
 MultiplicativeOperator
-  = operator:("*" / "/" / "%") !"="
+  = operator:("**" / "*" / "/" / "%") !"="
 
 AdditiveExpression
   = head:MultiplicativeExpression

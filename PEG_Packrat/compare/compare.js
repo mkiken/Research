@@ -25,41 +25,70 @@ names = [
 	'../testcase/test026_sclass.grm',
 	'../testcase/test027_jsstatement.grm', // 10
 	'../testcase/test028_mul.grm',
-	'../testcase/test033_err.grm', // 12
+	'../testcase/test030_js_without_action.grm',
+	'../testcase/test033_err.grm', // 13
 	'../testcase/test034_semicolon.grm',
-	'../examples/arithmetics.pegjs', // 14
+	'../examples/arithmetics.pegjs', // 15
 	'../examples/json.pegjs',
 	'../examples/css.pegjs',
 	'../examples/javascript.pegjs'
 
 ];
-var grm = names[11];
+var grm = names[17];
 contents = fs.readFileSync(grm, 'utf8');
 
+function getMean(ary){
+	var ret = 0;
+	for(var i = 0; i < ary.length; i++){
+		ret += ary[i];
+	}
+	return ret / ary.length;
+}
+
+function getSD(ary, m){
+	var ret = 0;
+	for(var i = 0; i < ary.length; i++){
+		ret += (ary[i] - m)*(ary[i] - m);;
+	}
+	return Math.sqrt(ret / ary.length);
+}
+
+
+//console.log(getMean([1, 2, 3]));
+
 console.log("grammar = " + grm);
+var rep = 1;
 if(arg != "2"){
+	var res = [];
 	console.log("PEG parser build start.");
-	var sum = 0, rep = 100;
+	var sum = 0, m, s;
 	for(var i = 0; i < rep; i++){
 		start = new Date();
 		parser2 = PEG.buildParser(contents);
 		end = new Date();
-		sum += end - start;
+		//sum += end - start;
+		res.push(end - start);
 	}
-	console.log("time = " + sum / (1000*rep) + ", rep = " + rep);
+	m = getMean(res);
+	s = getSD(res, m);
+	console.log("time = " + m / 1000 + ", SD = " + s / 1000 + ", rep = " + rep);
 }
 if(arg != "1"){
 	console.log("my parser build start.");
 	gram = fs.readFileSync( '../back/_packrat_peg_sync_onlypos.pegjs', 'utf8' );
-	var sum = 0, rep = 100;
+	var sum = 0, res = [], m, s;
 	for(var i = 0; i < rep; i++){
-		start = new Date();
 		parser = PEG.buildParser(gram);
+		start = new Date();
 		ns = parser.parse(contents);
 		end = new Date();
-		sum += end - start;
+		res.push(end - start);
+		//sum += end - start;
 	}
-	console.log("time = " + sum / (1000*rep) + ", rep = " + rep);
+	m = getMean(res);
+	s = getSD(res, m);
+	//console.log("time = " + m / 1000 + ", rep = " + rep);
+	console.log("time = " + m / 1000 + ", SD = " + s / 1000 + ", rep = " + rep);
 	//gram = fs.readFileSync( '../packrat_peg_action.pegjs', 'utf8' );
 }
 

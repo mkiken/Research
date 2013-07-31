@@ -17,7 +17,7 @@
 			var ret = f1(pos, inputs, memory, layer+1);
 			if(ret == consts["FAIL_FUNC"]) ret = f2(pos, inputs, memory, layer);
 			if(ret == consts["FAIL_FUNC"] && layer == 0) func.err(dname, pos, "matching at least one prioritized choice", "matching not", "");
-
+			console.log("pri:[" + dname + "] end. ret = " + ret);
 			return ret;
 		},
 
@@ -29,6 +29,7 @@
 				ret = fary[i](ret, inputs, memory, layer);
 				if(ret == consts["FAIL_FUNC"]) break;
 			}
+			console.log("seq:[" + dname + "] end. ret = " + ret);
 			return ret;
 		},
 
@@ -40,6 +41,7 @@
 				ret = tmp;
 				tmp = f(ret, inputs, memory, layer+1);
 			}
+			console.log("star:[" + dname + "] end. ret = " + ret);
 			return ret;
 		},
 
@@ -47,6 +49,7 @@
 		question : function(f, dname, pos, inputs, memory, layer){
 			var ret = f(pos, inputs, memory, layer+1);
 			if(ret == consts["FAIL_FUNC"]) ret = pos;
+			console.log("que:[" + dname + "] end. ret = " + ret);
 			return ret;
 		},
 
@@ -58,6 +61,7 @@
 			}
 			else ret = (ret == consts["FAIL_FUNC"]? pos : consts["FAIL_FUNC"]);
 			if(ret == consts["FAIL_FUNC"] && layer == 0) func.err(dname, pos, "predicate matching", "matching not", "");
+			console.log("not:[" + dname + "] end. ret = " + ret);
 			return ret;
 		},
 
@@ -87,6 +91,7 @@
 				}
 			}
 			if(ret == consts["FAIL_FUNC"] && layer == 0) func.err(dname, pos, lit, inputs.substring(pos, tmp), "");
+			console.log("lit:[" + dname + "] end. ret = " + ret);
 			return ret;
 		},
 
@@ -102,6 +107,7 @@
 			if(bHat) ret = (ret == consts["FAIL_FUNC"]? pos+1 : consts["FAIL_FUNC"]);
 			if(ret == inputs.length) ret = consts["END_INPUT"];
 			if(ret == consts["FAIL_FUNC"] && layer == 0) func.err(dname, pos, "class", "not match", "");
+			console.log("cls:[" + dname + "] end. ret = " + ret);
 			return ret;
 		},
 
@@ -115,6 +121,7 @@
 				}
 			}
 			//if(ret == consts["FAIL_FUNC"]) func.err(dname, pos, c, inputs[pos], "");
+			console.log("chr:[" + dname + "] end. ret = " + ret);
 			return ret;
 		},
 
@@ -126,6 +133,7 @@
 				var c = inputs.charCodeAt(pos);
 				if(c1 <= c && c <= c2) ret = (pos+1 == inputs.length? consts["END_INPUT"] : pos+1);
 			}
+			console.log("range:[" + dname + "] end. ret = " + ret);
 			return ret;
 		},
 
@@ -138,6 +146,7 @@
 				if(ret == inputs.length) ret = consts["END_INPUT"];
 			}
 			else if(layer == 0) func.err(dname, pos, "any character", "EOF", "");
+			console.log("dot:[" + dname + "] end. ret = " + ret);
 			return ret;
 		}
 	};

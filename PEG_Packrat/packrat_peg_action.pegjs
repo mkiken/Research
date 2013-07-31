@@ -18,6 +18,7 @@
 			if(ret.pos == consts["FAIL_FUNC"]) ret = f2(pos, input, memory, layer);
 			if(ret.pos == consts["FAIL_FUNC"] && layer == 0) func.err(dname, pos, "matching at least one prioritized choice", "matching not", "");
 
+			console.log("pri:[" + dname + "] end. ret = " + ret.pos);
 			return ret;
 		},
 
@@ -34,10 +35,24 @@
 			}
 			if(ret.pos != consts["FAIL_FUNC"]) ret.val = func.remUniAry(vals);
 			//console.log("seq: ret = " + ret.val);
+			console.log("seq:[" + dname + "] end. ret = " + ret.pos);
 			return ret;
 		},
 
 		//Starテンプレート（Plusテンプレート）
+		star : function(f, bPlus, dname, pos, inputs, memory, layer){
+			var ret = {pos: consts["FAIL_FUNC"], val: null}, tmp = {pos: pos, val:null};
+			if(bPlus) tmp = f(pos, inputs, memory, layer);
+			while(tmp.pos != consts["FAIL_FUNC"]){
+				ret = tmp;
+				tmp = f(ret.pos, inputs, memory, layer+1);
+			}
+			console.log("star:[" + dname + "] end. ret = " + ret.pos);
+			return ret;
+		},
+
+		//Starテンプレート（Plusテンプレート）
+			  /*
 		star : function(f, bPlus, dname, pos, input, memory, layer){
 			var ret = {pos: bPlus? consts["FAIL_FUNC"] : pos, val: null}, tmp = f(pos, input, memory, bPlus? layer : layer + 1), vals = [];
 			if(bPlus) tmp = {pos: pos, val: null};
@@ -49,21 +64,13 @@
 			if(ret.pos != consts["FAIL_FUNC"]) ret.val = func.remUniAry(vals);
 			//console.log("star: " + ret.val);
 			return ret;
-		},
-		/* star : function(f, bPlus, dname, pos, input, memory, layer){ */
-			/* var ret = {pos: consts["FAIL_FUNC"], val: null}, tmp; */
-			/* tmp = (bPlus? f(pos, input, memory, layer) : {pos: pos, val: null}); */
-			/* while(tmp.pos != consts["FAIL_FUNC"]){ */
-				/* ret.pos = tmp.pos; */
-				/* tmp = f(ret.pos, input, memory, layer+1); */
-			/* } */
-			/* return ret; */
-		/* }, */
+		},*/
 
 		//Questionテンプレート (syntax sugar)
 		question : function(f, dname, pos, input, memory, layer){
 			var ret = f(pos, input, memory, layer+1);
 			if(ret.pos == consts["FAIL_FUNC"]) ret.pos = pos;
+			console.log("que:[" + dname + "] end. ret = " + ret.pos);
 			return ret;
 		},
 
@@ -76,6 +83,7 @@
 			else ret.pos = (ret.pos == consts["FAIL_FUNC"]? pos : consts["FAIL_FUNC"]);
 			if(ret.pos == consts["FAIL_FUNC"] && layer == 0) func.err(dname, pos, "predicate matching", "matching not", "");
 			ret.val = null;
+			console.log("not:[" + dname + "] end. ret = " + ret.pos);
 			return ret;
 		},
 
@@ -89,7 +97,8 @@
 				memory[cacheKey] = ret;
 			}
 			//console.log("ret = " + ret);
-			console.log(dname + "[" + pos + "] end. ret = " + JSON.stringify(ret));
+			//console.log(dname + "[" + pos + "] end. ret = " + JSON.stringify(ret));
+			console.log(dname + "[" + pos + "] end. ret = " + ret.pos);
 			return ret;
 		},
 
@@ -107,12 +116,14 @@
 				}
 			}
 			if(ret.pos == consts["FAIL_FUNC"] && layer == 0) func.err(dname, pos, lit, input.substring(pos, tmp), "");
+			console.log("lit:[" + dname + "] end. ret = " + ret.pos);
 			return ret;
 		},
 
 		//Classテンプレート
 		cls : function(fary, bHat, dname, pos, input, memory, layer){
-			var ret = {pos: consts["FAIL_FUNC"], val: null};
+			//var ret = {pos: consts["FAIL_FUNC"], val: null};
+			var ret = {pos: pos, val: null};
 			for(var i = 0; i < fary.length; i++){
 				//console.log("class -> " + typeof(fary[0][1]));
 				//pegjsの仕様上、fary[i][1]に関数が入っている
@@ -122,6 +133,7 @@
 			if(bHat) ret.pos = (ret.pos == consts["FAIL_FUNC"]? pos+1 : consts["FAIL_FUNC"]);
 			if(ret.pos == input.length) ret.pos = consts["END_INPUT"];
 			if(ret.pos == consts["FAIL_FUNC"] && layer == 0) func.err(dname, pos, "class", "not match", "");
+			console.log("cls:[" + dname + "] end. ret = " + ret.pos);
 			return ret;
 		},
 
@@ -136,6 +148,7 @@
 				}
 			}
 			//if(ret == consts["FAIL_FUNC"]) func.err(dname, pos, c, input[pos], "");
+			console.log("chr:[" + dname + "] end. ret = " + ret.pos);
 			return ret;
 		},
 
@@ -150,6 +163,7 @@
 					ret.val = input[pos];
 				}
 			}
+			console.log("range:[" + dname + "] end. ret = " + ret.pos);
 			return ret;
 		},
 
@@ -163,6 +177,7 @@
 				if(ret.pos == input.length) ret.pos = consts["END_INPUT"];
 			}
 			else if(layer == 0) func.err(dname, pos, "any character", "EOF", "");
+			console.log("dot:[" + dname + "] end. ret = " + ret.pos);
 			return ret;
 		}
 	};
@@ -181,6 +196,7 @@
 
 		//remUniAry : [["a"]] -> "a"
 		remUniAry : function(arg){
+			//console.log("remUniAry invoked.");
 			while(arg instanceof Array && arg.length == 1){
 				arg = arg[0];
 			}

@@ -1,11 +1,31 @@
 var PEG = require("pegjs");
-
+var names = [
+	'./testcase/test003_plus.grm',
+	'./testcase/test012_plus.grm',
+	'./testcase/test013_multi.grm',
+	'./testcase/test015_arith.grm',
+	'./testcase/test016_json.grm',
+	'./testcase/test017_css.grm', // 5
+	'./testcase/test018_javascript.grm',
+	'./testcase/test019_json.grm',
+	'./testcase/test020_css.grm',
+	'./testcase/test021_q.grm',
+	'./testcase/test023_codeinvestigate.grm', // 10
+	'./testcase/test026_sclass.grm',
+	'./testcase/test027_jsstatement.grm',
+	'./testcase/test028_newop.grm',
+	'./examples/arithmetics.pegjs',
+	'./examples/json.pegjs', // 15
+	'./examples/css.pegjs',
+	'./examples/javascript.pegjs'
+];
 var fs = require("fs");
+var name = names[17];
 //var args = process.argv;
 var gram = fs.readFileSync( './packrat_peg_action.pegjs', 'utf8');
 var parser = PEG.buildParser(gram);
 //var contents = fs.readFileSync(  './testcase/test015_arith.grm' ).toString();
-var contents = fs.readFileSync(  './testcase/test003_plus.grm', 'utf8');
+var contents = fs.readFileSync(  name, 'utf8');
 var ns = parser.parse(contents);
 
 console.log(ns);
