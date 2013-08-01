@@ -18,7 +18,7 @@
 			if(ret.pos == consts["FAIL_FUNC"]) ret = f2(pos, input, memory, layer);
 			if(ret.pos == consts["FAIL_FUNC"] && layer == 0) func.err(dname, pos, "matching at least one prioritized choice", "matching not", "");
 
-			console.log("pri:[" + dname + "] end. ret = " + ret.pos);
+			//console.log("pri:[" + dname + "] end. ret = " + ret.pos);
 			return ret;
 		},
 
@@ -30,47 +30,36 @@
 				tmp = fary[i](ret.pos, input, memory, layer);
 				ret.pos = tmp.pos;
 				if(ret.pos == consts["FAIL_FUNC"]) break;
-				vals.push(tmp.val);
+				if(tmp.val != null) vals.push(tmp.val);
 				//console.log("seq: tmp.val = " + vals[i]);
 			}
 			if(ret.pos != consts["FAIL_FUNC"]) ret.val = func.remUniAry(vals);
 			//console.log("seq: ret = " + ret.val);
-			console.log("seq:[" + dname + "] end. ret = " + ret.pos);
+			//console.log("seq:[" + dname + "] end. ret = " + ret.pos);
 			return ret;
 		},
 
 		//Starテンプレート（Plusテンプレート）
-		star : function(f, bPlus, dname, pos, inputs, memory, layer){
-			var ret = {pos: consts["FAIL_FUNC"], val: null}, tmp = {pos: pos, val:null};
-			if(bPlus) tmp = f(pos, inputs, memory, layer);
-			while(tmp.pos != consts["FAIL_FUNC"]){
-				ret = tmp;
-				tmp = f(ret.pos, inputs, memory, layer+1);
-			}
-			console.log("star:[" + dname + "] end. ret = " + ret.pos);
-			return ret;
-		},
-
-		//Starテンプレート（Plusテンプレート）
-			  /*
 		star : function(f, bPlus, dname, pos, input, memory, layer){
 			var ret = {pos: bPlus? consts["FAIL_FUNC"] : pos, val: null}, tmp = f(pos, input, memory, bPlus? layer : layer + 1), vals = [];
 			if(bPlus) tmp = {pos: pos, val: null};
 			while(tmp.pos != consts["FAIL_FUNC"]){
 				ret.pos = tmp.pos;
-				vals.push(tmp.val);
+				if(tmp.val != null) vals.push(tmp.val);
 				tmp = f(ret.pos, input, memory, layer+1);
 			}
-			if(ret.pos != consts["FAIL_FUNC"]) ret.val = func.remUniAry(vals);
+			//if(ret.pos != consts["FAIL_FUNC"]) console.log(JSON.stringify(vals));; 
+			//if(ret.pos != consts["FAIL_FUNC"] && 1 <= vals.length) ret.val = func.sjoin(func.remUniAry(vals));
+			if(ret.pos != consts["FAIL_FUNC"] && 1 <= vals.length) ret.val = func.remUniAry(vals);
 			//console.log("star: " + ret.val);
 			return ret;
-		},*/
+		},
 
 		//Questionテンプレート (syntax sugar)
 		question : function(f, dname, pos, input, memory, layer){
 			var ret = f(pos, input, memory, layer+1);
 			if(ret.pos == consts["FAIL_FUNC"]) ret.pos = pos;
-			console.log("que:[" + dname + "] end. ret = " + ret.pos);
+			//console.log("que:[" + dname + "] end. ret = " + ret.pos);
 			return ret;
 		},
 
@@ -83,22 +72,29 @@
 			else ret.pos = (ret.pos == consts["FAIL_FUNC"]? pos : consts["FAIL_FUNC"]);
 			if(ret.pos == consts["FAIL_FUNC"] && layer == 0) func.err(dname, pos, "predicate matching", "matching not", "");
 			ret.val = null;
-			console.log("not:[" + dname + "] end. ret = " + ret.pos);
+			//console.log("not:[" + dname + "] end. ret = " + ret.pos);
 			return ret;
 		},
 
 		//Identifierテンプレート
 		identifier : function(dname, pos, input, memory, layer){
 			//console.log(dname + " invoked. pos = [" + pos + "]");
-			var cacheKey = dname + "@" + pos, ret;
-			if(memory[cacheKey]) ret = memory[cacheKey];
+			var cacheKey = dname + "@" + pos, ret, memo = memory[cacheKey];
+			if(memo){
+				//ret = {pos: memo.pos, val: memo.val};
+				//ret = memory[cacheKey];
+				ret = func.clone(memo);
+			}
 			else{
 				ret = ns[dname](pos, input, memory, layer);
 				memory[cacheKey] = ret;
+				//valのメモ化は本当にこれで大丈夫？とりあえず
+				//memory[cacheKey] = {pos: ret.pos, val: ret.val};
+				memory[cacheKey] = func.clone(ret);
 			}
 			//console.log("ret = " + ret);
 			//console.log(dname + "[" + pos + "] end. ret = " + JSON.stringify(ret));
-			console.log(dname + "[" + pos + "] end. ret = " + ret.pos);
+			//console.log(dname + "[" + pos + "] end. ret = " + ret.pos);
 			return ret;
 		},
 
@@ -116,7 +112,7 @@
 				}
 			}
 			if(ret.pos == consts["FAIL_FUNC"] && layer == 0) func.err(dname, pos, lit, input.substring(pos, tmp), "");
-			console.log("lit:[" + dname + "] end. ret = " + ret.pos);
+			//console.log("lit:[" + dname + "] end. ret = " + ret.pos);
 			return ret;
 		},
 
@@ -133,7 +129,7 @@
 			if(bHat) ret.pos = (ret.pos == consts["FAIL_FUNC"]? pos+1 : consts["FAIL_FUNC"]);
 			if(ret.pos == input.length) ret.pos = consts["END_INPUT"];
 			if(ret.pos == consts["FAIL_FUNC"] && layer == 0) func.err(dname, pos, "class", "not match", "");
-			console.log("cls:[" + dname + "] end. ret = " + ret.pos);
+			//console.log("cls:[" + dname + "] end. ret = " + ret.pos);
 			return ret;
 		},
 
@@ -148,7 +144,7 @@
 				}
 			}
 			//if(ret == consts["FAIL_FUNC"]) func.err(dname, pos, c, input[pos], "");
-			console.log("chr:[" + dname + "] end. ret = " + ret.pos);
+			//console.log("chr:[" + dname + "] end. ret = " + ret.pos);
 			return ret;
 		},
 
@@ -163,7 +159,7 @@
 					ret.val = input[pos];
 				}
 			}
-			console.log("range:[" + dname + "] end. ret = " + ret.pos);
+			//console.log("range:[" + dname + "] end. ret = " + ret.pos);
 			return ret;
 		},
 
@@ -177,7 +173,7 @@
 				if(ret.pos == input.length) ret.pos = consts["END_INPUT"];
 			}
 			else if(layer == 0) func.err(dname, pos, "any character", "EOF", "");
-			console.log("dot:[" + dname + "] end. ret = " + ret.pos);
+			//console.log("dot:[" + dname + "] end. ret = " + ret.pos);
 			return ret;
 		}
 	};
@@ -219,6 +215,27 @@
 				break;
 			}
 			return str;
+		},
+
+		//clone : オブジェクトのクローンを作る
+		clone : function(obj){
+			return func.shallow_copy(obj);	
+		},
+		//http://stackoverflow.com/questions/122102/most-efficient-way-to-clone-an-objec
+		deep_copy : function(obj){
+		//return JSON.parse(JSON.stringify(obj));
+			if(obj == null || typeof(obj) != 'object') return obj;
+			var temp = obj.constructor(); // changed
+			for(var key in obj) temp[key] = clone(obj[key]);
+			return temp;
+		},
+		shallow_copy : function(obj){
+			//var extend = require('util')._extend;
+			//return extend({}, obj);
+			if(obj == null || typeof(obj) != 'object') return obj;
+			var temp = obj.constructor(); // changed
+			for(var key in obj) temp[key] = obj[key];
+			return temp;
 		},
 
 		//err : エラーフォーマット

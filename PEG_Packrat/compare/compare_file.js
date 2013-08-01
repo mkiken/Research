@@ -54,7 +54,7 @@ function getSD(ary, m){
 	return Math.sqrt(ret / ary.length);
 }
 var grm = names[14];
-var file = files[1];
+var file = files[4];
 contents = fs.readFileSync(grm, 'utf8');
 //console.log(contents);
 
@@ -72,8 +72,8 @@ if(arg != "2"){
 }
 if(arg != "1"){
 	console.log("my parser build start.");
-	//gram = fs.readFileSync( '../packrat_peg_action.pegjs' ).toString();
-	gram = fs.readFileSync( '../back/_packrat_peg_sync_onlypos.pegjs' ).toString();
+	gram = fs.readFileSync( '../packrat_peg_action.pegjs' ).toString();
+	//gram = fs.readFileSync( '../back/_packrat_peg_sync_onlypos.pegjs' ).toString();
 	start = new Date();
 	parser = PEG.buildParser(gram);
 	ns = parser.parse(contents);
@@ -82,7 +82,7 @@ if(arg != "1"){
 }
 
 var memory = {};
-var cmd = fs.readFileSync(file).toString();
+var cmd = fs.readFileSync(file, 'utf8');
 var rep = 1;
 if(arg != "2"){
 	console.log("PEG parser parse start.");
