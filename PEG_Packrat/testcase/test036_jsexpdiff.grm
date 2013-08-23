@@ -1,0 +1,6 @@
+PowerExpression
+  = UnaryExpression (__ "**" __ UnaryExpression)*
+
+MultiplicativeExpression
+  = PowerExpression
+    (__ MultiplicativeOperator __ PowerExpression)*

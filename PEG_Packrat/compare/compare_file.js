@@ -54,7 +54,7 @@ function getSD(ary, m){
 	return Math.sqrt(ret / ary.length);
 }
 var grm = names[14];
-var file = files[4];
+var file = files[1];
 contents = fs.readFileSync(grm, 'utf8');
 //console.log(contents);
 

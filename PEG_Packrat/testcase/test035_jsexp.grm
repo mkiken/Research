@@ -531,8 +531,11 @@ UnaryOperator
   / "~"
   /  "!"
 
+PowerExpression
+  = UnaryExpression (__ "**" __ UnaryExpression)*
+
 MultiplicativeExpression
-  = UnaryExpression (__ MultiplicativeOperator __ UnaryExpression)*
+  = PowerExpression (__ MultiplicativeOperator __ PowerExpression)*
 
 MultiplicativeOperator
   = ("*" / "/" / "%") !"="

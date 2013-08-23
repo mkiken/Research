@@ -14,13 +14,15 @@ var names = [
 	'./testcase/test026_sclass.grm',
 	'./testcase/test027_jsstatement.grm',
 	'./testcase/test028_newop.grm',
+	'./testcase/test029_jssync.grm',
+	'./testcase/test035_jsexp.grm',
 	'./examples/arithmetics.pegjs',
-	'./examples/json.pegjs', // 15
+	'./examples/json.pegjs', // 17
 	'./examples/css.pegjs',
 	'./examples/javascript.pegjs'
 ];
 var fs = require("fs");
-var name = names[17];
+var name = names[15];
 //var args = process.argv;
 var gram = fs.readFileSync( './packrat_peg_action.pegjs', 'utf8');
 var parser = PEG.buildParser(gram);

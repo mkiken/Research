@@ -28,13 +28,15 @@ names = [
 	'../testcase/test030_js_without_action.grm',
 	'../testcase/test033_err.grm', // 13
 	'../testcase/test034_semicolon.grm',
-	'../examples/arithmetics.pegjs', // 15
+	'../testcase/test035_jsexp.grm',// 15
+	'../testcase/test036_jsexpdiff.grm',
+	'../examples/arithmetics.pegjs',
 	'../examples/json.pegjs',
 	'../examples/css.pegjs',
 	'../examples/javascript.pegjs'
 
 ];
-var grm = names[17];
+var grm = names[16];
 contents = fs.readFileSync(grm, 'utf8');
 
 function getMean(ary){
@@ -57,7 +59,7 @@ function getSD(ary, m){
 //console.log(getMean([1, 2, 3]));
 
 console.log("grammar = " + grm);
-var rep = 1;
+var rep = 100;
 if(arg != "2"){
 	var res = [];
 	console.log("PEG parser build start.");
@@ -75,7 +77,8 @@ if(arg != "2"){
 }
 if(arg != "1"){
 	console.log("my parser build start.");
-	gram = fs.readFileSync( '../back/_packrat_peg_sync_onlypos.pegjs', 'utf8' );
+	//gram = fs.readFileSync( '../back/_packrat_peg_sync_onlypos.pegjs', 'utf8' );
+	gram = fs.readFileSync( '../packrat_peg_action.pegjs', 'utf8' );
 	var sum = 0, res = [], m, s;
 	for(var i = 0; i < rep; i++){
 		parser = PEG.buildParser(gram);
