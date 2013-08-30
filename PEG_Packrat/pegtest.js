@@ -15,14 +15,17 @@ var names = [
 	'./testcase/test027_jsstatement.grm',
 	'./testcase/test028_newop.grm',
 	'./testcase/test029_jssync.grm',
-	'./testcase/test035_jsexp.grm',
+	'./testcase/test035_jsexp.grm', //15
+	'./testcase/test037_shock.grm',
+	'./testcase/test038_shock2.grm',
 	'./examples/arithmetics.pegjs',
-	'./examples/json.pegjs', // 17
+	'./examples/json.pegjs',
 	'./examples/css.pegjs',
 	'./examples/javascript.pegjs'
 ];
 var fs = require("fs");
-var name = names[15];
+var name = names[17];
+console.log("grammar is " + name);
 //var args = process.argv;
 var gram = fs.readFileSync( './packrat_peg_action.pegjs', 'utf8');
 var parser = PEG.buildParser(gram);
@@ -32,12 +35,12 @@ var ns = parser.parse(contents);
 
 console.log(ns);
 var memory = {};
-var names = [ "START_SYMBOL",
-			  "start",
-			  "additive",
-			  "multiplicative",
-			  "primar",
-			  "integer"];
+// var names = [ "START_SYMBOL",
+			  // "start",
+			  // "additive",
+			  // "multiplicative",
+			  // "primar",
+			  // "integer"];
 
 //console.log("res = " + ns[names[0]](0, "3*2", memory, 0));
 
@@ -52,7 +55,7 @@ var start = ns["START_SYMBOL"];
 rl.on('line', function (cmd) {
 	var memory = {}, ret;
 	cmd = cmd.slice(0, cmd.length - 1);
-	ret = ns[start](0, cmd, memory, 0);
+	ret = ns[start](0, cmd, memory, ns, 0);
 	console.log(ret);
 	console.log(JSON.stringify(ret));
 });
