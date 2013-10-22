@@ -30,13 +30,15 @@ names = [
 	'../testcase/test034_semicolon.grm',
 	'../testcase/test035_jsexp.grm',// 15
 	'../testcase/test036_jsexpdiff.grm',
+	'../testcase/test039_leftrec.grm',
 	'../examples/arithmetics.pegjs',
 	'../examples/json.pegjs',
-	'../examples/css.pegjs',
-	'../examples/javascript.pegjs'
+	'../examples/css.pegjs', //20
+	'../examples/javascript.pegjs',
+	'../examples/Java.1.7.pegjs'
 
 ];
-var grm = names[16];
+var grm = names[22];
 contents = fs.readFileSync(grm, 'utf8');
 
 function getMean(ary){
@@ -74,6 +76,7 @@ if(arg != "2"){
 	m = getMean(res);
 	s = getSD(res, m);
 	console.log("time = " + m / 1000 + ", SD = " + s / 1000 + ", rep = " + rep);
+	console.log(parser2);
 }
 if(arg != "1"){
 	console.log("my parser build start.");
