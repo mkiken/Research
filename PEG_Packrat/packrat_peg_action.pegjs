@@ -83,7 +83,7 @@
 			/* var i = 0; */
 			/* for( key in nt ){ i++; } [> keyと言う文字は任意の変数名 <] */
 			//alert(i);
-			console.log(dname + " invoked. |nt| = [" + i + "]");
+			/* console.log(dname + " invoked. |nt| = [" + i + "]"); */
 			var cacheKey = dname + "@" + pos, ret, memo = memory[cacheKey];
 			if(memo){
 				//ret = {pos: memo.pos, val: memo.val};

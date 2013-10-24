@@ -1,4 +1,4 @@
-var PEG = require("pegjs");
+var PEG = require("/usr/local/share/npm/lib/node_modules/pegjs");
 var names = [
 	'./testcase/test003_plus.grm',
 	'./testcase/test012_plus.grm',
@@ -15,7 +15,8 @@ var names = [
 	'./testcase/test027_jsstatement.grm',
 	'./testcase/test028_newop.grm',
 	'./testcase/test029_jssync.grm',
-	'./testcase/test035_jsexp.grm', //15
+	'./testcase/test030_js_without_action.grm' ,
+	'./testcase/test035_jsexp.grm', //16
 	'./testcase/test037_shock.grm',
 	'./testcase/test038_shock2.grm',
 	'./examples/arithmetics.pegjs',
@@ -24,7 +25,7 @@ var names = [
 	'./examples/javascript.pegjs'
 ];
 var fs = require("fs");
-var name = names[17];
+var name = names[15];
 console.log("grammar is " + name);
 //var args = process.argv;
 var gram = fs.readFileSync( './packrat_peg_action.pegjs', 'utf8');
