@@ -42,24 +42,23 @@
 		//Starテンプレート（Plusテンプレート）
 		star : function(f, bPlus, dname, pos, input, memory, nt, layer){
 			var ret = {pos: bPlus? consts["FAIL_FUNC"] : pos, val: null}, tmp = f(pos, input, memory, nt, bPlus? layer : layer + 1), vals = [];
-			if(!bPlus) tmp = {pos: pos, val: null};
+			if(bPlus) tmp = {pos: pos, val: null};
 			while(tmp.pos != consts["FAIL_FUNC"]){
 				ret.pos = tmp.pos;
 				if(tmp.val != null) vals.push(tmp.val);
 				tmp = f(ret.pos, input, memory, nt, layer+1);
 			}
-			//if(ret.pos != consts["FAIL_FUNC"]) console.log(JSON.stringify(vals));;
+			//if(ret.pos != consts["FAIL_FUNC"]) console.log(JSON.stringify(vals));; 
 			//if(ret.pos != consts["FAIL_FUNC"] && 1 <= vals.length) ret.val = func.sjoin(func.remUniAry(vals));
 			if(ret.pos != consts["FAIL_FUNC"] && 1 <= vals.length) ret.val = func.remUniAry(vals);
-			console.log("star[" + bPlus + "]: pos = " + ret.pos + ", val = " + ret.val);
+			//console.log("star: " + ret.val);
 			return ret;
 		},
 
 		//Questionテンプレート (syntax sugar)
 		question : function(f, dname, pos, input, memory, nt, layer){
 			var ret = f(pos, input, memory, nt, layer+1);
-			//if(ret.pos == consts["FAIL_FUNC"]) ret.pos = pos;
-			if(ret.pos == consts["FAIL_FUNC"]) ret = {pos:pos, val:ret.val};
+			if(ret.pos == consts["FAIL_FUNC"]) ret.pos = pos;
 			//console.log("que:[" + dname + "] end. ret = " + ret.pos);
 			return ret;
 		},
@@ -68,13 +67,11 @@
 		not : function(f, bAnd, dname, pos, input, memory, nt, layer){
 			var ret = f(pos, input, memory, nt, layer+1);
 			if(bAnd){
-				//if(ret.pos != consts["FAIL_FUNC"]) ret.pos = pos;
-				if(ret.pos != consts["FAIL_FUNC"]) ret = {pos:pos, val:null};
+				if(ret.pos != consts["FAIL_FUNC"]) ret.pos = pos;
 			}
-			//else ret.pos = (ret.pos == consts["FAIL_FUNC"]? pos : consts["FAIL_FUNC"]);
-			else ret = (ret.pos == consts["FAIL_FUNC"]? {pos:pos, val:null} : {pos:consts["FAIL_FUNC"], val:null});
+			else ret.pos = (ret.pos == consts["FAIL_FUNC"]? pos : consts["FAIL_FUNC"]);
 			if(ret.pos == consts["FAIL_FUNC"] && layer == 0) func.err(dname, pos, "predicate matching", "matching not", "");
-			//ret.val = null;
+			ret.val = null;
 			//console.log("not:[" + dname + "] end. ret = " + ret.pos);
 			return ret;
 		},
@@ -86,6 +83,7 @@
 			/* var i = 0; */
 			/* for( key in nt ){ i++; } [> keyと言う文字は任意の変数名 <] */
 			//alert(i);
+			/* console.log(dname + " invoked. |nt| = [" + i + "]"); */
 			var cacheKey = dname + "@" + pos, ret, memo = memory[cacheKey];
 			if(memo){
 				//ret = {pos: memo.pos, val: memo.val};
@@ -94,11 +92,6 @@
 			}
 			else{
 				ret = nt[dname](pos, input, memory, nt, layer);
-				console.log(dname + " invoked. pos = " + pos);
-				if(ret.val != null){
-					console.log("---ret = " + func.form(ret.pos, input));
-					console.log("---val = " + JSON.stringify(ret.val));
-				}
 				//memory[cacheKey] = ret;
 				//valのメモ化は本当にこれで大丈夫？とりあえず
 				//memory[cacheKey] = {pos: ret.pos, val: ret.val};
@@ -138,9 +131,8 @@
 				ret = fary[i][1](pos, input, memory, nt, layer+1);
 				if(ret.pos != consts["FAIL_FUNC"]) break;
 			}
-			//if(bHat) ret.pos = (ret.pos == consts["FAIL_FUNC"]? pos+1 : consts["FAIL_FUNC"]);
-			if(bHat) ret = (ret.pos == consts["FAIL_FUNC"]? {pos:pos+1, val:ret.val} : ret);
-			if(ret.pos == input.length) ret = {pos:consts["END_INPUT"], val:ret.val};
+			if(bHat) ret.pos = (ret.pos == consts["FAIL_FUNC"]? pos+1 : consts["FAIL_FUNC"]);
+			if(ret.pos == input.length) ret.pos = consts["END_INPUT"];
 			if(ret.pos == consts["FAIL_FUNC"] && layer == 0) func.err(dname, pos, "class", "not match", "");
 			//console.log("cls:[" + dname + "] end. ret = " + ret.pos);
 			return ret;
@@ -214,7 +206,7 @@
 		},
 
 		//form : 位置情報を人間用に修正
-		form : function(n, input){
+		form : function(n){
 			var str = "";
 			switch(n){
 			case consts["FAIL_FUNC"]:
@@ -232,14 +224,14 @@
 
 		//clone : オブジェクトのクローンを作る
 		clone : function(obj){
-			return func.shallow_copy(obj);
+			return func.shallow_copy(obj);	
 		},
 		//http://stackoverflow.com/questions/122102/most-efficient-way-to-clone-an-objec
 		deep_copy : function(obj){
 		//return JSON.parse(JSON.stringify(obj));
 			if(obj == null || typeof(obj) != 'object') return obj;
 			var temp = obj.constructor(); // changed
-			for(var key in obj) temp[key] = func.clone(obj[key]);
+			for(var key in obj) temp[key] = clone(obj[key]);
 			return temp;
 		},
 		shallow_copy : function(obj){
@@ -414,7 +406,7 @@ SPACING
 	= (SPACE / COMMENT)*
 
 SPACE
-	= " " / "\\" / "\t" / EOL
+	= " " / "\\" / EOL
 
 COMMENT
 //	= '#' (!EOF .)* EOL

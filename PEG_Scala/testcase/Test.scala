@@ -8,6 +8,7 @@ object Main {
     // val m = sc.next().toCharArray();
     val list = List(3,4,5)
     val +++ = 1;
+    //val ;;; = 1;
     val `"a"` = 1000;
     //val '"b"' = 1000; //cannot
     //val "c" = 2000; //cannot
