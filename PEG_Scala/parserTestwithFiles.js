@@ -1,16 +1,27 @@
+var args = process.argv;
 var parser = require('./scala-parser.js');
 var fs = require("fs");
-var names = [
-	'testcase/_A.scala',
-	'testcase/Test.scala',
-	'test.pegjs'
-];
-var name = names[1];
-var contents = fs.readFileSync(name, 'utf8');
+// var names = [
+	// 'testcase/_A.scala',
+	// 'test.pegjs'
+// ];
 
-console.log("");
+for(var i = 2; i < args.length; i++){
+	var name = args[i];
+	var contents = fs.readFileSync(name, 'utf8');
+	console.log("\n\nfile = " + name + "\n");
+	console.log(JSON.stringify(parser.parse(contents)));
+	console.log("\n\n");
+}
 
-console.log(JSON.stringify(parser.parse(contents)));
+
+// for(var e in args){
+	// console.log(e);
+// }
+//args.forEach(function(element){console.log(element);});
+
+//console.log("");
+
 
 // var readline = require('readline');
 // var rl = readline.createInterface({

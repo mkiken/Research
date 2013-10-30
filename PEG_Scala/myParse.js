@@ -21,9 +21,11 @@ var start = ns["START_SYMBOL"]
 
 var scalas = [
 	'./testcase/_A.scala',
+	'./testcase/Test.scala',
+	'./testcase/util.scala',
 	'./input.txt'
 ];
-var scala = fs.readFileSync( scalas[0], 'utf8');
+var scala = fs.readFileSync( scalas[1], 'utf8');
 console.log("input length = " + scala.length);
 	ret = ns[start](0, scala, memory, ns, 0);
 	console.log(ret);

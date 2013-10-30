@@ -33,16 +33,16 @@ object CF254c {
         for(i <- 0 until len){ //0 .. len - 1
             var idx = s(i) - 'A';
             if(at(idx) < as(idx)){
-                // loop.breakable{
-                    // for(j <- 0 until as.length)
-                        // if(as(j) < at(j) && ((j < idx) || cnts(idx) <= as(idx) - at(idx) )){
-                            // s(i) = (j + 'A').toChar;
-                            // as(j) += 1;
-                            // as(idx) -= 1;
-                            // count += 1;
-                            // loop.break;
-                        // }
-                // }
+                loop.breakable{
+                    for(j <- 0 until as.length)
+                        if(as(j) < at(j) && ((j < idx) || cnts(idx) <= as(idx) - at(idx) )){
+                            s(i) = (j + 'A').toChar;
+                            as(j) += 1;
+                            as(idx) -= 1;
+                            count += 1;
+                            loop.break;
+                        }
+                }
             }
             cnts(idx) -= 1;
         }

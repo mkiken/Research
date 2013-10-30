@@ -68,9 +68,23 @@ a-z
  */
 //opchar = [\u0021-\u0027] / [\u0030-\u002d] / [\u002f-\u005a] / [005c] / [\u005e-\u007a] / [\u007c] / [\u007e]
 //よく分からないのでとりあえず
-opchar = [a-zA-Z0-9\+\-\*/]
+opchar = [a-zA-Z0-9\+\-\*/><=!&|%:~\^|]
 
+/* operator precedence
+(all letters)
+|
+^
+&
+< >
+= !
+:
++ -
+* / %
+(all other special characters)
+ */
 /* op ::= opchar {opchar} */
+//op = ([%] / [+\-] / ':' / [=!] / [<>] / '&' / '^' / '|' / opchar+) __ */
+//op = (">>>" / "<<" / ">>" / "<=" / ">=" / "==" / "!=" / "eq" / "ne" / "&&" / "||" / [*/%] / [+\-] / ':' / [!~] / [<>] / '&' / '^' / '|' / opchar+) __
 op = opchar+ __
 
 /* varid ::= lower idrest */
@@ -310,11 +324,11 @@ Expr1 = IF OPPAREN Expr CLPAREN nl* Expr (semi? 'else' __ Expr)?
 / 'for' __ (OPPAREN Enumerators CLPAREN / OPBRACE Enumerators CLBRACE) nl* ('yield' __)? Expr
 / 'throw' __ Expr
 / 'return' __ Expr?
-/ (SimpleExpr DOT)? id EQUAL Expr
 / SimpleExpr1 ArgumentExprs EQUAL Expr
 / PostfixExpr Ascription
 / PostfixExpr 'match' __ OPBRACE CaseClauses CLBRACE
 / PostfixExpr
+/ (SimpleExpr DOT)? id EQUAL Expr
 
 /* PostfixExpr ::= InfixExpr [id [nl]] */
 PostfixExpr = InfixExpr (id nl?)?
@@ -331,17 +345,9 @@ PrefixExpr = (HYPHEN / PLUS / '~' __ / '!' __)? SimpleExpr
 /* SimpleExpr ::= ‘new’ (ClassTemplate | TemplateBody) */
 /* | BlockExpr */
 /* | SimpleExpr1 [‘_’] */
-SimpleExpr = NEW (ClassTemplate / TemplateBody) _SimpleExpr
-/ BlockExpr _SimpleExpr
-/ OPPAREN Exprs? CLPAREN UNDER? _SimpleExpr
-/ SimpleExpr1 UNDER? _SimpleExpr
-/ XmlExpr UNDER? _SimpleExpr
-/ Literal UNDER? _SimpleExpr
-/ Path UNDER? _SimpleExpr
-/ UNDER UNDER? _SimpleExpr
-_SimpleExpr = DOT id UNDER? _SimpleExpr
-			/ TypeArgs UNDER? _SimpleExpr
-			/ Empty
+SimpleExpr = NEW (ClassTemplate / TemplateBody)
+/ BlockExpr
+/ SimpleExpr1 UNDER?
 
 /* SimpleExpr1 ::= Literal */
 /* | Path */
@@ -351,29 +357,19 @@ _SimpleExpr = DOT id UNDER? _SimpleExpr
 /* | SimpleExpr TypeArgs */
 /* | SimpleExpr1 ArgumentExprs */
 /* | XmlExpr */
-SimpleExpr1 = NEW (ClassTemplate / TemplateBody) _SimpleExpr DOT id
-/ BlockExpr _SimpleExpr DOT id _SimpleExpr1
-
-/ OPPAREN Exprs? CLPAREN UNDER? _SimpleExpr DOT id _SimpleExpr1
-/ XmlExpr UNDER? _SimpleExpr DOT id _SimpleExpr1
-/ Literal UNDER? _SimpleExpr DOT id _SimpleExpr1
-/ Path UNDER? _SimpleExpr DOT id _SimpleExpr1
-/ UNDER UNDER? _SimpleExpr DOT id _SimpleExpr1
-/ NEW (ClassTemplate / TemplateBody) _SimpleExpr TypeArgs _SimpleExpr1
-/ BlockExpr _SimpleExpr TypeArgs _SimpleExpr1
-/ OPPAREN Exprs? CLPAREN UNDER? _SimpleExpr TypeArgs _SimpleExpr1
-/ XmlExpr UNDER? _SimpleExpr TypeArgs _SimpleExpr1
-/ Literal UNDER? _SimpleExpr TypeArgs _SimpleExpr1
-/ Path UNDER? _SimpleExpr TypeArgs _SimpleExpr1
-/ UNDER UNDER? _SimpleExpr TypeArgs _SimpleExpr1
+SimpleExpr1 = OPPAREN Exprs? CLPAREN _SimpleExpr1
+/* / SimpleExpr DOT id */
+/ NEW (ClassTemplate / TemplateBody) DOT id _SimpleExpr1
+/ BlockExpr DOT id _SimpleExpr1
+/ NEW (ClassTemplate / TemplateBody) TypeArgs _SimpleExpr1
+/ BlockExpr TypeArgs _SimpleExpr1
 / XmlExpr _SimpleExpr1
-/ Literal _SimpleExpr1
 / Path _SimpleExpr1
+/ Literal _SimpleExpr1
 / UNDER _SimpleExpr1
-/ OPPAREN Exprs? CLPAREN _SimpleExpr1
-_SimpleExpr1 = ArgumentExprs UNDER? _SimpleExpr DOT id _SimpleExpr1
-/  ArgumentExprs UNDER? _SimpleExpr TypeArgs _SimpleExpr1
-/  ArgumentExprs _SimpleExpr1
+_SimpleExpr1 = UNDER? DOT id _SimpleExpr1
+/ UNDER? TypeArgs _SimpleExpr1
+/ ArgumentExprs _SimpleExpr1
 / Empty
 
 /* Exprs ::= Expr {‘,’ Expr} */
