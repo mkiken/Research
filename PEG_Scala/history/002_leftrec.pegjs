@@ -68,7 +68,7 @@ a-z
  */
 //opchar = [\u0021-\u0027] / [\u0030-\u002d] / [\u002f-\u005a] / [005c] / [\u005e-\u007a] / [\u007c] / [\u007e]
 //よく分からないのでとりあえず
-opchar = [\+\-\*/><=!&|%:~\^|]
+opchar = [a-zA-Z0-9\+\-\*/><=!&|%:~\^|]
 
 /* operator precedence
 (all letters)
@@ -85,47 +85,37 @@ opchar = [\+\-\*/><=!&|%:~\^|]
 /* op ::= opchar {opchar} */
 //op = ([%] / [+\-] / ':' / [=!] / [<>] / '&' / '^' / '|' / opchar+) __ */
 //op = (">>>" / "<<" / ">>" / "<=" / ">=" / "==" / "!=" / "eq" / "ne" / "&&" / "||" / [*/%] / [+\-] / ':' / [!~] / [<>] / '&' / '^' / '|' / opchar+) __
-op = chars:opchar+ __ {return chars.join("");}
+op = opchar+ __
 
 /* varid ::= lower idrest */
-varid = start:lower parts:idrest {return start + parts;}
+varid = lower idrest
 
 /* plainid ::= upper idrest
 | varid
 | op */
-plainid = start:upper parts:idrest {return start + parts;}
+plainid = upper idrest
 		/ varid
 		/ op
 
 /* id ::= plainid */
 /* | ‘\‘’ stringLit ‘\‘’ */
 id = plainid
-	/ [`] str:stringLiteral [`] __ {return str;}
+	/ [`] stringLiteral [`] __
 
 /* idrest ::= {letter | digit} [‘_’ op] */
-idrest	= chars:(letter / digit)* '_' ops:op __ {return chars.join("") + '_' + ops;}
-		/ chars:(letter / digit)* __ {return chars;}
+idrest = (letter / digit)* ('_' op)? __
 
 /* integerLiteral ::= (decimalNumeral | hexNumeral | octalNumeral) [‘L’ | ‘l’] */
-integerLiteral = ilit:(decimalNumeral / hexNumeral / octalNumeral) ll:('L' / 'l')? __ {
-	return {
-		type: "integerLiteral",
-		value: ilit,
-		lVal: ll
-	};
-}
-
+integerLiteral = (decimalNumeral / hexNumeral / octalNumeral) ('L' / 'l')? __
 
 /* decimalNumeral ::= ‘0’ | nonZeroDigit {digit} */
-/* decimalNumeral	= '0' {return {type: "decimalNumeral", value: '0'};} */
-decimalNumeral	= '0'
-				/ start:nonZeroDigit parts:digit* __ {return start + parts.join("");}
+decimalNumeral = '0' / nonZeroDigit digit* __
 
 /* hexNumeral ::= ‘0’ ‘x’ hexDigit {hexDigit} */
-hexNumeral = '0' 'x' parts:hexDigit+ __ {return "0x" + parts.join("");}
+hexNumeral = '0' 'x' hexDigit+ __
 
 /* octalNumeral ::= ‘0’ octalDigit {octalDigit} */
-octalNumeral = '0' parts:octalDigit+ __ {return '0' + parts.join("");}
+octalNumeral = '0' octalDigit+ __
 
 /* digit ::= ‘0’ | nonZeroDigit */
 digit = '0' / nonZeroDigit
@@ -142,28 +132,27 @@ octalDigit = [0-7]
 /* | digit {digit} exponentPart [floatType] */
 /* | digit {digit} [exponentPart] floatType */
 floatingPointLiteral
-	= dp:digit+ '.' ds:digit* exp:exponentPart? type:floatType? __ {return dp.join("") + '.' + ds.join("") + exp + type;}
-	/ '.' dp:digit+  exp:exponentPart? type:floatType? __ {return '.' + dp.join("") + exp + type;}
-	/ dp:digit+ exp:exponentPart type:floatType? __ {return dp.join("") + exp + type;}
-	/ dp:digit+ exp:exponentPart? type:floatType __ {return dp.join("") + exp + type;}
+	= digit+ '.' digit* exponentPart? floatType? __
+	/ '.' digit+  exponentPart? floatType? __
+	/ digit+ exponentPart floatType? __
+	/ digit+ exponentPart? floatType __
 
 /* exponentPart ::= (‘E’ | ‘e’) [‘+’ | ‘-’] digit {digit} */
-exponentPart = exp:('E' / 'e') sign:('+' / '-')? dt:digit+ {return exp + sign + dt.join("");}
+exponentPart = ('E' / 'e') ('+' / '-')? digit+
 
 /* floatType ::= ‘F’ | ‘f’ | ‘D’ | ‘d’*/
 floatType = 'F' / 'f' / 'D' / 'd'
 
 /* booleanLiteral ::= ‘true’ | ‘false’ */
-booleanLiteral = ret:('true' / 'false') __ {return ret;}
+booleanLiteral = ('true' / 'false') __
 
 /* characterLiteral ::= ‘\’’ printableChar ‘\’’ */
 /* | ‘\’’ charEscapeSeq ‘\’’ */
-characterLiteral = ['] chr:( printableChar / charEscapeSeq ) ['] __ {return chr;}
+characterLiteral = (['] printableChar ['] / ['] charEscapeSeq [']) __
 
 /* stringLiteral ::= ‘"’ {stringElement} ‘"’ */
 /* | ‘"""’ multiLineChars ‘"""’ */
-stringLiteral	= '"' ele:stringElement* '"' __ {return {type: "stringLiteral", value: ele.join("")};}
-				/ '"""' chrs:multiLineChars '"""' __ {return {type: "stringLiteral", value: chrs};}
+stringLiteral = ('"' stringElement* '"' / '"""' multiLineChars '"""') __
 
 /* stringElement ::= printableCharNoDoubleQuote */
 /* | charEscapeSeq */
@@ -171,14 +160,10 @@ stringElement	= printableCharNoDoubleQuote
 				/ charEscapeSeq
 
 /* multiLineChars ::= {[‘"’] [‘"’] charNoDoubleQuote} {‘"’} */
-//check : これ結構解決難し・・・
-multiLineChars	= eles:multiLineCharsElements* '"""""' {return eles.join("") + '""';}
-				/ eles:multiLineCharsElements* '""""' {return eles.join("") + '"';}
-				/ eles:multiLineCharsElements* '"""' {return eles.join("");}
+multiLineChars = ('"'? '"'? charNoDoubleQuote)* '"'*
 
-multiLineCharsElements = chrs:('"'? '"'? charNoDoubleQuote) {return chrs.join("");}
 /* symbolLiteral ::= ‘’’ plainid */
-symbolLiteral = "'" pi:plainid __ {return "'" + pi;}
+symbolLiteral = "'" plainid __
 
 // comment ::= ‘/*’ “any sequence of characters” ‘*/’ */
 /* | ‘//’ “any sequence of characters up to end of line” */
