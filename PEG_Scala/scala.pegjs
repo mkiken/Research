@@ -10,6 +10,24 @@ Scala Syntax Summary
 The lexical syntax of Scala is given by the following grammar in EBNF form.
  */
 
+/*Initializer*/
+{
+	//引数をフィルターして適切な形に変形する
+	//もしidxが入っていればarg[idx]を戻り値とする
+	function ftr(arg, idx){
+		//空文字列はnull
+		if(typeof idx === 'undefined') idx = -1;
+		if(arg === "") return null;
+		return idx == -1? arg : arg[idx];
+	}
+
+	//keyをキーワードとする
+	function makeKeyword(key){
+		return {type:"Keyword", word:key};
+	}
+
+}
+
 /* CompilationUnit ::= {‘package’ QualId semi} TopStatSeq */
 CompilationUnit = __ (PACKAGE QualId semi)* TopStatSeq
 
@@ -99,20 +117,16 @@ plainid = start:upper parts:idrest {return start + parts;}
 
 /* id ::= plainid */
 /* | ‘\‘’ stringLit ‘\‘’ */
-id = plainid
-	/ [`] str:stringLiteral [`] __ {return str;}
+id = nm:plainid {return { type: "Identifier", name: nm }; }
+	/ [`] str:stringLiteral [`] __ { return { type: "Identifier", name: str}; }
 
 /* idrest ::= {letter | digit} [‘_’ op] */
 idrest	= chars:(letter / digit)* '_' ops:op __ {return chars.join("") + '_' + ops;}
-		/ chars:(letter / digit)* __ {return chars;}
+		/ chars:(letter / digit)* __ {return chars.join("");}
 
 /* integerLiteral ::= (decimalNumeral | hexNumeral | octalNumeral) [‘L’ | ‘l’] */
 integerLiteral = ilit:(decimalNumeral / hexNumeral / octalNumeral) ll:('L' / 'l')? __ {
-	return {
-		type: "integerLiteral",
-		value: ilit,
-		lVal: ll
-	};
+	return ilit + ll;
 }
 
 
@@ -154,7 +168,7 @@ exponentPart = exp:('E' / 'e') sign:('+' / '-')? dt:digit+ {return exp + sign + 
 floatType = 'F' / 'f' / 'D' / 'd'
 
 /* booleanLiteral ::= ‘true’ | ‘false’ */
-booleanLiteral = ret:('true' / 'false') __ {return ret;}
+booleanLiteral = ret:('true' / 'false') __ {return {type: "booleanLiteral", value: chrs};}
 
 /* characterLiteral ::= ‘\’’ printableChar ‘\’’ */
 /* | ‘\’’ charEscapeSeq ‘\’’ */
@@ -163,7 +177,7 @@ characterLiteral = ['] chr:( printableChar / charEscapeSeq ) ['] __ {return chr;
 /* stringLiteral ::= ‘"’ {stringElement} ‘"’ */
 /* | ‘"""’ multiLineChars ‘"""’ */
 stringLiteral	= '"' ele:stringElement* '"' __ {return {type: "stringLiteral", value: ele.join("")};}
-				/ '"""' chrs:multiLineChars '"""' __ {return {type: "stringLiteral", value: chrs};}
+				/ '"""' chrs:multiLineChars __ {return {type: "stringLiteral", value: chrs};}
 
 /* stringElement ::= printableCharNoDoubleQuote */
 /* | charEscapeSeq */
@@ -172,9 +186,7 @@ stringElement	= printableCharNoDoubleQuote
 
 /* multiLineChars ::= {[‘"’] [‘"’] charNoDoubleQuote} {‘"’} */
 //check : これ結構解決難し・・・
-multiLineChars	= eles:multiLineCharsElements* '"""""' {return eles.join("") + '""';}
-				/ eles:multiLineCharsElements* '""""' {return eles.join("") + '"';}
-				/ eles:multiLineCharsElements* '"""' {return eles.join("");}
+multiLineChars	= eles:multiLineCharsElements* ('"""""' / '""""' / '"""') {return eles.join("");}
 
 multiLineCharsElements = chrs:('"'? '"'? charNoDoubleQuote) {return chrs.join("");}
 /* symbolLiteral ::= ‘’’ plainid */
@@ -214,94 +226,171 @@ __
 /* | stringLiteral */
 /* | symbolLiteral */
 /* | ‘null’ */
-Literal = HYPHEN? integerLiteral
-/ HYPHEN? floatingPointLiteral
+Literal = minus:HYPHEN? val:integerLiteral {return {type: "integerLiteral", value: minus + val}; }
+/ HYPHEN? val:floatingPointLiteral {return {type: "floatingPointLiteral", value: minus + val}; }
 / booleanLiteral
-/ characterLiteral
+/ val:characterLiteral {return {type: "characterLiteral", value: val}; }
 / stringLiteral
-/ symbolLiteral
-/ 'null' __
+/ val:symbolLiteral {return {type: "symbolLiteral", value: val}; }
+/ 'null' __ {return {type: "nullLiteral", value: "null"}; }
 
 /* QualId ::= id {‘.’ id} */
-QualId = id (DOT id)*
+QualId = head:id tail:(DOT id)* {
+      var result = [head];
+      for (var i = 0; i < tail.length; i++) {
+        result.push(tail[i][1]);
+      }
+      return result;
+    }
 
-/* ids ::= id {‘,’ id} */
-ids = id (COMMA id)*
+/* ,ids ::= id {‘,’ id} */
+ids = head:id tail:(COMMA id)* {
+      var result = [head];
+      for (var i = 0; i < tail.length; i++) {
+        result.push(tail[i][1]);
+      }
+      return result;
+    }
 
 /* Path ::= StableId */
 
 /* | [id ‘.’] ‘this’ */
-Path	= StableId
-		/ (id DOT)? THIS
+Path	= sid:StableId {return {type:"Path", contents:sid.contents}}
+		/ pre:(id DOT)? th:THIS {return {type:"Path", contents:pre !== ""? [pre[0], th] : [th]};}
 
 /* StableId ::= id */
 /* | Path ‘.’ id */
 /* | [id ’.’] ‘super’ [ClassQualifier] ‘.’ id */
-StableId	= id _StableId
-			/ (id DOT)? THIS DOT id _StableId
-			/ (id DOT)? 'super' __ ClassQualifier? DOT id _StableId
-_StableId	= DOT id _StableId
-			/ Empty
+/* StableId	= id _StableId */
+StableId	= base:id accessors:(DOT id)* {
+      var result = [base];
+      for (var i = 0; i < accessors.length; i++) {
+        result.push(accessors[i][1]);
+	  }
+      return {type:"StableId", contents:result};
+    }
+			/* / (id DOT)? THIS DOT id _StableId */
+			/ pre:(id DOT)? th:THIS accessors:(DOT id)+ {
+      var result = pre !==""? [pre[0], th] : [th];
+      for (var i = 0; i < accessors.length; i++) {
+        result.push(accessors[i][1]);
+	  }
+	  return {type:"StableId", contents:result};
+    }
+
+			/* / (id DOT)? 'super' __ ClassQualifier? DOT id _StableId */
+			/ pre:(id DOT)? 'super' __ cl:ClassQualifier? accessors:(DOT id)+ {
+      var result = pre !== ""? [pre[0], {type:"Keyword", word:"super"}] : [{type:"Keyword", word:"super"}];
+if(cl !== ""){
+	result.push(cl);
+}
+	  for (var i = 0; i < accessors.length; i++) {
+        result.push(accessors[i][1]);
+	  }
+	  return {type:"StableId", contents:result};
+    }
+
+/* _StableId	= DOT id _StableId {return } */
+			/* / Empty */
 
 /* ClassQualifier ::= ‘[’ id ‘]’ */
-ClassQualifier = OPBRACKET id CLBRACKET
+ClassQualifier = OPBRACKET qual:id CLBRACKET {return qual;}
 
 /* Type ::= FunctionArgTypes ‘=>’ Type */
 /* | InfixType [ExistentialClause] */
-Type	= FunctionArgTypes ARROW Type
-		/ InfixType ExistentialClause?
+Type	= funcarg:FunctionArgTypes ARROW tp:Type {return {type:"Type", isFunc:true, arg:funcarg, type:tp};}
+		/ tp:InfixType ExistentialClause? {return {type:"Type", isFunc:false, ext:ext, type:tp};}
+
 
 /* FunctionArgTypes ::= InfixType */
 /* | ‘(’ [ ParamType {‘,’ ParamType } ] ‘)’ */
-FunctionArgTypes	= InfixType
-					/ OPPAREN  ( ParamType (COMMA ParamType )* )? CLPAREN
+FunctionArgTypes	= tp:InfixType {return {type:"FunctionArgTypes", types:[tp]};}
+
+					/ OPPAREN tps:( ParamType (COMMA ParamType )* )? CLPAREN {
+      var result = [];
+if(tps !== ""){
+	result.push(tps[0]);
+	for (var i = 0; i < tps[1].length; i++) {
+        result.push(tps[1][i][1]);
+	  }
+}
+	  return {type:"FunctionArgTypes", contents:result};
+    }
+
 
 /* ExistentialClause ::= ‘forSome’ ‘{’ ExistentialDcl {semi ExistentialDcl} ‘}’ */
-ExistentialClause = 'forSome' __ OPBRACE ExistentialDcl (semi ExistentialDcl)* CLBRACE
+ExistentialClause = 'forSome' __ OPBRACE ex:ExistentialDcl exs:(semi ExistentialDcl)* CLBRACE {
+      var result = [{type:"Keyword", word:"forSome"}];
+	  result.push(ex);
+	for (var i = 0; i < exs.length; i++) {
+        result.push(exs[i][1]);
+	  }	  return {type:"ExistentialClause", contents:result};
+    }
 
 /* ExistentialDcl ::= ‘type’ TypeDcl */
 /* | ‘val’ ValDcl */
-ExistentialDcl	= TYPE TypeDcl
-				/ VAL ValDcl
+ExistentialDcl	= tp:TYPE dcl:TypeDcl {return {type:"ExistentialDcl", dcl:[tp,dcl]}}
+				/ vl:VAL dcl:ValDcl {return {type:"ExistentialDcl", dcl:[vl,dcl]}}
 
+//このあたりよく分からないので後回し
 /* InfixType ::= CompoundType {id [nl] CompoundType} */
-InfixType = CompoundType (id nl? CompoundType)*
+InfixType = CompoundType (id nl? CompoundType)* {return {type:"InfixType"};}
 
 /* CompoundType ::= AnnotType {‘with’ AnnotType} [Refinement] */
 /* | Refinement */
-CompoundType	= AnnotType (WITH AnnotType)? Refinement?
-				/ Refinement
+CompoundType	= AnnotType (WITH AnnotType)? Refinement? {return {type:"CompoundType"};}
+
+				/ Refinement {return {type:"CompoundType"}; }
 
 /* AnnotType ::= SimpleType {Annotation} */
-AnnotType = SimpleType Annotation*
+AnnotType = st:SimpleType annotation:Annotation* {return {type:"AnnotType", st:st, annotation:annotation}; }
 
 /* SimpleType ::= SimpleType TypeArgs */
 /* | SimpleType ‘#’ id */
 /* | StableId */
 /* | Path ‘.’ ‘type’ */
 /* | ‘(’ Types ’)’ */
-SimpleType = StableId _SimpleType
-/ Path DOT TYPE _SimpleType
-/ OPPAREN Types CLPAREN _SimpleType
-_SimpleType = TypeArgs
-			/ '#' __ id
-			/ Empty
+//ここもよく分からないので後回し
+SimpleType = StableId (TypeArgs / '#' __ id)* {return {type:"SimpleType"}; }
+/ Path DOT TYPE  (TypeArgs / '#' __ id)* {return {type:"SimpleType"}; }
+/ OPPAREN Types CLPAREN  (TypeArgs / '#' __ id)* {return {type:"SimpleType"}; }
+
+/* SimpleType = StableId _SimpleType */
+/* / Path DOT TYPE _SimpleType */
+/* / OPPAREN Types CLPAREN _SimpleType */
+/* _SimpleType = TypeArgs */
+			/* / '#' __ id */
+			/* / Empty */
 
 /* TypeArgs ::= ‘[’ Types ‘]’ */
-TypeArgs = OPBRACKET Types CLBRACKET
+TypeArgs = OPBRACKET types:Types CLBRACKET {return {type:"TypeArgs", types:types}; }
+
 
 /* Types ::= Type {‘,’ Type} */
-Types = Type (COMMA Type)*
+Types = tp:Type tps:(COMMA Type)* {
+      var result = [tp];
+	  for (var i = 0; i < tps.length; i++) {
+        result.push(tps[i][1]);
+	  }
+	  return {type:"Types", contents:result};
+    }
 
 /* Refinement ::= [nl] ‘{’ RefineStat {semi RefineStat} ‘}’ */
-Refinement = nl? OPBRACE RefineStat (semi RefineStat)* CLBRACE
+Refinement = nl? OPBRACE ref:RefineStat refs:(semi RefineStat)* CLBRACE {
+      var result = [ref];
+	  for (var i = 0; i < refs.length; i++) {
+        result.push(refs[i][1]);
+	  }
+	  return {type:"Refinement", contents:result};
+    }
 
 /* RefineStat ::= Dcl */
 /* | ‘type’ TypeDef */
 /* | */
-RefineStat = Dcl
-/ TYPE TypeDef
-/ Empty
+//ここもよく分からないので後回し
+RefineStat = Dcl {return {type:"RefineStat"}; }
+/ TYPE TypeDef {return {type:"RefineStat"}; }
+/ Empty {return {type:"RefineStat"}; }
 
 /* TypePat ::= Type */
 TypePat = Type
@@ -309,13 +398,14 @@ TypePat = Type
 /* Ascription ::= ‘:’ InfixType */
 /* | ‘:’ Annotation {Annotation} */
 /* | ‘:’ ‘_’ ‘*’ */
-Ascription = COLON InfixType
-/ COLON Annotation+
-/ COLON UNDER STAR
+Ascription = COLON infix:InfixType {return {type:"Ascription", contents:infix}; }
+/ COLON as:Annotation+ {return {type:"Ascription", contents:as}; }
+/ COLON ud:UNDER st:STAR {return {type:"Ascription", contents:[us,st]}; }
 
 /* Expr ::= (Bindings | [‘implicit’] id | ‘_’) ‘=>’ Expr */
 /* | Expr1 */
-Expr = (Bindings / IMPLICIT? id / UNDER) ARROW Expr
+//後回し
+Expr = (Bindings / IMPLICIT? id / UNDER) ARROW Expr {return {type:"Expr"}; }
 / Expr1
 
 /* Expr1 ::= ‘if’ ‘(’ Expr ‘)’ {nl} Expr [[semi] else Expr] */
@@ -332,37 +422,83 @@ Expr = (Bindings / IMPLICIT? id / UNDER) ARROW Expr
 /* | PostfixExpr */
 /* | PostfixExpr Ascription */
 /* | PostfixExpr ‘match’ ‘{’ CaseClauses ‘}’ */
-Expr1 = IF OPPAREN Expr CLPAREN nl* Expr (semi? 'else' __ Expr)?
-/ WHILE OPPAREN Expr CLPAREN nl* Expr
+//いったん後回し
+Expr1 = IF OPPAREN condition:Expr CLPAREN nl* ifStatement:Expr elseStatement:(semi? 'else' __ Expr)? {
+      return {
+        type:          "IfStatement",
+        condition:     condition,
+        ifStatement:   ifStatement,
+        elseStatement: elseStatement !== "" ? elseStatement[3] : null
+      };
+    }
+/ WHILE OPPAREN condition:Expr CLPAREN nl* statement:Expr {
+      return {
+        type: "WhileStatement",
+        condition: condition,
+        statement: statement
+      };
+    }
 / 'try' __ OPBRACE Block CLBRACE ('catch' __ OPBRACE CaseClauses CLBRACE)? ('finally' __ Expr)?
-/ 'do' __ Expr semi? WHILE OPPAREN Expr CLPAREN
-/ 'for' __ (OPPAREN Enumerators CLPAREN / OPBRACE Enumerators CLBRACE) nl* ('yield' __)? Expr
-/ 'throw' __ Expr
-/ 'return' __ Expr?
-/ SimpleExpr1 ArgumentExprs EQUAL Expr
-/ PostfixExpr Ascription
-/ PostfixExpr 'match' __ OPBRACE CaseClauses CLBRACE
+/ 'do' __ statement:Expr semi? WHILE OPPAREN condition:Expr CLPAREN {
+      return {
+        type: "DoWhileStatement",
+        condition: condition,
+        statement: statement
+      };
+    }
+/ 'for' __ enums:(OPPAREN Enumerators CLPAREN / OPBRACE Enumerators CLBRACE) nl* yield:('yield' __)? statement:Expr {
+      return {
+        type:        "ForStatement",
+        enumrator: enums[1],
+        yield:     yield !== "" ? yield[0] : null,
+        statement:   statement
+      };
+    }
+/ 'throw' __ exception:Expr {
+      return {
+        type:      "ThrowStatement",
+        exception: exception
+      };
+    }
+/ 'return' __ value:Expr? {
+      return {
+        type:  "ReturnStatement",
+        value: value !== "" ? value : null
+      };
+    }
+/ SimpleExpr1 ArgumentExprs EQUAL Expr {return {type:"Expr1"}; }
+/ PostfixExpr Ascription {return {type:"Expr1"}; }
+/ PostfixExpr 'match' __ OPBRACE CaseClauses CLBRACE {return {type:"Expr1"}; }
 / PostfixExpr
-/ (SimpleExpr DOT)? id EQUAL Expr
+/ (SimpleExpr DOT)? id EQUAL Expr {return {type:"Expr1"}; }
 
 /* PostfixExpr ::= InfixExpr [id [nl]] */
-PostfixExpr = InfixExpr (id nl?)?
+PostfixExpr = infix:InfixExpr id:(id nl?)? {return {type:"PostfixExpr", infix:infix, id: id !== ""? id[0]:null};}
 
 /* InfixExpr ::= PrefixExpr */
 /* | InfixExpr id [nl] InfixExpr */
-InfixExpr = PrefixExpr _InfixExpr
-_InfixExpr = id nl? InfixExpr _InfixExpr
-/ Empty
+InfixExpr = prefix:PrefixExpr infixs:(id nl? InfixExpr)* {
+	return {type:"InfixExpr", prefix:prefix, infixs:infixs};
+}
+/* _InfixExpr = id nl? InfixExpr _InfixExpr */
+/* / Empty */
 
 /* PrefixExpr ::= [‘-’ | ‘+’ | ‘~’ | ‘!’] SimpleExpr */
-PrefixExpr = (HYPHEN / PLUS / '~' __ / '!' __)? SimpleExpr
+PrefixExpr = op:(HYPHEN / PLUS / '~' __ / '!' __)? expr:SimpleExpr {
+	return {type:"InfixExpr", op:op, expr:expr};
+}
 
 /* SimpleExpr ::= ‘new’ (ClassTemplate | TemplateBody) */
 /* | BlockExpr */
 /* | SimpleExpr1 [‘_’] */
-SimpleExpr = NEW (ClassTemplate / TemplateBody)
+SimpleExpr = expr1:SimpleExpr1 ud:UNDER? {
+	return {type:"SimpleExpr", expr1:expr1, under:ud};
+}
 / BlockExpr
-/ SimpleExpr1 UNDER?
+/ NEW arg:(ClassTemplate / TemplateBody) {
+	return {type:"NewExpression", arg:arg};
+}
+
 
 /* SimpleExpr1 ::= Literal */
 /* | Path */
@@ -372,97 +508,129 @@ SimpleExpr = NEW (ClassTemplate / TemplateBody)
 /* | SimpleExpr TypeArgs */
 /* | SimpleExpr1 ArgumentExprs */
 /* | XmlExpr */
-SimpleExpr1 = OPPAREN Exprs? CLPAREN _SimpleExpr1
+//一旦後回し・・・
+SimpleExpr1 = OPPAREN Exprs? CLPAREN _SimpleExpr1 {return {type:"SimpleExpr1"}; }
 /* / SimpleExpr DOT id */
-/ NEW (ClassTemplate / TemplateBody) DOT id _SimpleExpr1
-/ BlockExpr DOT id _SimpleExpr1
-/ NEW (ClassTemplate / TemplateBody) TypeArgs _SimpleExpr1
-/ BlockExpr TypeArgs _SimpleExpr1
-/ XmlExpr _SimpleExpr1
-/ Path _SimpleExpr1
-/ Literal _SimpleExpr1
-/ UNDER _SimpleExpr1
-_SimpleExpr1 = UNDER? DOT id _SimpleExpr1
-/ UNDER? TypeArgs _SimpleExpr1
-/ ArgumentExprs _SimpleExpr1
+/ NEW (ClassTemplate / TemplateBody) DOT id _SimpleExpr1 {return {type:"SimpleExpr1"}; }
+/ BlockExpr DOT id _SimpleExpr1 {return {type:"SimpleExpr1"}; }
+/ NEW (ClassTemplate / TemplateBody) TypeArgs _SimpleExpr1 {return {type:"SimpleExpr1"}; }
+/ BlockExpr TypeArgs _SimpleExpr1 {return {type:"SimpleExpr1"}; }
+/ XmlExpr _SimpleExpr1 {return {type:"SimpleExpr1"}; }
+/ Path _SimpleExpr1 {return {type:"SimpleExpr1"}; }
+/ Literal _SimpleExpr1 {return {type:"SimpleExpr1"}; }
+/ UNDER _SimpleExpr1 {return {type:"SimpleExpr1"}; }
+_SimpleExpr1 = UNDER? DOT id _SimpleExpr1 {return {type:"SimpleExpr1"}; }
+/ UNDER? TypeArgs _SimpleExpr1 {return {type:"SimpleExpr1"}; }
+/ ArgumentExprs _SimpleExpr1 {return {type:"SimpleExpr1"}; }
 / Empty
 
 /* Exprs ::= Expr {‘,’ Expr} */
-Exprs = Expr (COMMA Expr)*
+Exprs = expr:Expr exprs:(COMMA Expr)* {
+      var result = [expr];
+	  for (var i = 0; i < exprs.length; i++) {
+        result.push(exprs[i][1]);
+	  }
+	  return {type:"Exprs", contents:result};
+    }
 
 /* ArgumentExprs ::= ‘(’ [Exprs] ‘)’ */
 /* | ‘(’ [Exprs ‘,’] PostfixExpr ‘:’ ‘_’ ‘*’ ’)’ */
 /* | [nl] BlockExpr */
-ArgumentExprs = OPPAREN Exprs? CLPAREN
-/ OPPAREN (Exprs COMMA)? PostfixExpr COLON UNDER STAR CLPAREN
-/ nl? BlockExpr
+//あとまわし
+ArgumentExprs = OPPAREN Exprs? CLPAREN {return {type:"ArgumentExprs"}; }
+/ OPPAREN (Exprs COMMA)? PostfixExpr COLON UNDER STAR CLPAREN {return {type:"ArgumentExprs"}; }
+/ nl? BlockExpr {return {type:"ArgumentExprs"}; }
 
 /* BlockExpr ::= ‘{’ CaseClauses ‘}’ */
 /* | ‘{’ Block ‘}’ */
-BlockExpr = OPBRACE CaseClauses CLBRACE
-/ OPBRACE Block CLBRACE
+BlockExpr = OPBRACE block:CaseClauses CLBRACE {return {type: "BlockExpression", block:block};}
+/ OPBRACE Block CLBRACE {return {type: "BlockExpression", block:block}; }
 
 /* Block ::= {BlockStat semi} [ResultExpr] */
-Block = (BlockStat semi)* ResultExpr?
+Block = blocks:(BlockStat semi)* res:ResultExpr? {
+      var result = [];
+	  for (var i = 0; i < blocks.length; i++) {
+        result.push(blocks[i][0]);
+	  }
+	  return {type:"Block", contents:result,res:res};
+    }
 
 /* BlockStat ::= Import */
 /* | {Annotation} [‘implicit’ | ‘lazy’] Def */
 /* | {Annotation} {LocalModifier} TmplDef */
 /* | Expr1 */
 /* | */
+//後回し
 BlockStat = Import
-
 / Annotation* (IMPLICIT / LAZY)? Def
+{return {type:"BlockStat"}; }
 / Annotation* LocalModifier* TmplDef
+{return {type:"BlockStat"}; }
 / Expr1
 / Empty
 
 /* ResultExpr ::= Expr1 */
 /* | (Bindings | ([‘implicit’] id | ‘_’) ‘:’ CompoundType) ‘=>’ Block */
+//後回し
 ResultExpr = Expr1
 / (Bindings / (IMPLICIT? id / UNDER) COLON CompoundType) ARROW Block
+{return {type:"ResultExpr"}; }
 
 /* Enumerators ::= Generator {semi Enumerator} */
-Enumerators = Generator (semi Enumerator)*
+Enumerators = gen:Generator enums:(semi Enumerator)* {
+      var result = [];
+	  for (var i = 0; i < enums.length; i++) {
+        result.push(enums[i][1]);
+	  }
+	  return {type:"Exprs", gen:gen, enums:result};
+    }
 
 /* Enumerator ::= Generator */
 /* | Guard */
 /* | ‘val’ Pattern1 ‘=’ Expr */
+//保留
 Enumerator = Generator
 / Guard
 / VAL Pattern1 EQUAL Expr
+{return {type:"Enumerator"}; }
 
 /* Generator ::= Pattern1 ‘<-’ Expr [Guard] */
-Generator = Pattern1 '<-' __ Expr Guard?
+Generator = pt1:Pattern1 '<-' __ expr:Expr guard:Guard? {return {type: "Generator", pt1:pt1, expr:expr, guard:guard}; }
 
 /* CaseClauses ::= CaseClause { CaseClause } */
-CaseClauses = CaseClause+
+CaseClauses = cls:CaseClause+ {return {type: "CaseClauses", cls:cls};}
 
 /* CaseClause ::= ‘case’ Pattern [Guard] ‘=>’ Block */
-CaseClause = CASE Pattern Guard? ARROW Block
+CaseClause = CASE Pattern Guard? ARROW Block {return {type: "Generator", pt:pt, guard:guard, block:block}; }
 
 /* Guard ::= ‘if’ PostfixExpr */
-Guard = IF PostfixExpr
+Guard = IF postfix:PostfixExpr {return {type: "Guard", postfix:postfix};}
 
 /* Pattern ::= Pattern1 { ‘|’ Pattern1 } */
-Pattern = Pattern1 ( '/' __ Pattern1 )*
+Pattern = pt1:Pattern1 pt1s:( '|' __ Pattern1 )* {
+      var result = [pt1];
+	  for (var i = 0; i < pt1s.length; i++) {
+        result.push(pt1s[i][2]);
+	  }
+	  return {type:"Pattern", pts:result};
+    }
 
 /* Pattern1 ::= varid ‘:’ TypePat */
 /* | ‘_’ ‘:’ TypePat */
 /* | Pattern2 */
-Pattern1 = varid COLON TypePat
-/ UNDER COLON TypePat
+Pattern1 = id:varid COLON tp:TypePat {return {type: "Pattern1", id:id, tp:tp};}
+/ id:UNDER COLON tp:TypePat {return {type: "Pattern1", id:id, tp:tp};}
 / Pattern2
 
 /* Pattern2 ::= varid [‘@’ Pattern3] */
 /* | Pattern3 */
-Pattern2 = varid (AT Pattern3)?
+Pattern2 = id:varid pt:(AT Pattern3)? {return {type: "Pattern2", id:id, pt:pt!== ""? pt[1] : null};}
 / Pattern3
 
 /* Pattern3 ::= SimplePattern */
 /* | SimplePattern { id [nl] SimplePattern } */
-Pattern3 = SimplePattern
-/ SimplePattern ( id nl? SimplePattern )*
+//後回し
+Pattern3 = SimplePattern ( id nl? SimplePattern )* {return {type: "Pattern3"};}
 
 /* SimplePattern ::= ‘_’ */
 /* | varid */
@@ -472,109 +640,154 @@ Pattern3 = SimplePattern
 /* | StableId ‘(’ [Patterns ‘,’] [varid ‘@’] ‘_’ ‘*’ ‘)’ */
 /* | ‘(’ [Patterns] ‘)’ */
 /* | XmlPattern */
+//後回し
 SimplePattern = UNDER
 / varid
 / Literal
+/ StableId OPPAREN Patterns? CLPAREN {return {type: "SimplePattern"};}
+/ StableId OPPAREN (Patterns COMMA)? (varid AT)? UNDER STAR CLPAREN {return {type: "SimplePattern"};}
 / StableId
-/ StableId OPPAREN Patterns? CLPAREN
-/ StableId OPPAREN (Patterns COMMA)? (varid AT)? UNDER STAR CLPAREN
-/ OPPAREN Patterns? CLPAREN
+/ OPPAREN Patterns? CLPAREN {return {type: "SimplePattern"};}
 / XmlPattern
 
+//後回し underの後の星は何？？？
 /* Patterns ::= Pattern [‘,’ Patterns] */
 /* | ‘_’ * */
-Patterns = Pattern (COMMA Patterns)?
-/ UNDER *
+Patterns = Pattern (COMMA Patterns)? {return {type: "Patterns"};}
+/ UNDER {return {type: "Patterns"};}
 
 /* TypeParamClause ::= ‘[’ VariantTypeParam {‘,’ VariantTypeParam} ‘]’ */
-TypeParamClause = OPBRACKET VariantTypeParam (COMMA VariantTypeParam)* CLBRACKET
+TypeParamClause = OPBRACKET param:VariantTypeParam params:(COMMA VariantTypeParam)* CLBRACKET {
+      var result = [param];
+	  for (var i = 0; i < params.length; i++) {
+        result.push(params[i][1]);
+	  }
+	  return {type:"TypeParamClause", params:result};
+    }
 
 /* FunTypeParamClause::= ‘[’ TypeParam {‘,’ TypeParam} ‘]’ */
-FunTypeParamClause = OPBRACKET TypeParam (COMMA TypeParam)* CLBRACKET
+FunTypeParamClause = OPBRACKET param:TypeParam params:(COMMA TypeParam)* CLBRACKET {
+      var result = [param];
+	  for (var i = 0; i < params.length; i++) {
+        result.push(params[i][1]);
+	  }
+	  return {type:"FunTypeParamClause", params:result};
+    }
 
 /* VariantTypeParam ::= {Annotation} [‘+’ | ‘-’] TypeParam */
-VariantTypeParam = Annotation* (PLUS / HYPHEN)? TypeParam
+VariantTypeParam = ans:Annotation* sign:(PLUS / HYPHEN)? param:TypeParam {return {type: "VariantTypeParam", annotations:ans, sign:sign, param:param};}
 
 /* TypeParam ::= (id | ‘_’) [TypeParamClause] [‘>:’ Type] [‘<:’ Type]*/
 /* {‘<%’ Type} {‘:’ Type} */
-TypeParam = (id / UNDER) TypeParamClause? (LEFTANGLE Type)? (RIGHTANGLE Type)?
-('<%' __ Type)* (COLON Type)*
+TypeParam = id:(id / UNDER) cl:TypeParamClause? tp1:(LEFTANGLE Type)? tp2:(RIGHTANGLE Type)?
+tp3:('<%' __ Type)* tp4:(COLON Type)* {return {type: "TypeParam", id:id, clause:cl,type1:tp1, type2:tp2, type3:tp3, type4:tp4};}
 
 /* ParamClauses ::= {ParamClause} [[nl] ‘(’ ‘implicit’ Params ‘)’] */
-ParamClauses = ParamClause* (nl? OPPAREN IMPLICIT Params CLPAREN)?
+ParamClauses = pc:ParamClause* pm:(nl? OPPAREN IMPLICIT Params CLPAREN)? {return {type: "ParamClauses", clause:pc, params:pm !== ""? pm[3] : null};}
 
 /* ParamClause ::= [nl] ‘(’ [Params] ’)’ */
-ParamClause = nl? OPPAREN Params? CLPAREN
+ParamClause = nl? OPPAREN pm:Params? CLPAREN {return {type: "ParamClause", params:pm !== ""? pm : null};}
 
 /* Params ::= Param {‘,’ Param} */
-Params = Param (COMMA Param)*
+Params = param:Param (COMMA Param)* {
+      var result = [param];
+	  for (var i = 0; i < params.length; i++) {
+        result.push(params[i][1]);
+	  }
+	  return {type:"Params", params:result};
+    }
 
 /* Param ::= {Annotation} id [‘:’ ParamType] [‘=’ Expr] */
-Param = Annotation* id (COLON ParamType)? (EQUAL Expr)?
+//後回し
+Param = Annotation* id (COLON ParamType)? (EQUAL Expr)? {return {type:"Param"}; }
 
 /* ParamType ::= Type */
 /* | ‘=>’ Type */
 /* | Type ‘*’ */
-ParamType = Type
-/ ARROW Type
-/ Type STAR
+//後回し
+ParamType = ARROW Type {return {type:"ParamType"}; }
+/ Type STAR? {return {type:"ParamType"}; }
+
 
 /* ClassParamClauses ::= {ClassParamClause} */
 /* [[nl] ‘(’ ‘implicit’ ClassParams ‘)’] */
-ClassParamClauses = ClassParamClause* (nl? OPPAREN IMPLICIT ClassParams CLPAREN)?
+ClassParamClauses = cls:ClassParamClause* params:(nl? OPPAREN IMPLICIT ClassParams CLPAREN)? {return {type:"ClassParamClauses", cls:cls, params:params !== ""? params[3] : null}; }
 
 /* ClassParamClause ::= [nl] ‘(’ [ClassParams] ’)’ */
-ClassParamClause = nl? OPPAREN ClassParams? CLPAREN
+ClassParamClause = nl? OPPAREN cp:ClassParams? CLPAREN {return {type:"ClassParamClause", params:ftr(cp)}; }
 
 /* ClassParams ::= ClassParam {‘’ ClassParam} */
-ClassParams = ClassParam (' ' ClassParam)*
+ClassParams = param:ClassParam params:(' ' ClassParam)*
+{
+      var result = [param];
+	  for (var i = 0; i < params.length; i++) {
+        result.push(params[i][1]);
+	  }
+	  return {type:"ClassParams", params:result};
+    }
 
 /* ClassParam ::= {Annotation} [{Modifier} (‘val’ | ‘var’)] */
 /* id ‘:’ ParamType [‘=’ Expr] */
-ClassParam = Annotation* (Modifier* (VAL / VAR))? id COLON ParamType (EQUAL Expr)?
+//後回し！
+ClassParam = Annotation* (Modifier* (VAL / VAR))? id COLON ParamType (EQUAL Expr)? {return {type:"ClassParam"}; }
 
 /* Bindings ::= ‘(’ Binding {‘,’ Binding ‘)’ */
 //多分'(' Binding (',' Binding ')')*ってこと？？
-Bindings = OPPAREN Binding (COMMA Binding CLPAREN)*
+//'(' Binding (',' Binding )* ')'ってことっぽい
+Bindings = OPPAREN bd:Binding bds:(COMMA Binding)* CLPAREN {
+      var result = [bd];
+	  for (var i = 0; i < bds.length; i++) {
+        result.push(bds[i][1]);
+	  }
+	  return {type:"Bindings", bindings:result};
+    }
 
 /* Binding ::= (id | ‘_’) [‘:’ Type] */
-Binding = (id / UNDER) (COLON Type)?
+Binding = id:(id / UNDER) tp:(COLON Type)? {return {type:"Bindings", id:id, tp:ftr(tp, 1)}; }
 
 /* Modifier ::= LocalModifier */
 /* | AccessModifier */
 /* | ‘override’ */
 Modifier = LocalModifier
 / AccessModifier
-/ 'override' __
+/ 'override' __ {return makeKeyword("override");}
 
 /* LocalModifier ::= ‘abstract’ */
 /* | ‘final’ */
 /* | ‘sealed’ */
 /* | ‘implicit’ */
 /* | ‘lazy’ */
-LocalModifier = 'abstract' __
-/ 'final' __
-/ 'sealed' __
+LocalModifier = 'abstract' __ {return makeKeyword("abstract");}
+/ 'final' __ {return makeKeyword("final");}
+/ 'sealed' __ {return makeKeyword("sealed");}
 / IMPLICIT
 / LAZY
 
 /* AccessModifier ::= (‘private’ | ‘protected’) [AccessQualifier] */
-AccessModifier = ('private' / 'protected') __ AccessQualifier?
+AccessModifier = md:('private' / 'protected') __ qual:AccessQualifier? {return {type:"AccessModifier", modifier:makeKeyword(md), qualifier:ftr(qual)};}
 
 /* AccessQualifier ::= ‘[’ (id | ‘this’) ‘]’ */
-AccessQualifier = OPBRACKET (id / THIS) CLBRACKET
+AccessQualifier = OPBRACKET id:(id / THIS) CLBRACKET {return id;}
 
 /* Annotation ::= ‘@’ SimpleType {ArgumentExprs} */
-Annotation = AT SimpleType ArgumentExprs*
+Annotation = AT stype:SimpleType exprs:ArgumentExprs* {return {type:"Annotation", stype:tp, exprs:exprs};}
 
 /* ConstrAnnotation ::= ‘@’ SimpleType ArgumentExprs */
-ConstrAnnotation = AT SimpleType ArgumentExprs
+ConstrAnnotation = AT tp:SimpleType exprs:ArgumentExprs {return {type:"ConstrAnnotation", stype:tp, exprs:exprs};}
+
 
 /* NameValuePair ::= ‘val’ id ‘=’ PrefixExpr */
-NameValuePair = VAL id EQUAL PrefixExpr
+NameValuePair = VAL id:id EQUAL prefix:PrefixExpr {return {type:"NameValuePair", id:id, prefix:prefix};}
+
 
 /* TemplateBody ::= [nl] ‘{’ [SelfType] TemplateStat {semi TemplateStat} ‘}’ */
-TemplateBody = nl? OPBRACE SelfType? TemplateStat (semi TemplateStat)* CLBRACE
+TemplateBody = nl? OPBRACE tp:SelfType? ts:TemplateStat tss:(semi TemplateStat)* CLBRACE {
+      var result = [ts];
+	  for (var i = 0; i < tss.length; i++) {
+        result.push(tss[i][1]);
+	  }
+	  return {type:"TemplateBody", selftype:ftr(tp), state:result};
+    }
 
 /* TemplateStat ::= Import */
 /* | {Annotation [nl]} {Modifier} Def */
@@ -582,128 +795,164 @@ TemplateBody = nl? OPBRACE SelfType? TemplateStat (semi TemplateStat)* CLBRACE
 /* | Expr */
 /* | */
 TemplateStat = Import
-/ (Annotation nl?)* Modifier* Def
-/ (Annotation nl?)* Modifier* Dcl
+/ ats:(Annotation nl?)* modifier:Modifier* def:Def {
+      var result = [];
+	  for (var i = 0; i < ats.length; i++) {
+        result.push(ats[i][0]);
+	  }
+	  return {type:"TemplateStat", annotation:result, modifier:modifier, definition:def};
+    }
+/ ats:(Annotation nl?)* modifier:Modifier* def:Dcl {
+      var result = [];
+	  for (var i = 0; i < ats.length; i++) {
+        result.push(ats[i][0]);
+	  }
+	  return {type:"TemplateStat", annotation:result, modifier:modifier, definition:def};
+    }
 / Expr
 / Empty
 
 /* SelfType ::= id [‘:’ Type] ‘=>’ */
 /* | ‘this’ ‘:’ Type ‘=>’ */
-SelfType = id (COLON Type)? ARROW
-/ THIS COLON Type ARROW
+SelfType = id:id tp:(COLON Type)? ARROW {return {type:"SelfType", id:id, tp:ftr(tp,1)};}
+/ id:THIS COLON tp:Type ARROW {return {type:"SelfType", id:id, tp:tp};}
 
 /* Import ::= ‘import’ ImportExpr {‘,’ ImportExpr} */
-Import = 'import' __ ImportExpr (COMMA ImportExpr)*
+Import = 'import' __ head:ImportExpr tail:(COMMA ImportExpr)* {
+	var result = [head];
+	for (var i = 0; i < tail.length; i++) {
+		result.push(tail[i][1]);
+	}
+	return {type:"ImportStatement", exprs:result};
+}
 
 /* ImportExpr ::= StableId ‘.’ (id | ‘_’ | ImportSelectors) */
-ImportExpr = StableId (DOT (UNDER / ImportSelectors))?
+ImportExpr = id:StableId sel:(DOT (UNDER / ImportSelectors))? {return {type:"ImportExpr", id:id, selector:ftr(sel,1)};}
 
 /* ImportSelectors ::= ‘{’ {ImportSelector ‘,’} (ImportSelector | ‘_’) ‘}’ */
-ImportSelectors = OPBRACE (ImportSelector COMMA)* (ImportSelector / UNDER) CLBRACE
+ImportSelectors = OPBRACE heads:(ImportSelector COMMA)* tail:(ImportSelector / UNDER) CLBRACE {
+	var result = [];
+	for (var i = 0; i < heads.length; i++) {
+		result.push(heads[i][0]);
+	}
+	result.push(tail);
+	return {type:"ImportSelectors", selectors:result};
+}
 
 /* ImportSelector ::= id [‘=>’ id | ‘=>’ ‘_’] */
-ImportSelector = id (ARROW id / ARROW UNDER)?
+ImportSelector = head:id tail:(ARROW id / ARROW UNDER)? {return {type:"ImportSelector", src:head, dest:ftr(tail,1)};}
 
 /* Dcl ::= ‘val’ ValDcl */
 /* | ‘var’ VarDcl */
 /* | ‘def’ FunDcl */
 /* | ‘type’ {nl} TypeDcl */
-Dcl = VAL ValDcl
-/ VAR VarDcl
-/ DEF FunDcl
-/ TYPE nl* TypeDcl
+Dcl = dcl:VAL body:ValDcl {return {type:"Dcl", dcl:dcl, body:body};}
+/ dcl:VAR body:VarDcl {return {type:"Dcl", dcl:dcl, body:body};}
+/ dcl:DEF body:FunDcl {return {type:"Dcl", dcl:dcl, body:body};}
+/ dcl:TYPE nl* body:TypeDcl {return {type:"Dcl", dcl:dcl, body:body};}
 
 /* ValDcl ::= ids ‘:’ Type */
-ValDcl = ids COLON Type
+ValDcl = id:ids COLON tp:Type {return {type:"ValDcl", id:id, tp:tp};}
 
 /* VarDcl ::= ids ‘:’ Type */
-VarDcl = ids COLON Type
+VarDcl = id:ids COLON tp:Type {return {type:"VarDcl", id:id, tp:tp};}
 
 /* FunDcl ::= FunSig [‘:’ Type] */
-FunDcl = FunSig (COLON Type)?
+FunDcl = sig:FunSig tp:(COLON Type)? {return {type:"FunDcl", signature:sig, tp:ftr(tp, 1)};}
 
 /* FunSig ::= id [FunTypeParamClause] ParamClauses */
-FunSig = id FunTypeParamClause? ParamClauses
+FunSig = id:id funtype:FunTypeParamClause? param:ParamClauses {return {type:"FunSig", id:id, funtype:ftr(funtype), param:param};}
 
 /* TypeDcl ::= id [TypeParamClause] [‘>:’ Type] [‘<:’ Type] */
-TypeDcl = id TypeParamClause? (LEFTANGLE Type)? (RIGHTANGLE Type)?
+TypeDcl = id:id tpc:TypeParamClause? t1:(LEFTANGLE Type)? t2:(RIGHTANGLE Type)? {return {type:"TypeDcl", id:id, typeparam:ftr(tpc), type1:ftr(t1), type2:ftr(t2)};}
 
 /* PatVarDef ::= ‘val’ PatDef */
 /* | ‘var’ VarDef */
-PatVarDef = VAL PatDef
-/ VAR VarDef
+PatVarDef = dcl:VAL body:PatDef {return {type:"PatVarDef", dcl:dcl, body:body};}
+/ dcl:VAR body:VarDef {return {type:"PatVarDef", dcl:dcl, body:body};}
 
 /* Def ::= PatVarDef */
 /* | ‘def’ FunDef */
 /* | ‘type’ {nl} TypeDef */
 /* | TmplDef */
 Def = PatVarDef
-/ DEF FunDef
-/ TYPE nl* TypeDef
+/ dcl:DEF body:FunDef {return {type:"Def", dcl:dcl, body:body};}
+/ dcl:TYPE nl* body:TypeDef {return {type:"Def", dcl:dcl, body:body};}
 / TmplDef
 
 /* PatDef ::= Pattern2 {‘,’ Pattern2} [‘:’ Type] ‘=’ Expr */
-PatDef = Pattern2 (COMMA Pattern2)* (COLON Type)? EQUAL Expr
+PatDef = ptn:Pattern2 ptns:(COMMA Pattern2)* tp:(COLON Type)? EQUAL expr:Expr{
+	var result = [ptn];
+	for (var i = 0; i < ptns.length; i++) {
+		result.push(ptns[i][1]);
+	}
+	return {type:"PatDef", patterns:result, tp:ftr(tp, 1), expr:expr};
+}
 
 /* VarDef ::= PatDef */
 /* | ids ‘:’ Type ‘=’ ‘_’ */
 VarDef = PatDef
-/ ids COLON Type EQUAL UNDER
+/ id:ids COLON tp:Type EQUAL UNDER {return {type:"VarDef", ids:id, tp:tp};}
 
 /* FunDef ::= FunSig [‘:’ Type] ‘=’ Expr */
 /* | FunSig [nl] ‘{’ Block ‘}’ */
 /* | ‘this’ ParamClause ParamClauses */
 /* (‘=’ ConstrExpr | [nl] ConstrBlock) */
-FunDef = FunSig (COLON Type)? EQUAL Expr
-/ FunSig nl? OPBRACE Block CLBRACE
-/ THIS ParamClause ParamClauses (EQUAL ConstrExpr / nl? ConstrBlock)
+//後回し・・・
+FunDef = FunSig (COLON Type)? EQUAL Expr {return {type:"FunDef"}; }
+/ FunSig nl? OPBRACE Block CLBRACE {return {type:"FunDef"}; }
+/ THIS ParamClause ParamClauses (EQUAL ConstrExpr / nl? ConstrBlock) {return {type:"FunDef"}; }
 
 /* TypeDef ::= id [TypeParamClause] ‘=’ Type */
-TypeDef = id TypeParamClause? EQUAL Type
+TypeDef = id:id pm:TypeParamClause? EQUAL tp:Type {return {type:"TypeDef", id:id, param:ftr(pm), tp:tp}; }
 
 /* TmplDef ::= [‘case’] ‘class’ ClassDef */
 /* | [‘case’] ‘object’ ObjectDef */
 /* | ‘trait’ TraitDef */
-TmplDef = CASE? 'class' __ ClassDef
-/ CASE? OBJECT ObjectDef
-/ 'trait' __ TraitDef
+TmplDef = cs:CASE? 'class' __ def:ClassDef {return {type:"TmplDef", prefix:[ftr(cs), makeKeyword("class")], def:def}; }
+/ cs:CASE? obj:OBJECT def:ObjectDef {return {type:"TmplDef", prefix:[ftr(cs), obj], def:def}; }
+/ 'trait' __ def:TraitDef {return {type:"TmplDef", prefix:[makeKeyword("trait")], def:def}; }
 
 /* ClassDef ::= id [TypeParamClause] {ConstrAnnotation} [AccessModifier] */
 /* ClassParamClauses ClassTemplateOpt */
-ClassDef = id TypeParamClause? ConstrAnnotation* AccessModifier? ClassParamClauses ClassTemplateOpt
+ClassDef = id:id tpc:TypeParamClause? ca:ConstrAnnotation* am:AccessModifier? cpc:ClassParamClauses cto:ClassTemplateOpt {return {type:"ClassDef", id:id, typeParam:ftr(tpc), annotation:ca, modifier:ftr(am), classParam:cpc, classTemplate:cto}; }
 
 /* TraitDef ::= id [TypeParamClause] TraitTemplateOpt */
-TraitDef = id TypeParamClause? TraitTemplateOpt
+TraitDef = id:id tpc:TypeParamClause? tto:TraitTemplateOpt {return {type:"TraitDef", id:id, typeParam:tpc, traitTemplate:tto}; }
 
 /* ObjectDef ::= id ClassTemplateOpt */
-ObjectDef = id ClassTemplateOpt
+ObjectDef = id:id cto:ClassTemplateOpt {return {type:"ObjectDef", id:id, classTemplate:cto}; }
 
 /* ClassTemplateOpt ::= ‘extends’ ClassTemplate | [[‘extends’] TemplateBody] */
-ClassTemplateOpt = EXTENDS ClassTemplate / (EXTENDS? TemplateBody)?
+ClassTemplateOpt = ext:EXTENDS ct:ClassTemplate {return {type:"ClassTemplateOpt", extend:ext, body:ct}; }
+/ tmpl:(EXTENDS? TemplateBody)? {return {type:"ClassTemplateOpt", extend:ftr(ftr(tmpl, 0)), body:ftr(tmpl, 1)}; }
 
 /* TraitTemplateOpt ::= ‘extends’ TraitTemplate | [[‘extends’] TemplateBody] */
-TraitTemplateOpt = EXTENDS TraitTemplate / (EXTENDS? TemplateBody)?
+TraitTemplateOpt = ext:EXTENDS tt:TraitTemplate {return {type:"TraitTemplateOpt", extend:ext, body:tt}; }
+/ (EXTENDS? TemplateBody)? {return {type:"TraitTemplateOpt", extend:ftr(ftr(tmpl, 0)), body:ftr(tmpl, 1)}; }
 
 /* ClassTemplate ::= [EarlyDefs] ClassParents [TemplateBody] */
-ClassTemplate = EarlyDefs? ClassParents TemplateBody?
+ClassTemplate = ed:EarlyDefs? cp:ClassParents tb:TemplateBody? {return {type:"ClassTemplate", def:ftr(ed), classParent:cp body:ftr(tb)}; }
 
 /* TraitTemplate ::= [EarlyDefs] TraitParents [TemplateBody] */
-TraitTemplate = EarlyDefs? TraitParents TemplateBody?
+TraitTemplate = ed:EarlyDefs? tp:TraitParents tb:TemplateBody? {return {type:"TraitTemplate", def:ftr(ed), traitParent:tp body:ftr(tb)}; }
 
 /* ClassParents ::= Constr {‘with’ AnnotType} */
-ClassParents = Constr (WITH AnnotType)*
+ClassParents = cst:Constr ats:(WITH AnnotType)* {return {type:"ClassParents", constr:cst, annotType:ats}; }
 
 /* TraitParents ::= AnnotType {‘with’ AnnotType} */
-TraitParents = AnnotType (WITH AnnotType)*
+TraitParents = at:AnnotType ats:(WITH AnnotType)* {return {type:"TraitParents", annotType:at, annotType:ats}; }
 
 /* Constr ::= AnnotType {ArgumentExprs} */
-Constr = AnnotType ArgumentExprs*
+Constr = at:AnnotType ae:ArgumentExprs* {return {type:"Constr", annotType:at, exprs:ae}; }
 
 /* EarlyDefs ::= ‘{’ [EarlyDef {semi EarlyDef}] ‘}’ ‘with’ */
-EarlyDefs = OPBRACE (EarlyDef (semi EarlyDef)*)? CLBRACE WITH
+//後回し
+EarlyDefs = OPBRACE (EarlyDef (semi EarlyDef)*)? CLBRACE WITH {return {type:"EarlyDefs"}; }
 
 /* EarlyDef ::= {Annotation [nl]} {Modifier} PatVarDef */
-EarlyDef = (Annotation nl?)* Modifier* PatVarDef
+//後回し
+EarlyDef = (Annotation nl?)* Modifier* PatVarDef {return {type:"EarlyDef"}; }
 
 /* ConstrExpr ::= SelfInvocation */
 /* | ConstrBlock */
@@ -711,7 +960,13 @@ ConstrExpr = SelfInvocation
 / ConstrBlock
 
 /* ConstrBlock ::= ‘{’ SelfInvocation {semi BlockStat} ‘}’ */
-ConstrBlock = OPBRACE SelfInvocation (semi BlockStat)* CLBRACE
+ConstrBlock = OPBRACE si:SelfInvocation bss:(semi BlockStat)* CLBRACE{
+      var result = [];
+	  for (var i = 0; i < bss.length; i++) {
+        result.push(bss[i][1]);
+	  }
+	  return {type:"TypeParamClause", params:result};
+    }
 
 /* SelfInvocation ::= ‘this’ ArgumentExprs {ArgumentExprs} */
 SelfInvocation = THIS ArgumentExprs+
@@ -764,11 +1019,11 @@ charEscapeSeq	= '\\b' / '\\u0008'
 hexDigit = [0-9A-Fa-f]
 
 //とりあえずエスケープシーケンスじゃなければなんでもOK
-printableChar = !charEscapeSeq .
+printableChar = !charEscapeSeq chr:. {return chr;}
 
-printableCharNoDoubleQuote = !'"' printableChar
+printableCharNoDoubleQuote = !'"' chr:printableChar {return chr;}
 
-charNoDoubleQuote = !'"' .
+charNoDoubleQuote = !'"' chr:. {return chr;}
 
 /* Empty = & {return true;} __ */
 Empty = &. / !.
@@ -778,7 +1033,7 @@ SEMICOLON = ';' __
 HYPHEN = '-' __
 DOT = '.' __
 COMMA = ',' __
-THIS = 'this' __
+THIS = 'this' __ {return {type:"Keyword", word:"this"}}
 OPBRACKET = '[' __
 CLBRACKET = ']' __
 ARROW = '=>' __
@@ -786,8 +1041,9 @@ OPPAREN = '(' __
 CLPAREN = ')' __
 OPBRACE = '{' __
 CLBRACE = '}' __
-TYPE = 'type' __
-VAL = 'val' __
+TYPE = 'type' __ {return {type:"Keyword", word:"type"}}
+VAL = 'val' __ {return {type:"Keyword", word:"val"}}
+
 WITH = 'with' __
 COLON = ':' __
 UNDER = '_' __

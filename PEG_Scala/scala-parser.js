@@ -879,7 +879,7 @@ module.exports = (function(){
             pos = clone(pos1);
           }
           if (result0 !== null) {
-            result0 = (function(offset, line, column, chars) {return chars;})(pos0.offset, pos0.line, pos0.column, result0[0]);
+            result0 = (function(offset, line, column, chars) {return chars.join("");})(pos0.offset, pos0.line, pos0.column, result0[0]);
           }
           if (result0 === null) {
             pos = clone(pos0);
@@ -953,11 +953,7 @@ module.exports = (function(){
         }
         if (result0 !== null) {
           result0 = (function(offset, line, column, ilit, ll) {
-        	return {
-        		type: "integerLiteral",
-        		value: ilit,
-        		lVal: ll
-        	};
+        	return ilit + ll;
         })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
         }
         if (result0 === null) {
@@ -1695,7 +1691,7 @@ module.exports = (function(){
           pos = clone(pos1);
         }
         if (result0 !== null) {
-          result0 = (function(offset, line, column, ret) {return ret;})(pos0.offset, pos0.line, pos0.column, result0[0]);
+          result0 = (function(offset, line, column, ret) {return {type: "booleanLiteral", value: chrs};})(pos0.offset, pos0.line, pos0.column, result0[0]);
         }
         if (result0 === null) {
           pos = clone(pos0);
@@ -1839,7 +1835,7 @@ module.exports = (function(){
           pos = clone(pos1);
         }
         if (result0 !== null) {
-          result0 = (function(offset, line, column, ele) {return {type: "stringLiteral", value: ele.join("")};})(pos0.offset, pos0.line, pos0.column, result0[1]);
+          result0 = (function(offset, line, column, ele) {return {type: "stringLiteral", value: ele};})(pos0.offset, pos0.line, pos0.column, result0[1]);
         }
         if (result0 === null) {
           pos = clone(pos0);
@@ -1859,23 +1855,9 @@ module.exports = (function(){
           if (result0 !== null) {
             result1 = parse_multiLineChars();
             if (result1 !== null) {
-              if (input.substr(pos.offset, 3) === "\"\"\"") {
-                result2 = "\"\"\"";
-                advance(pos, 3);
-              } else {
-                result2 = null;
-                if (reportFailures === 0) {
-                  matchFailed("\"\\\"\\\"\\\"\"");
-                }
-              }
+              result2 = parse___();
               if (result2 !== null) {
-                result3 = parse___();
-                if (result3 !== null) {
-                  result0 = [result0, result1, result2, result3];
-                } else {
-                  result0 = null;
-                  pos = clone(pos1);
-                }
+                result0 = [result0, result1, result2];
               } else {
                 result0 = null;
                 pos = clone(pos1);
@@ -1954,6 +1936,28 @@ module.exports = (function(){
               matchFailed("\"\\\"\\\"\\\"\\\"\\\"\"");
             }
           }
+          if (result1 === null) {
+            if (input.substr(pos.offset, 4) === "\"\"\"\"") {
+              result1 = "\"\"\"\"";
+              advance(pos, 4);
+            } else {
+              result1 = null;
+              if (reportFailures === 0) {
+                matchFailed("\"\\\"\\\"\\\"\\\"\"");
+              }
+            }
+            if (result1 === null) {
+              if (input.substr(pos.offset, 3) === "\"\"\"") {
+                result1 = "\"\"\"";
+                advance(pos, 3);
+              } else {
+                result1 = null;
+                if (reportFailures === 0) {
+                  matchFailed("\"\\\"\\\"\\\"\"");
+                }
+              }
+            }
+          }
           if (result1 !== null) {
             result0 = [result0, result1];
           } else {
@@ -1965,82 +1969,10 @@ module.exports = (function(){
           pos = clone(pos1);
         }
         if (result0 !== null) {
-          result0 = (function(offset, line, column, eles) {return eles.join("") + '""';})(pos0.offset, pos0.line, pos0.column, result0[0]);
+          result0 = (function(offset, line, column, eles) {return eles.join("");})(pos0.offset, pos0.line, pos0.column, result0[0]);
         }
         if (result0 === null) {
           pos = clone(pos0);
-        }
-        if (result0 === null) {
-          pos0 = clone(pos);
-          pos1 = clone(pos);
-          result0 = [];
-          result1 = parse_multiLineCharsElements();
-          while (result1 !== null) {
-            result0.push(result1);
-            result1 = parse_multiLineCharsElements();
-          }
-          if (result0 !== null) {
-            if (input.substr(pos.offset, 4) === "\"\"\"\"") {
-              result1 = "\"\"\"\"";
-              advance(pos, 4);
-            } else {
-              result1 = null;
-              if (reportFailures === 0) {
-                matchFailed("\"\\\"\\\"\\\"\\\"\"");
-              }
-            }
-            if (result1 !== null) {
-              result0 = [result0, result1];
-            } else {
-              result0 = null;
-              pos = clone(pos1);
-            }
-          } else {
-            result0 = null;
-            pos = clone(pos1);
-          }
-          if (result0 !== null) {
-            result0 = (function(offset, line, column, eles) {return eles.join("") + '"';})(pos0.offset, pos0.line, pos0.column, result0[0]);
-          }
-          if (result0 === null) {
-            pos = clone(pos0);
-          }
-          if (result0 === null) {
-            pos0 = clone(pos);
-            pos1 = clone(pos);
-            result0 = [];
-            result1 = parse_multiLineCharsElements();
-            while (result1 !== null) {
-              result0.push(result1);
-              result1 = parse_multiLineCharsElements();
-            }
-            if (result0 !== null) {
-              if (input.substr(pos.offset, 3) === "\"\"\"") {
-                result1 = "\"\"\"";
-                advance(pos, 3);
-              } else {
-                result1 = null;
-                if (reportFailures === 0) {
-                  matchFailed("\"\\\"\\\"\\\"\"");
-                }
-              }
-              if (result1 !== null) {
-                result0 = [result0, result1];
-              } else {
-                result0 = null;
-                pos = clone(pos1);
-              }
-            } else {
-              result0 = null;
-              pos = clone(pos1);
-            }
-            if (result0 !== null) {
-              result0 = (function(offset, line, column, eles) {return eles.join("");})(pos0.offset, pos0.line, pos0.column, result0[0]);
-            }
-            if (result0 === null) {
-              pos = clone(pos0);
-            }
-          }
         }
         
         cache[cacheKey] = {
@@ -2123,9 +2055,10 @@ module.exports = (function(){
         }
         
         var result0, result1, result2;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         if (input.charCodeAt(pos.offset) === 39) {
           result0 = "'";
           advance(pos, 1);
@@ -2143,14 +2076,20 @@ module.exports = (function(){
               result0 = [result0, result1, result2];
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, pi) {return "'" + pi;})(pos0.offset, pos0.line, pos0.column, result0[1]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -2724,9 +2663,10 @@ module.exports = (function(){
         }
         
         var result0, result1;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_HYPHEN();
         result0 = result0 !== null ? result0 : "";
         if (result0 !== null) {
@@ -2735,14 +2675,21 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, minus, val) {return {type: "integerLiteral", value: minus + val}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         if (result0 === null) {
           pos0 = clone(pos);
+          pos1 = clone(pos);
           result0 = parse_HYPHEN();
           result0 = result0 !== null ? result0 : "";
           if (result0 !== null) {
@@ -2751,22 +2698,43 @@ module.exports = (function(){
               result0 = [result0, result1];
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
+            pos = clone(pos1);
+          }
+          if (result0 !== null) {
+            result0 = (function(offset, line, column, val) {return {type: "floatingPointLiteral", value: minus + val}; })(pos0.offset, pos0.line, pos0.column, result0[1]);
+          }
+          if (result0 === null) {
             pos = clone(pos0);
           }
           if (result0 === null) {
             result0 = parse_booleanLiteral();
             if (result0 === null) {
+              pos0 = clone(pos);
               result0 = parse_characterLiteral();
+              if (result0 !== null) {
+                result0 = (function(offset, line, column, val) {return {type: "characterLiteral", value: val}; })(pos0.offset, pos0.line, pos0.column, result0);
+              }
+              if (result0 === null) {
+                pos = clone(pos0);
+              }
               if (result0 === null) {
                 result0 = parse_stringLiteral();
                 if (result0 === null) {
+                  pos0 = clone(pos);
                   result0 = parse_symbolLiteral();
+                  if (result0 !== null) {
+                    result0 = (function(offset, line, column, val) {return {type: "symbolLiteral", value: val}; })(pos0.offset, pos0.line, pos0.column, result0);
+                  }
+                  if (result0 === null) {
+                    pos = clone(pos0);
+                  }
                   if (result0 === null) {
                     pos0 = clone(pos);
+                    pos1 = clone(pos);
                     if (input.substr(pos.offset, 4) === "null") {
                       result0 = "null";
                       advance(pos, 4);
@@ -2782,10 +2750,16 @@ module.exports = (function(){
                         result0 = [result0, result1];
                       } else {
                         result0 = null;
-                        pos = clone(pos0);
+                        pos = clone(pos1);
                       }
                     } else {
                       result0 = null;
+                      pos = clone(pos1);
+                    }
+                    if (result0 !== null) {
+                      result0 = (function(offset, line, column) {return {type: "nullLiteral", value: "null"}; })(pos0.offset, pos0.line, pos0.column);
+                    }
+                    if (result0 === null) {
                       pos = clone(pos0);
                     }
                   }
