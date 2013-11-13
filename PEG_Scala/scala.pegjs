@@ -29,7 +29,7 @@ The lexical syntax of Scala is given by the following grammar in EBNF form.
 }
 
 /* CompilationUnit ::= {‘package’ QualId semi} TopStatSeq */
-CompilationUnit = __ (PACKAGE QualId semi)* TopStatSeq
+CompilationUnit = __ pcs:(PACKAGE QualId semi)* tss:TopStatSeq {return {type: "CompilationUnit", packages:pcs, topStatseq:tss};}
 
 /* upper ::= ‘A’ | ... | ‘Z’ | ‘$’ | ‘_’ and Unicode category Lu */
 upper = [A-Z] / '$' / '_'
@@ -329,18 +329,23 @@ ExistentialClause = 'forSome' __ OPBRACE ex:ExistentialDcl exs:(semi Existential
 
 /* ExistentialDcl ::= ‘type’ TypeDcl */
 /* | ‘val’ ValDcl */
-ExistentialDcl	= tp:TYPE dcl:TypeDcl {return {type:"ExistentialDcl", dcl:[tp,dcl]}}
-				/ vl:VAL dcl:ValDcl {return {type:"ExistentialDcl", dcl:[vl,dcl]}}
+ExistentialDcl	= tp:TYPE dcl:TypeDcl {return {type:"ExistentialDcl", pre:tp, dcl:dcl}}
+				/ vl:VAL dcl:ValDcl {return {type:"ExistentialDcl", pre:vl, dcl:dcl}}
 
-//このあたりよく分からないので後回し
 /* InfixType ::= CompoundType {id [nl] CompoundType} */
-InfixType = CompoundType (id nl? CompoundType)* {return {type:"InfixType"};}
+InfixType = head:CompoundType tails:(id nl? CompoundType)* {
+      var ids = [], cts = [];
+	for (var i = 0; i < tails.length; i++) {
+        ids.push(tails[i][0]);
+        cts.push(tails[i][2]);
+	  }	  return {type:"InfixType", compoundType:head, ids:ids, compoundTypes:cts};
+    }
 
 /* CompoundType ::= AnnotType {‘with’ AnnotType} [Refinement] */
 /* | Refinement */
-CompoundType	= AnnotType (WITH AnnotType)? Refinement? {return {type:"CompoundType"};}
+CompoundType	= at:AnnotType wat:(WITH AnnotType)? ref:Refinement? {return {type:"CompoundType", annotType:[at, ftr(wat)], ref:ftr(ref)};}
 
-				/ Refinement {return {type:"CompoundType"}; }
+				/ Refinement {return {type:"CompoundType", annotType:[null], ref:ref}; }
 
 /* AnnotType ::= SimpleType {Annotation} */
 AnnotType = st:SimpleType annotation:Annotation* {return {type:"AnnotType", st:st, annotation:annotation}; }
@@ -350,10 +355,11 @@ AnnotType = st:SimpleType annotation:Annotation* {return {type:"AnnotType", st:s
 /* | StableId */
 /* | Path ‘.’ ‘type’ */
 /* | ‘(’ Types ’)’ */
-//ここもよく分からないので後回し
-SimpleType = StableId (TypeArgs / '#' __ id)* {return {type:"SimpleType"}; }
-/ Path DOT TYPE  (TypeArgs / '#' __ id)* {return {type:"SimpleType"}; }
-/ OPPAREN Types CLPAREN  (TypeArgs / '#' __ id)* {return {type:"SimpleType"}; }
+SimpleType = si:StableId tails:(TypeArgs / withId)* {return {type:"SimpleType", id:[si], postfix:tails}; }
+/ path:Path dot:DOT tp:TYPE  tails:(TypeArgs / withId)* {return {type:"SimpleType", id:[path, dot, tp], postfix:tails}; }
+/ op:OPPAREN tps:Types cl:CLPAREN  tails:(TypeArgs / withId)* {return {type:"SimpleType", id:[op, tps, cl], postfix:tails}; }
+withId = '#' __ id:id {return {type:"withId", id:id};}
+
 
 /* SimpleType = StableId _SimpleType */
 /* / Path DOT TYPE _SimpleType */
@@ -387,10 +393,9 @@ Refinement = nl? OPBRACE ref:RefineStat refs:(semi RefineStat)* CLBRACE {
 /* RefineStat ::= Dcl */
 /* | ‘type’ TypeDef */
 /* | */
-//ここもよく分からないので後回し
-RefineStat = Dcl {return {type:"RefineStat"}; }
-/ TYPE TypeDef {return {type:"RefineStat"}; }
-/ Empty {return {type:"RefineStat"}; }
+RefineStat = Dcl
+/ TYPE td:TypeDef {return {type:"RefineStat", typedef:td}; }
+/ Empty
 
 /* TypePat ::= Type */
 TypePat = Type
@@ -404,8 +409,7 @@ Ascription = COLON infix:InfixType {return {type:"Ascription", contents:infix}; 
 
 /* Expr ::= (Bindings | [‘implicit’] id | ‘_’) ‘=>’ Expr */
 /* | Expr1 */
-//後回し
-Expr = (Bindings / IMPLICIT? id / UNDER) ARROW Expr {return {type:"Expr"}; }
+Expr = left:(Bindings / IMPLICIT? id / UNDER) ARROW right:Expr {return {type:"Expr", left:left, right:right}; }
 / Expr1
 
 /* Expr1 ::= ‘if’ ‘(’ Expr ‘)’ {nl} Expr [[semi] else Expr] */
@@ -536,10 +540,9 @@ Exprs = expr:Expr exprs:(COMMA Expr)* {
 /* ArgumentExprs ::= ‘(’ [Exprs] ‘)’ */
 /* | ‘(’ [Exprs ‘,’] PostfixExpr ‘:’ ‘_’ ‘*’ ’)’ */
 /* | [nl] BlockExpr */
-//あとまわし
-ArgumentExprs = OPPAREN Exprs? CLPAREN {return {type:"ArgumentExprs"}; }
-/ OPPAREN (Exprs COMMA)? PostfixExpr COLON UNDER STAR CLPAREN {return {type:"ArgumentExprs"}; }
-/ nl? BlockExpr {return {type:"ArgumentExprs"}; }
+ArgumentExprs = OPPAREN exprs:Exprs? CLPAREN {return {type:"ArgumentExprs", exprs:ftr(exprs)}; }
+/ OPPAREN exprs:(Exprs COMMA)? pfe:PostfixExpr COLON UNDER STAR CLPAREN {return {type:"ArgumentExprsWithRepeated", exprs:ftr(exprs, 0), postfixExpr:pfe}; }
+/ nl? block:BlockExpr {return block; }
 
 /* BlockExpr ::= ‘{’ CaseClauses ‘}’ */
 /* | ‘{’ Block ‘}’ */
@@ -560,21 +563,18 @@ Block = blocks:(BlockStat semi)* res:ResultExpr? {
 /* | {Annotation} {LocalModifier} TmplDef */
 /* | Expr1 */
 /* | */
-//後回し
 BlockStat = Import
-/ Annotation* (IMPLICIT / LAZY)? Def
-{return {type:"BlockStat"}; }
-/ Annotation* LocalModifier* TmplDef
-{return {type:"BlockStat"}; }
+/ an:Annotation* md:(IMPLICIT / LAZY)? def:Def
+{return {type:"BlockStat", annotations:an, modifier:ftr(md), def:def}; }
+/ an:Annotation* lm:LocalModifier* td:TmplDef {return {type:"BlockStat", annotations:an, modifier:lm, def:td}; }
 / Expr1
 / Empty
 
 /* ResultExpr ::= Expr1 */
 /* | (Bindings | ([‘implicit’] id | ‘_’) ‘:’ CompoundType) ‘=>’ Block */
-//後回し
 ResultExpr = Expr1
-/ (Bindings / (IMPLICIT? id / UNDER) COLON CompoundType) ARROW Block
-{return {type:"ResultExpr"}; }
+/ left:(Bindings / (IMPLICIT? id / UNDER) COLON CompoundType) ARROW right:Block
+{return {type:"ResultExpr", left:left, right:right}; }
 
 /* Enumerators ::= Generator {semi Enumerator} */
 Enumerators = gen:Generator enums:(semi Enumerator)* {
@@ -629,8 +629,13 @@ Pattern2 = id:varid pt:(AT Pattern3)? {return {type: "Pattern2", id:id, pt:pt!==
 
 /* Pattern3 ::= SimplePattern */
 /* | SimplePattern { id [nl] SimplePattern } */
-//後回し
-Pattern3 = SimplePattern ( id nl? SimplePattern )* {return {type: "Pattern3"};}
+Pattern3 = head:SimplePattern tails:( id nl? SimplePattern )* {
+      var ids = [], cts = [];
+	for (var i = 0; i < tails.length; i++) {
+        ids.push(tails[i][0]);
+        cts.push(tails[i][2]);
+	  }	  return {type:"Pattern3", SimplePattern:head, ids:ids, SimplePatterns:cts};
+    }
 
 /* SimplePattern ::= ‘_’ */
 /* | varid */
@@ -650,11 +655,10 @@ SimplePattern = UNDER
 / OPPAREN Patterns? CLPAREN {return {type: "SimplePattern"};}
 / XmlPattern
 
-//後回し underの後の星は何？？？
 /* Patterns ::= Pattern [‘,’ Patterns] */
 /* | ‘_’ * */
-Patterns = Pattern (COMMA Patterns)? {return {type: "Patterns"};}
-/ UNDER {return {type: "Patterns"};}
+Patterns = head:Pattern tail:(COMMA Patterns)? {return {type: "Patterns", pattern:[head, tail]};}
+/ ud:UNDER st:STAR {return {type: "Patterns", pattern:[ud, st]};}
 
 /* TypeParamClause ::= ‘[’ VariantTypeParam {‘,’ VariantTypeParam} ‘]’ */
 TypeParamClause = OPBRACKET param:VariantTypeParam params:(COMMA VariantTypeParam)* CLBRACKET {
@@ -698,15 +702,13 @@ Params = param:Param (COMMA Param)* {
     }
 
 /* Param ::= {Annotation} id [‘:’ ParamType] [‘=’ Expr] */
-//後回し
-Param = Annotation* id (COLON ParamType)? (EQUAL Expr)? {return {type:"Param"}; }
+Param = an:Annotation* id:id pt:(COLON ParamType)? expr:(EQUAL Expr)? {return {type:"Param", annotations:an, id:id, paramType:ftr(pt, 1), expr:expr}; }
 
 /* ParamType ::= Type */
 /* | ‘=>’ Type */
 /* | Type ‘*’ */
-//後回し
-ParamType = ARROW Type {return {type:"ParamType"}; }
-/ Type STAR? {return {type:"ParamType"}; }
+ParamType = ar:ARROW tp:Type {return {type:"ParamType", allow:ar, tp:tp, star:null}; }
+/ tp:Type st:STAR? {return {type:"ParamType", allow:null, tp:tp, star:ftr(st)}; }
 
 
 /* ClassParamClauses ::= {ClassParamClause} */
@@ -728,8 +730,7 @@ ClassParams = param:ClassParam params:(' ' ClassParam)*
 
 /* ClassParam ::= {Annotation} [{Modifier} (‘val’ | ‘var’)] */
 /* id ‘:’ ParamType [‘=’ Expr] */
-//後回し！
-ClassParam = Annotation* (Modifier* (VAL / VAR))? id COLON ParamType (EQUAL Expr)? {return {type:"ClassParam"}; }
+ClassParam = an:Annotation* md:(Modifier* (VAL / VAR))? id:id COLON pt:ParamType exp:(EQUAL Expr)? {return {type:"ClassParam", annotations:an, modifier:ftr(md, 0), vax:ftr(md, 1), id:id, paramType:pt, exp:ftr(exp, 1)}; }
 
 /* Bindings ::= ‘(’ Binding {‘,’ Binding ‘)’ */
 //多分'(' Binding (',' Binding ')')*ってこと？？
@@ -898,10 +899,9 @@ VarDef = PatDef
 /* | FunSig [nl] ‘{’ Block ‘}’ */
 /* | ‘this’ ParamClause ParamClauses */
 /* (‘=’ ConstrExpr | [nl] ConstrBlock) */
-//後回し・・・
-FunDef = FunSig (COLON Type)? EQUAL Expr {return {type:"FunDef"}; }
-/ FunSig nl? OPBRACE Block CLBRACE {return {type:"FunDef"}; }
-/ THIS ParamClause ParamClauses (EQUAL ConstrExpr / nl? ConstrBlock) {return {type:"FunDef"}; }
+FunDef = fs:FunSig tp:(COLON Type)? EQUAL exp:Expr {return {type:"FunctionDefinition", signature:fs, tp:ftr(tp), expr:exp}; }
+/ fs:FunSig nl? OPBRACE bk:Block CLBRACE {return {type:"Procedure", signature:fs, block:bk}; }
+/ THIS pc:ParamClause pcs:ParamClauses body:(EQUAL ConstrExpr / nl? ConstrBlock) {return {type:"ConstructorDefinition", param:pc, params:pcs, body:body}; }
 
 /* TypeDef ::= id [TypeParamClause] ‘=’ Type */
 TypeDef = id:id pm:TypeParamClause? EQUAL tp:Type {return {type:"TypeDef", id:id, param:ftr(pm), tp:tp}; }
@@ -932,10 +932,10 @@ TraitTemplateOpt = ext:EXTENDS tt:TraitTemplate {return {type:"TraitTemplateOpt"
 / (EXTENDS? TemplateBody)? {return {type:"TraitTemplateOpt", extend:ftr(ftr(tmpl, 0)), body:ftr(tmpl, 1)}; }
 
 /* ClassTemplate ::= [EarlyDefs] ClassParents [TemplateBody] */
-ClassTemplate = ed:EarlyDefs? cp:ClassParents tb:TemplateBody? {return {type:"ClassTemplate", def:ftr(ed), classParent:cp body:ftr(tb)}; }
+ClassTemplate = ed:EarlyDefs? cp:ClassParents tb:TemplateBody? {return {type:"ClassTemplate", def:ftr(ed), classParent:cp, body:ftr(tb)}; }
 
 /* TraitTemplate ::= [EarlyDefs] TraitParents [TemplateBody] */
-TraitTemplate = ed:EarlyDefs? tp:TraitParents tb:TemplateBody? {return {type:"TraitTemplate", def:ftr(ed), traitParent:tp body:ftr(tb)}; }
+TraitTemplate = ed:EarlyDefs? tp:TraitParents tb:TemplateBody? {return {type:"TraitTemplate", def:ftr(ed), traitParent:tp, body:ftr(tb)}; }
 
 /* ClassParents ::= Constr {‘with’ AnnotType} */
 ClassParents = cst:Constr ats:(WITH AnnotType)* {return {type:"ClassParents", constr:cst, annotType:ats}; }
@@ -947,12 +947,24 @@ TraitParents = at:AnnotType ats:(WITH AnnotType)* {return {type:"TraitParents", 
 Constr = at:AnnotType ae:ArgumentExprs* {return {type:"Constr", annotType:at, exprs:ae}; }
 
 /* EarlyDefs ::= ‘{’ [EarlyDef {semi EarlyDef}] ‘}’ ‘with’ */
-//後回し
-EarlyDefs = OPBRACE (EarlyDef (semi EarlyDef)*)? CLBRACE WITH {return {type:"EarlyDefs"}; }
+EarlyDefs = OPBRACE eds:(EarlyDef (semi EarlyDef)*)? CLBRACE WITH {
+      var result = ftr(eds);
+	  if(eds !== null){
+		  for (var i = 0; i < eds[1].length; i++) {
+			  result.push(eds[1][i][1]);
+		  }
+	  }
+	  return {type:"EarlyDefs", earlyDefs:result};
+    }
 
 /* EarlyDef ::= {Annotation [nl]} {Modifier} PatVarDef */
-//後回し
-EarlyDef = (Annotation nl?)* Modifier* PatVarDef {return {type:"EarlyDef"}; }
+EarlyDef = an:(Annotation nl?)* md:Modifier* pvd:PatVarDef {
+      var result = [];
+	  for (var i = 0; i < an.length; i++) {
+        result.push(an[i][0]);
+	  }
+	  return {type:"EarlyDef", annotation:an, modifier:md, def:pvd};
+    }
 
 /* ConstrExpr ::= SelfInvocation */
 /* | ConstrBlock */
@@ -969,26 +981,38 @@ ConstrBlock = OPBRACE si:SelfInvocation bss:(semi BlockStat)* CLBRACE{
     }
 
 /* SelfInvocation ::= ‘this’ ArgumentExprs {ArgumentExprs} */
-SelfInvocation = THIS ArgumentExprs+
+SelfInvocation = THIS ae:ArgumentExprs+ {return {type:"SelfInvocation", exprs:ae}; }
 
 /* TopStatSeq ::= TopStat {semi TopStat} */
-TopStatSeq = TopStat (semi TopStat)*
+TopStatSeq = tp:TopStat tps:(semi TopStat)*{
+      var result = [tp];
+	  for (var i = 0; i < tps.length; i++) {
+        result.push(tps[i][1]);
+	  }
+	  return {type:"TopStatSeq", topstat:result};
+    }
 
 /* TopStat ::= {Annotation [nl]} {Modifier} TmplDef */
 /* | Import */
 /* | Packaging */
 /* | PackageObject */
 /* | */
-TopStat = (Annotation nl?)* Modifier* TmplDef
+TopStat = an:(Annotation nl?)* md:Modifier* td:TmplDef{
+      var result = [];
+	  for (var i = 0; i < an.length; i++) {
+        result.push(an[i][0]);
+	  }
+	  return {type:"TopStat", annotation:an, modifier:md, def:td};
+    }
 / Import
 / Packaging
 / PackageObject
 / Empty
 /* Packaging ::= ‘package’ QualId [nl] ‘{’ TopStatSeq ‘}’ */
-Packaging = PACKAGE QualId nl? OPBRACE TopStatSeq CLBRACE
+Packaging = PACKAGE qi:QualId nl? OPBRACE tss:TopStatSeq CLBRACE {return {type:"Packaging", qualId:qi, topStatseq:tss}; }
 
 /* PackageObject ::= ‘package’ ‘object’ ObjectDef */
-PackageObject = PACKAGE OBJECT ObjectDef
+PackageObject = PACKAGE OBJECT od:ObjectDef {return {type:"PackageObject", def:od}; }
 
 
 
