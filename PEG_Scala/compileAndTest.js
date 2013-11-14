@@ -22,7 +22,7 @@ var scalas = [
 	'./input.txt'
 ];
 var scala = fs.readFileSync( scalas[0], 'utf8');
-	console.log(JSON.stringify(parser.parse(scala)));
+	console.log(JSON.stringify(parser.parse(scala), null,  1 ));
 
 // var readline = require('readline');
 // var rl = readline.createInterface({

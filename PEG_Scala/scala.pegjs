@@ -426,7 +426,6 @@ Expr = left:(Bindings / IMPLICIT? id / UNDER) ARROW right:Expr {return {type:"Ex
 /* | PostfixExpr */
 /* | PostfixExpr Ascription */
 /* | PostfixExpr ‘match’ ‘{’ CaseClauses ‘}’ */
-//いったん後回し
 Expr1 = IF OPPAREN condition:Expr CLPAREN nl* ifStatement:Expr elseStatement:(semi? 'else' __ Expr)? {
       return {
         type:          "IfStatement",
@@ -442,7 +441,14 @@ Expr1 = IF OPPAREN condition:Expr CLPAREN nl* ifStatement:Expr elseStatement:(se
         statement: statement
       };
     }
-/ 'try' __ OPBRACE Block CLBRACE ('catch' __ OPBRACE CaseClauses CLBRACE)? ('finally' __ Expr)?
+/ 'try' __ OPBRACE block:Block CLBRACE catch_:('catch' __ OPBRACE CaseClauses CLBRACE)? finally_:('finally' __ Expr)?{
+      return {
+        type:      "TryStatement",
+        block:     block,
+        "catch":   ftr(catch_, 3),
+        "finally": ftr(finally_, 2)
+      };
+    }
 / 'do' __ statement:Expr semi? WHILE OPPAREN condition:Expr CLPAREN {
       return {
         type: "DoWhileStatement",
@@ -470,11 +476,11 @@ Expr1 = IF OPPAREN condition:Expr CLPAREN nl* ifStatement:Expr elseStatement:(se
         value: value !== "" ? value : null
       };
     }
-/ SimpleExpr1 ArgumentExprs EQUAL Expr {return {type:"Expr1"}; }
-/ PostfixExpr Ascription {return {type:"Expr1"}; }
-/ PostfixExpr 'match' __ OPBRACE CaseClauses CLBRACE {return {type:"Expr1"}; }
+/ se1:SimpleExpr1 ae:ArgumentExprs EQUAL exp:Expr {return {type:"AssignmentExpression", left:[se1, ae], right:exp}; }
+/ pe:PostfixExpr as:Ascription {return {type:"Expr1withAscription", postfix:pe, ascription:as}; }
+/ pe:PostfixExpr 'match' __ OPBRACE cases:CaseClauses CLBRACE {return {type:"PatternMatchingExpression", postfix:pe, cases:cc}; }
 / PostfixExpr
-/ (SimpleExpr DOT)? id EQUAL Expr {return {type:"Expr1"}; }
+/ se:(SimpleExpr DOT)? id:id EQUAL exp:Expr {return {type:"AssignmentExpression", left:[ftr(se), id], right:exp}; }
 
 /* PostfixExpr ::= InfixExpr [id [nl]] */
 PostfixExpr = infix:InfixExpr id:(id nl?)? {return {type:"PostfixExpr", infix:infix, id: id !== ""? id[0]:null};}
@@ -500,7 +506,7 @@ SimpleExpr = expr1:SimpleExpr1 ud:UNDER? {
 }
 / BlockExpr
 / NEW arg:(ClassTemplate / TemplateBody) {
-	return {type:"NewExpression", arg:arg};
+	return {type:"InstanceCreationExpression", arg:arg};
 }
 
 
@@ -513,19 +519,19 @@ SimpleExpr = expr1:SimpleExpr1 ud:UNDER? {
 /* | SimpleExpr1 ArgumentExprs */
 /* | XmlExpr */
 //一旦後回し・・・
-SimpleExpr1 = OPPAREN Exprs? CLPAREN _SimpleExpr1 {return {type:"SimpleExpr1"}; }
+SimpleExpr1 = OPPAREN exp:Exprs? CLPAREN se1:_SimpleExpr1 {return {type:"TupleExpression", expr:exp, suffix:se1}; }
 /* / SimpleExpr DOT id */
-/ NEW (ClassTemplate / TemplateBody) DOT id _SimpleExpr1 {return {type:"SimpleExpr1"}; }
-/ BlockExpr DOT id _SimpleExpr1 {return {type:"SimpleExpr1"}; }
-/ NEW (ClassTemplate / TemplateBody) TypeArgs _SimpleExpr1 {return {type:"SimpleExpr1"}; }
-/ BlockExpr TypeArgs _SimpleExpr1 {return {type:"SimpleExpr1"}; }
-/ XmlExpr _SimpleExpr1 {return {type:"SimpleExpr1"}; }
-/ Path _SimpleExpr1 {return {type:"SimpleExpr1"}; }
-/ Literal _SimpleExpr1 {return {type:"SimpleExpr1"}; }
-/ UNDER _SimpleExpr1 {return {type:"SimpleExpr1"}; }
-_SimpleExpr1 = UNDER? DOT id _SimpleExpr1 {return {type:"SimpleExpr1"}; }
-/ UNDER? TypeArgs _SimpleExpr1 {return {type:"SimpleExpr1"}; }
-/ ArgumentExprs _SimpleExpr1 {return {type:"SimpleExpr1"}; }
+/ NEW arg:(ClassTemplate / TemplateBody) DOT id:id se1:_SimpleExpr1 {return {type:"InstanceCreationExpressionWithId", arg:arg, id:id, suffix:se1}; }
+/ NEW arg:(ClassTemplate / TemplateBody) ta:TypeArgs se1:_SimpleExpr1 {return {type:"InstanceCreationExpressionWithTypes", arg:arg, types:ta, suffix:se1}; }
+/ bk:BlockExpr DOT id:id se1:_SimpleExpr1 {return {type:"blockExpressionWithId", block:bk, id:id, suffix:se1}; }
+/ bk:BlockExpr ta:TypeArgs se1:_SimpleExpr1 {return {type:"blockExpressionWithTypes", block:bk, types:ta, suffix:se1}; }
+/ xml:XmlExpr se1:_SimpleExpr1 {return {type:"SimpleExpression", expr:xml, suffix:se1}; }
+/ path:Path se1:_SimpleExpr1 {return {type:"SimpleExpression", expr:path, suffix:se1}; }
+/ lt:Literal se1:_SimpleExpr1 {return {type:"SimpleExpression", expr:lt, suffix:se1}; }
+/ ud:UNDER se1:_SimpleExpr1 {return {type:"SimpleExpression", expr:ud, suffix:se1}; }
+_SimpleExpr1 = ud:UNDER? DOT id:id _SimpleExpr1 {return {type:"DesignatorPostfix", under:ftr(ud), id:id, postfix:se1}; }
+/ UNDER? ta:TypeArgs se1:_SimpleExpr1 {return {type:"TypeApplicationPostfix", under:ftr(ud), typeArgument:ta, postfix:se1}; }
+/ ae:ArgumentExprs se1:_SimpleExpr1 {return {type:"FunctionApplicationPostfix", argument:ae, postfix:se1}; }
 / Empty
 
 /* Exprs ::= Expr {‘,’ Expr} */
@@ -645,14 +651,13 @@ Pattern3 = head:SimplePattern tails:( id nl? SimplePattern )* {
 /* | StableId ‘(’ [Patterns ‘,’] [varid ‘@’] ‘_’ ‘*’ ‘)’ */
 /* | ‘(’ [Patterns] ‘)’ */
 /* | XmlPattern */
-//後回し
 SimplePattern = UNDER
 / varid
 / Literal
-/ StableId OPPAREN Patterns? CLPAREN {return {type: "SimplePattern"};}
-/ StableId OPPAREN (Patterns COMMA)? (varid AT)? UNDER STAR CLPAREN {return {type: "SimplePattern"};}
+/ si:StableId OPPAREN pts:Patterns? CLPAREN {return {type: "SimplePattern", id:si, pattern:pts};}
+/ id:StableId OPPAREN pts:(Patterns COMMA)? vi:(varid AT)? UNDER STAR CLPAREN {return {type: "SimplePatternSequences", id:si, pattern:ftr(pts, 0), varid:ftr(vi, 0)};}
 / StableId
-/ OPPAREN Patterns? CLPAREN {return {type: "SimplePattern"};}
+/ OPPAREN pts:Patterns? CLPAREN {return {type: "SimplePattern", id:null, pattern:ftr(pts)};}
 / XmlPattern
 
 /* Patterns ::= Pattern [‘,’ Patterns] */
@@ -1050,43 +1055,43 @@ printableCharNoDoubleQuote = !'"' chr:printableChar {return chr;}
 charNoDoubleQuote = !'"' chr:. {return chr;}
 
 /* Empty = & {return true;} __ */
-Empty = &. / !.
+Empty = &. / !. {return {type:"Empty", value:null};}
 
-PACKAGE = 'package' __
-SEMICOLON = ';' __
-HYPHEN = '-' __
-DOT = '.' __
-COMMA = ',' __
+PACKAGE = 'package' __ {return {type:"Keyword", word:"package"}}
+SEMICOLON = ';' __ {return {type:"Keyword", word:";"}}
+HYPHEN = '-' __ {return {type:"Keyword", word:"-"}}
+DOT = '.' __ {return {type:"Keyword", word:"."}}
+COMMA = ',' __ {return {type:"Keyword", word:","}}
 THIS = 'this' __ {return {type:"Keyword", word:"this"}}
-OPBRACKET = '[' __
-CLBRACKET = ']' __
-ARROW = '=>' __
-OPPAREN = '(' __
-CLPAREN = ')' __
-OPBRACE = '{' __
-CLBRACE = '}' __
+OPBRACKET = '[' __ {return {type:"Keyword", word:"["}}
+CLBRACKET = ']' __ {return {type:"Keyword", word:"]"}}
+ARROW = '=>' __ {return {type:"Keyword", word:"=>"}}
+OPPAREN = '(' __ {return {type:"Keyword", word:"("}}
+CLPAREN = ')' __ {return {type:"Keyword", word:")"}}
+OPBRACE = '{' __ //{return {type:"Keyword", word:"{"}}
+CLBRACE = '}' __ //{return {type:"Keyword", word:"}"}}
 TYPE = 'type' __ {return {type:"Keyword", word:"type"}}
 VAL = 'val' __ {return {type:"Keyword", word:"val"}}
 
-WITH = 'with' __
-COLON = ':' __
-UNDER = '_' __
-STAR = '*' __
-IMPLICIT = 'implicit' __
-IF = 'if' __
-WHILE = 'while' __
-EQUAL = '=' __
-PLUS = '+' __
-NEW = 'new' __
-LAZY = 'lazy' __
-CASE = 'case' __
-AT = '@' __
-LEFTANGLE = '>:' __
-RIGHTANGLE = '<:' __
-VAR = 'var' __
-DEF = 'def' __
-OBJECT = 'object' __
-EXTENDS = 'extends' __
+WITH = 'with' __ {return {type:"Keyword", word:"with"}}
+COLON = ':' __ {return {type:"Keyword", word:":"}}
+UNDER = '_' __ {return {type:"Keyword", word:"_"}}
+STAR = '*' __ {return {type:"Keyword", word:"*"}}
+IMPLICIT = 'implicit' __ {return {type:"Keyword", word:"implicit"}}
+IF = 'if' __ {return {type:"Keyword", word:"if"}}
+WHILE = 'while' __ {return {type:"Keyword", word:"while"}}
+EQUAL = '=' __ {return {type:"Keyword", word:"="}}
+PLUS = '+' __ {return {type:"Keyword", word:"+"}}
+NEW = 'new' __ {return {type:"Keyword", word:"new"}}
+LAZY = 'lazy' __ {return {type:"Keyword", word:"lazy"}}
+CASE = 'case' __ {return {type:"Keyword", word:"case"}}
+AT = '@' __ {return {type:"Keyword", word:"@"}}
+LEFTANGLE = '>:' __ {return {type:"Keyword", word:">:"}}
+RIGHTANGLE = '<:' __ {return {type:"Keyword", word:"<:"}}
+VAR = 'var' __ {return {type:"Keyword", word:"var"}}
+DEF = 'def' __ {return {type:"Keyword", word:"def"}}
+OBJECT = 'object' __ {return {type:"Keyword", word:"object"}}
+EXTENDS = 'extends' __ {return {type:"Keyword", word:"extends"}}
 
 /*
    10.1 XML expressions
@@ -1142,7 +1147,7 @@ ContentP1 ::= ElemPattern
 ScalaPatterns ::= ‘{’ Patterns ‘}’
  */
 
-XmlExpr = XmlContent Element*
+XmlExpr = XmlContent Element* {return {type:"XmlExpr"};}
 Element	= EmptyElemTag
 		/ STag Content ETag
 EmptyElemTag = '<' Name (S Attribute)* S? '/>'
@@ -1211,8 +1216,8 @@ BaseChar = [\u0041-\u005A] / [\u0061-\u007A] / [\u00C0-\u00D6] / [\u00D8-\u00F6]
 S = ('\x20' / '\x09' / '\x0d' / '\x0a')+
 
 
-
-XmlPattern = ElemPattern
+//とりあえず保留・・・
+XmlPattern = ElemPattern {return {type:"XmlPattern"};}
 ElemPattern	= EmptyElemTagP
 			/ STagP ContentP ETagP
 EmptyElemTagP = '<' Name S? '/>'
