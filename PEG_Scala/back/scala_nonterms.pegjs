@@ -1,100 +1,29 @@
-/*
- * Unparser for JavaScript
- * This program takes a JSON tree that represents an abstract syntax
- * tree for JavaScript code and converts it to a textual program.
- */
-
-var fs = require('fs');
-
-var buf = [], indentLevel = 0, whitespaces = '    ', bol = true;
-function newline() { B.push('\n'); bol = true; }
-
-var B = { // Buffer
-    push: function (/* args */) {
-        for (var i = 0; i < arguments.length; i++) {
-            this.indent();
-            buf.push(arguments[i]);
-        }
-    },
-    params: function (names) {
-        if (names.length > 0) B.push(ident(names[0]));
-        for (var i = 1; i < names.length; i++)
-            this.format(', ', ident(names[i]));
-    },
-    separating: function (arr) {
-        if (arr.length === 0) return;
-        T(arr[0]);
-        for (var i = 1; i < arr.length; i++) { this.push(', '); T(arr[i]); }
-    },
-    terminating: function (arr) {
-        arr.forEach(function (a) { B.format(a, ';', newline); });
-    },
-    format: function (/* args */) {
-        this.indent();
-        for (var i = 0; i < arguments.length; i++) {
-            var a = arguments[i];
-            if (a == null) ;
-            else if (Array.isArray(a)) {
-                var sep = arguments[i+1]; i++;
-                if (sep === ',') this.separating(a, sep);
-                else if (sep === ';') this.terminating(a, sep);
-            } else if (typeof a === 'object' && a.type) T(a);
-            else if (typeof a === 'string') this.push(a);
-            else if (typeof a === 'number') indentLevel += a;
-            else if (typeof a === 'function') a();
-            else console.error('I do not know what to do with: ', a);
-        }
-    },
-    indent: function () {
-        if (!bol) return;
-        while (whitespaces.length < indentLevel)
-            whitespaces += whitespaces;
-        buf.push(whitespaces.substr(0, indentLevel));
-        bol = false;
-    },
-    flush: function (fd) {
-        if (fd) {
-            newline();
-            buf.forEach(function (line) { fs.writeSync(fd, line); });
-            this.reset();
-        } else {
-            var result = buf.join('');
-            this.reset();
-            return result;
-        }
-    },
-    reset: function () { buf = []; indentLevel = 0; }
-};
-
-var unwanted_characters = '`.*';
-function ident(identifier) {
-    var chars = identifier.split('');
-    for (var i = 0; i < chars.length; i++)
-        if (unwanted_characters.indexOf(chars[i]) >= 0) chars[i] = '_';
-    return chars.join('');
-}
-
-// my unparser
-var unparser = {
-	/*
-	 * CompilationUnit = __ pcs:(PACKAGE QualId semi)* tss:TopStatSeq {return {type: "CompilationUnit", packages:pcs, topStatseq:tss};}
+		if(typeof idx === 'undefined') idx = -1;
+		if(arg === "") return null;
+		return idx == -1? arg : arg[idx];
+CompilationUnit = __ pcs:(PACKAGE QualId semi)* tss:TopStatSeq {return {type: "CompilationUnit", packages:pcs, topStatseq:tss};}
 upper = [A-Z] / '$' / '_'
 lower = [a-z]
 letter = upper / lower
 digit = [0-9]
-opchar = [\+\-\/><=!&|%:~\^|]
+=
+opchar = [\+\-\*/><=!&|%:~\^|]
+= !
+/* op =  chars:opchar+ __ {return chars.join("");} */
 op = !("/*" / "//" / EQUAL) chars:opchar+ __ {return chars.join("");}
 varid = start:lower parts:idrest {return start + parts;}
 plainid = start:upper parts:idrest {return start + parts;}
 id = nm:plainid {return { type: "Identifier", name: nm }; }
 idrest	= chars:(letter / digit)* '_' ops:op __ {return chars.join("") + '_' + ops;}
 integerLiteral = ilit:(decimalNumeral / hexNumeral / octalNumeral) ll:('L' / 'l')? __ {
+/* decimalNumeral	= '0' {return {type: "decimalNumeral", value: '0'};} */
 decimalNumeral	= '0'
 hexNumeral = '0' 'x' parts:hexDigit+ __ {return "0x" + parts.join("");}
 octalNumeral = '0' parts:octalDigit+ __ {return '0' + parts.join("");}
+digit = '0' / nonZeroDigit
 nonZeroDigit = [1-9]
 octalDigit = [0-7]
-	floatingPointLiteral= dp:digit+ '.' ds:digit* exp:exponentPart? type:floatType? __ {return dp.join("") + '.' + ds.join("") + exp + type;}
+	= dp:digit+ '.' ds:digit* exp:exponentPart? type:floatType? __ {return dp.join("") + '.' + ds.join("") + exp + type;}
 exponentPart = exp:('E' / 'e') sign:('+' / '-')? dt:digit+ {return exp + sign + dt.join("");}
 floatType = 'F' / 'f' / 'D' / 'd'
 booleanLiteral = ret:('true' / 'false') __ {return {type: "booleanLiteral", value: chrs};}
@@ -106,72 +35,132 @@ multiLineCharsElements = chrs:('"'? '"'? charNoDoubleQuote) {return chrs.join(""
 symbolLiteral = "'" pi:plainid __ {return "'" + pi;}
 comment = singleLineComment / multiLineComment
 singleLineComment = '//' (!nl . )* nl+
-multiLineComment = [/][*] ((&"/*" multiLineComment) / (!"/" . ))* [*][/]
+multiLineComment = [/][*] ((&"/*" multiLineComment) / (!"*/" . ))* [*][/]
 __ = (whitespace / comment)*
 nl = ("\r\n" / "\n" / "\r") __
 semi = (SEMICOLON nl* / nl+)
 whitespace = [\u0020\u0009]
+  = (whitespace / comment)*
 Literal =
 QualId = head:id tail:(DOT id)* {
+      var result = [head];
+      for (var i = 0; i < tail.length; i++) {
 ids = head:id tail:(COMMA id)* {
+      var result = [head];
+      for (var i = 0; i < tail.length; i++) {
 Path	= StableId
+/* StableId	= id _StableId */
 StableId	= base:id accessors:(DOT id)* {
+      var result = [base];
+      for (var i = 0; i < accessors.length; i++) {
+      var result = pre !==""? [pre[0], th] : [th];
+      for (var i = 0; i < accessors.length; i++) {
+      var result = pre !== ""? [pre[0], {type:"Keyword", word:"super"}] : [{type:"Keyword", word:"super"}];
+if(cl !== ""){
+	  for (var i = 0; i < accessors.length; i++) {
+/* _StableId	= DOT id _StableId {return } */
 ClassQualifier = OPBRACKET qual:id CLBRACKET {return {type: "ClassQualifier", id:qual};}
 Type	= funcarg:FunctionArgTypes ARROW tp:Type {return {type:"FunctionType", left:funcarg, right:tp};}
 FunctionArgTypes	= InfixType
+      var result = [];
+if(tps !== ""){
+	for (var i = 0; i < tps[1].length; i++) {
 ExistentialClause = 'forSome' __ OPBRACE ex:ExistentialDcl exs:(semi ExistentialDcl)* CLBRACE {
+      var result = [{type:"Keyword", word:"forSome"}];
+	for (var i = 0; i < exs.length; i++) {
 ExistentialDcl	= tp:TYPE dcl:TypeDcl {return {type:"ExistentialDcl", pre:tp, dcl:dcl}}
+/* InfixType = head:CompoundType tails:(id __ CompoundType)* { */
 InfixType = head:CompoundType tails:(id nl? CompoundType)* {
+      var ids = [], cts = [];
+	for (var i = 0; i < tails.length; i++) {
 CompoundType	= at:AnnotType wat:(WITH AnnotType)? ref:Refinement? {return {type:"CompoundType", annotType:[at, ftr(wat)], ref:ftr(ref)};}
 AnnotType = st:SimpleType annotation:Annotation* {return {type:"AnnotType", st:st, annotation:annotation}; }
 SimpleType =
 withId = '#' __ id:id {return {type:"withId", id:id};}
+/* SimpleType = StableId _SimpleType */
+/* _SimpleType = TypeArgs */
 TypeArgs = OPBRACKET types:Types CLBRACKET {return {type:"TypeArgs", types:types}; }
 Types = tp:Type tps:(COMMA Type)* {
+      var result = [tp];
+	  for (var i = 0; i < tps.length; i++) {
 Refinement = nl? OPBRACE ref:RefineStat refs:(semi RefineStat)* CLBRACE {
+      var result = [ref];
+	  for (var i = 0; i < refs.length; i++) {
 RefineStat = Dcl
 TypePat = Type
 Ascription = COLON infix:InfixType {return {type:"Ascription", contents:[infix]}; }
 Expr = left:(Bindings / IMPLICIT? id / UNDER) ARROW right:Expr {return {type:"AnonymousFunction", left:left, right:right}; }
+/* | [SimpleExpr ‘.’] id ‘=’ Expr */
+/* | SimpleExpr1 ArgumentExprs ‘=’ Expr */
 Expr1 = IF OPPAREN condition:Expr CLPAREN nl* ifStatement:Expr elseStatement:(semi? 'else' __ Expr)? {
+        elseStatement: elseStatement !== "" ? elseStatement[3] : null
+        yield:     yield !== "" ? yield[0] : null,
+        value: value !== "" ? value : null
 PostfixExpr = infix:InfixExpr id:(id nl?)? {return {type:"PostfixExpr", infix:infix, id: ftr(id, 0)};}
 InfixExpr = head:PrefixExpr tails:(id nl? InfixExpr)* {
+      var ids = [], exps = [];
+	for (var i = 0; i < tails.length; i++) {
+/* _InfixExpr = id nl? InfixExpr _InfixExpr */
 PrefixExpr = op:(HYPHEN / PLUS / '~' __ / '!' __)? expr:SimpleExpr {
 SimpleExpr =
 SimpleExpr1 = OPPAREN exp:Exprs? CLPAREN se1:_SimpleExpr1 {return {type:"TupleExpression", expr:exp, suffix:se1}; }
 _SimpleExpr1 = ud:UNDER? !(DOT id EQUAL) DOT id:id se1:_SimpleExpr1 {return {type:"DesignatorPostfix", under:ftr(ud), id:id, postfix:se1}; }
 Exprs = expr:Expr exprs:(COMMA Expr)* {
+      var result = [expr];
+	  for (var i = 0; i < exprs.length; i++) {
 ArgumentExprs = OPPAREN exprs:Exprs? CLPAREN {return {type:"ArgumentExprs", exprs:ftr(exprs)}; }
 BlockExpr = OPBRACE block:CaseClauses CLBRACE {return {type: "PatternMatchingAnonymousFunction", block:block};}
 Block = blocks:(BlockStat semi)* res:ResultExpr? {
+      var result = [];
+	  for (var i = 0; i < blocks.length; i++) {
 BlockStat = Import
+/* | (Bindings | ([‘implicit’] id | ‘_’) ‘:’ CompoundType) ‘=>’ Block */
 ResultExpr =
 Enumerators = gen:Generator enums:(semi Enumerator)* {
+      var result = [];
+	  for (var i = 0; i < enums.length; i++) {
+/* | ‘val’ Pattern1 ‘=’ Expr */
 Enumerator = Generator
 Generator = pt1:Pattern1 '<-' __ expr:Expr guard:Guard? {return {type: "Generator", pt1:pt1, expr:expr, guard:guard}; }
 CaseClauses = cls:CaseClause+ {return {type: "CaseClauses", cls:cls};}
 CaseClause = CASE pt:Pattern guard:Guard? ARROW block:Block {return {type: "Generator", pt:pt, guard:ftr(guard), block:block}; }
 Guard = IF postfix:PostfixExpr {return {type: "Guard", postfix:postfix};}
 Pattern = pt1:Pattern1 pt1s:( '|' __ Pattern1 )* {
+      var result = [pt1];
+	  for (var i = 0; i < pt1s.length; i++) {
 Pattern1 = id:varid COLON tp:TypePat {return {type: "TypedPattern", id:id, tp:tp};}
 Pattern2 = id:varid pt:(AT Pattern3)? {return {type: "PatternBinder", id:id, pt:pt!== ""? pt[1] : null};}
 Pattern3 =
+      var ids = [], cts = [];
+	for (var i = 0; i < tails.length; i++) {
 SimplePattern = UNDER
 Patterns = head:Pattern tail:(COMMA Patterns)? {return {type: "Patterns", pattern:[head, tail]};}
 TypeParamClause = OPBRACKET param:VariantTypeParam params:(COMMA VariantTypeParam)* CLBRACKET {
+      var result = [param];
+	  for (var i = 0; i < params.length; i++) {
 FunTypeParamClause = OPBRACKET param:TypeParam params:(COMMA TypeParam)* CLBRACKET {
+      var result = [param];
+	  for (var i = 0; i < params.length; i++) {
 VariantTypeParam = ans:Annotation* sign:(PLUS / HYPHEN)? param:TypeParam {return {type: "VariantTypeParam", annotations:ans, sign:sign, param:param};}
 TypeParam = id:(id / UNDER) cl:TypeParamClause? tp1:(LEFTANGLE Type)? tp2:(RIGHTANGLE Type)?
 ParamClauses = pc:ParamClause* pm:(nl? OPPAREN IMPLICIT Params CLPAREN)? {return {type: "ParamClauses", clause:pc, params:pm !== ""? pm[3] : null};}
 ParamClause = nl? OPPAREN pm:Params? CLPAREN {return {type: "ParamClause", params:pm !== ""? pm : null};}
 Params = param:Param params:(COMMA Param)* {
+      var result = [param];
+	  for (var i = 0; i < params.length; i++) {
 Param = an:Annotation* id:id pt:(COLON ParamType)? expr:(EQUAL Expr)? {return {type:"Param", annotations:an, id:id, paramType:ftr(pt, 1), expr:expr}; }
+/* | ‘=>’ Type */
 ParamType = ar:ARROW tp:Type {return {type:"ParamType", allow:ar, tp:tp, star:null}; }
 ClassParamClauses = cls:ClassParamClause* params:(nl? OPPAREN IMPLICIT ClassParams CLPAREN)? {return {type:"ClassParamClauses", cls:cls, params:params !== ""? params[3] : null}; }
 ClassParamClause = nl? OPPAREN cp:ClassParams? CLPAREN {return {type:"ClassParamClause", params:ftr(cp)}; }
 ClassParams = param:ClassParam params:(' ' ClassParam)*
+      var result = [param];
+	  for (var i = 0; i < params.length; i++) {
+/* id ‘:’ ParamType [‘=’ Expr] */
 ClassParam = an:Annotation* md:(Modifier* (VAL / VAR))? id:id COLON pt:ParamType exp:(EQUAL Expr)? {return {type:"ClassParam", annotations:an, modifier:ftr(md, 0), vax:ftr(md, 1), id:id, paramType:pt, exp:ftr(exp, 1)}; }
 Bindings = OPPAREN bd:Binding bds:(COMMA Binding)* CLPAREN {
+      var result = [bd];
+	  for (var i = 0; i < bds.length; i++) {
 Binding = id:(id / UNDER) tp:(COLON Type)? {return {type:"Bindings", id:id, tp:ftr(tp, 1)}; }
 Modifier = LocalModifier
 LocalModifier = 'abstract' __ {return makeKeyword("abstract");}
@@ -181,11 +170,20 @@ Annotation = AT stype:SimpleType exprs:ArgumentExprs* {return {type:"Annotation"
 ConstrAnnotation = AT tp:SimpleType exprs:ArgumentExprs {return {type:"ConstrAnnotation", stype:tp, exprs:exprs};}
 NameValuePair = VAL id:id EQUAL prefix:PrefixExpr {return {type:"NameValuePair", id:id, prefix:prefix};}
 TemplateBody = nl? OPBRACE tp:SelfType? nl? ts:TemplateStat tss:(semi TemplateStat)* nl? CLBRACE {
+      var result = [ts];
+	  for (var i = 0; i < tss.length; i++) {
 TemplateStat = Import
+      var result = [];
+	  for (var i = 0; i < ats.length; i++) {
+/* | ‘this’ ‘:’ Type ‘=>’ */
 SelfType = id:id tp:(COLON Type)? ARROW {return {type:"SelfType", id:id, tp:ftr(tp,1)};}
 Import = 'import' __ head:ImportExpr tail:(COMMA ImportExpr)* {
+	var result = [head];
+	for (var i = 0; i < tail.length; i++) {
 ImportExpr = id:StableId sel:(DOT (UNDER / ImportSelectors))? {return {type:"ImportExpr", id:id, selector:ftr(sel,1)};}
 ImportSelectors = OPBRACE heads:(ImportSelector COMMA)* tail:(ImportSelector / UNDER) CLBRACE {
+	var result = [];
+	for (var i = 0; i < heads.length; i++) {
 ImportSelector = head:id tail:(ARROW id / ARROW UNDER)? {return {type:"ImportSelector", src:head, dest:ftr(tail,1)};}
 Dcl = dcl:VAL body:ValDcl {return {type:"Declaration", dcl:dcl, body:body};}
 ValDcl = id:ids COLON tp:Type {return {type:"ValueDeclaration", id:id, tp:tp};}
@@ -196,7 +194,11 @@ TypeDcl = id:id tpc:TypeParamClause? t1:(LEFTANGLE Type)? t2:(RIGHTANGLE Type)? 
 PatVarDef = dcl:VAL body:PatDef {return {type:"PatValDef", body:body};}
 Def = PatVarDef
 PatDef = ptn:Pattern2 ptns:(COMMA Pattern2)* tp:(COLON Type)? EQUAL expr:Expr{
+	var result = [ptn];
+	for (var i = 0; i < ptns.length; i++) {
+/* | ids ‘:’ Type ‘=’ ‘_’ */
 VarDef = PatDef
+/* (‘=’ ConstrExpr | [nl] ConstrBlock) */
 FunDef = fs:FunSig tp:(COLON Type)? EQUAL exp:Expr {return {type:"FunctionDefinition", signature:fs, tp:ftr(tp), expr:exp}; }
 TypeDef = id:id pm:TypeParamClause? EQUAL tp:Type {return {type:"TypeDef", id:id, param:ftr(pm), tp:tp}; }
 TmplDef = cs:CASE? 'class' __ def:ClassDef {return {type:"TmplDef", prefix:[ftr(cs), makeKeyword("class")], def:def}; }
@@ -211,12 +213,23 @@ ClassParents = cst:Constr ats:(WITH AnnotType)* {return {type:"ClassParents", co
 TraitParents = at:AnnotType ats:(WITH AnnotType)* {return {type:"TraitParents", annotType:at, annotType:ats}; }
 Constr = at:AnnotType ae:ArgumentExprs* {return {type:"Constr", annotType:at, exprs:ae}; }
 EarlyDefs = OPBRACE eds:(EarlyDef (semi EarlyDef)*)? CLBRACE WITH {
+      var result = ftr(eds);
+	  if(eds !== null){
+		  for (var i = 0; i < eds[1].length; i++) {
 EarlyDef = an:(Annotation nl?)* md:Modifier* pvd:PatVarDef {
+      var result = [];
+	  for (var i = 0; i < an.length; i++) {
 ConstrExpr = SelfInvocation
 ConstrBlock = OPBRACE si:SelfInvocation bss:(semi BlockStat)* CLBRACE{
+      var result = [];
+	  for (var i = 0; i < bss.length; i++) {
 SelfInvocation = THIS ae:ArgumentExprs+ {return {type:"SelfInvocation", exprs:ae}; }
 TopStatSeq = tp:TopStat tps:(semi TopStat)*{
+      var result = [tp];
+	  for (var i = 0; i < tps.length; i++) {
 TopStat = an:(Annotation nl?)* md:Modifier* td:TmplDef{
+      var result = [];
+	  for (var i = 0; i < an.length; i++) {
 Packaging = PACKAGE qi:QualId nl? OPBRACE tss:TopStatSeq CLBRACE {return {type:"Packaging", qualId:qi, topStatseq:tss}; }
 PackageObject = PACKAGE OBJECT od:ObjectDef {return {type:"PackageObject", def:od}; }
 charEscapeSeq	= '\\b' / '\\u0008'
@@ -224,7 +237,9 @@ hexDigit = [0-9A-Fa-f]
 printableChar = !charEscapeSeq chr:. {return chr;}
 printableCharNoDoubleQuote = !'"' chr:printableChar {return chr;}
 charNoDoubleQuote = !'"' chr:. {return chr;}
+/* Empty = & {return true;} __ */
 Empty = & {return true;} {return {type:"Empty", value:null};}
+/* Empty = (&. / !.) {return {type:"Empty", value:null};} */
 PACKAGE = 'package' __ {return {type:"Keyword", word:"package"}}
 SEMICOLON = ';' __ {return {type:"Keyword", word:";"}}
 HYPHEN = '-' __ {return {type:"Keyword", word:"-"}}
@@ -277,6 +292,7 @@ CharA = !"'" Char1
 CharB = !'{' Char1
 Name = XNameStart NameChar*
 XNameStart = !':' (UNDER / BaseChar / Ideographic)
+= “as in W3C XML
 Char = '\u0009' / '\u000A' / '\u000D' / [\u0020-\uD7FF] / [\uE000-\uFFFD] / [\u10000-\u10FFFF]
 Comment	= '<!--' ((!'-' Char) / ('-' (!'-' Char)))* '-->'
 Eq = S? EQUAL S?
@@ -286,7 +302,7 @@ NameStartChar = ":" / [A-Z] / "_" / [a-z] / [\u00C0-\u00D6] / [\u00D8-\u00F6] / 
 Reference = EntityRef / CharRef
 EntityRef = '&' Name SEMICOLON
 CharRef = '&#' [0-9]+ SEMICOLON
-BaseChar
+BaseChar = [\u0041-\u005A] / [\u0061-\u007A] / [\u00C0-\u00D6] / [\u00D8-\u00F6] / [\u00F8-\u00FF] / [\u0100-\u0131] / [\u0134-\u013E] / [\u0141-\u0148] / [\u014A-\u017E] / [\u0180-\u01C3] / [\u01CD-\u01F0] / [\u01F4-\u01F5] / [\u01FA-\u0217] / [\u0250-\u02A8] / [\u02BB-\u02C1] / '\u0386' / [\u0388-\u038A] / '\u038C' / [\u038E-\u03A1] / [\u03A3-\u03CE] / [\u03D0-\u03D6] / '\u03DA' / '\u03DC' / '\u03DE' / '\u03E0' / [\u03E2-\u03F3] / [\u0401-\u040C] / [\u040E-\u044F] / [\u0451-\u045C] / [\u045E-\u0481] / [\u0490-\u04C4] / [\u04C7-\u04C8] / [\u04CB-\u04CC] / [\u04D0-\u04EB] / [\u04EE-\u04F5] / [\u04F8-\u04F9] / [\u0531-\u0556] / '\u0559' / [\u0561-\u0586] / [\u05D0-\u05EA] / [\u05F0-\u05F2] / [\u0621-\u063A] / [\u0641-\u064A] / [\u0671-\u06B7] / [\u06BA-\u06BE] / [\u06C0-\u06CE] / [\u06D0-\u06D3] / '\u06D5' / [\u06E5-\u06E6] / [\u0905-\u0939] / '\u093D' / [\u0958-\u0961] / [\u0985-\u098C] / [\u098F-\u0990] / [\u0993-\u09A8] / [\u09AA-\u09B0] / '\u09B2' / [\u09B6-\u09B9] / [\u09DC-\u09DD] / [\u09DF-\u09E1] / [\u09F0-\u09F1] / [\u0A05-\u0A0A] / [\u0A0F-\u0A10] / [\u0A13-\u0A28] / [\u0A2A-\u0A30] / [\u0A32-\u0A33] / [\u0A35-\u0A36] / [\u0A38-\u0A39] / [\u0A59-\u0A5C] / '\u0A5E' / [\u0A72-\u0A74] / [\u0A85-\u0A8B] / '\u0A8D' / [\u0A8F-\u0A91] / [\u0A93-\u0AA8] / [\u0AAA-\u0AB0] / [\u0AB2-\u0AB3] / [\u0AB5-\u0AB9] / '\u0ABD' / '\u0AE0' / [\u0B05-\u0B0C] / [\u0B0F-\u0B10] / [\u0B13-\u0B28] / [\u0B2A-\u0B30] / [\u0B32-\u0B33] / [\u0B36-\u0B39] / '\u0B3D' / [\u0B5C-\u0B5D] / [\u0B5F-\u0B61] / [\u0B85-\u0B8A] / [\u0B8E-\u0B90] / [\u0B92-\u0B95] / [\u0B99-\u0B9A] / '\u0B9C' / [\u0B9E-\u0B9F] / [\u0BA3-\u0BA4] / [\u0BA8-\u0BAA] / [\u0BAE-\u0BB5] / [\u0BB7-\u0BB9] / [\u0C05-\u0C0C] / [\u0C0E-\u0C10] / [\u0C12-\u0C28] / [\u0C2A-\u0C33] / [\u0C35-\u0C39] / [\u0C60-\u0C61] / [\u0C85-\u0C8C] / [\u0C8E-\u0C90] / [\u0C92-\u0CA8] / [\u0CAA-\u0CB3] / [\u0CB5-\u0CB9] / '\u0CDE' / [\u0CE0-\u0CE1] / [\u0D05-\u0D0C] / [\u0D0E-\u0D10] / [\u0D12-\u0D28] / [\u0D2A-\u0D39] / [\u0D60-\u0D61] / [\u0E01-\u0E2E] / '\u0E30' / [\u0E32-\u0E33] / [\u0E40-\u0E45] / [\u0E81-\u0E82] / '\u0E84' / [\u0E87-\u0E88] / '\u0E8A' / '\u0E8D' / [\u0E94-\u0E97] / [\u0E99-\u0E9F] / [\u0EA1-\u0EA3] / '\u0EA5' / '\u0EA7' / [\u0EAA-\u0EAB] / [\u0EAD-\u0EAE] / '\u0EB0' / [\u0EB2-\u0EB3] / '\u0EBD' / [\u0EC0-\u0EC4] / [\u0F40-\u0F47] / [\u0F49-\u0F69] / [\u10A0-\u10C5] / [\u10D0-\u10F6] / '\u1100' / [\u1102-\u1103] / [\u1105-\u1107] /'\u1109' / [\u110B-\u110C] / [\u110E-\u1112] / '\u113C' / '\u113E' / '\u1140' / '\u114C' / '\u114E' / '\u1150' / [\u1154-\u1155] / '\u1159' / [\u115F-\u1161] / '\u1163' / '\u1165' / '\u1167' / '\u1169' / [\u116D-\u116E] / [\u1172-\u1173] / '\u1175' / '\u119E' / '\u11A8' / '\u11AB' / [\u11AE-\u11AF] / [\u11B7-\u11B8] / '\u11BA' / [\u11BC-\u11C2] / '\u11EB' / '\u11F0' / '\u11F9' / [\u1E00-\u1E9B] / [\u1EA0-\u1EF9] / [\u1F00-\u1F15] / [\u1F18-\u1F1D] / [\u1F20-\u1F45] / [\u1F48-\u1F4D] / [\u1F50-\u1F57] / '\u1F59' / '\u1F5B' / '\u1F5D' / [\u1F5F-\u1F7D] / [\u1F80-\u1FB4] / [\u1FB6-\u1FBC] / '\u1FBE' / [\u1FC2-\u1FC4] / [\u1FC6-\u1FCC] / [\u1FD0-\u1FD3] / [\u1FD6-\u1FDB] / [\u1FE0-\u1FEC] / [\u1FF2-\u1FF4] / [\u1FF6-\u1FFC] / '\u2126' / [\u212A-\u212B] / '\u212E' / [\u2180-\u2182] / [\u3041-\u3094] / [\u30A1-\u30FA] / [\u3105-\u312C] / [\uAC00-\uD8A3]
 S = ('\x20' / '\x09' / '\x0d' / '\x0a')+
 XmlPattern = ElemPattern {return {type:"XmlPattern"};}
 ElemPattern	= EmptyElemTagP
@@ -302,178 +318,4 @@ CData = !(Char* ']]>' Char*) Char*
 CDEnd = ']]>'
 PI = '<?' PITarget (S (!(Char* '?>' Char*) Char*))? '?>'
 PITarget = !(('X' / 'x') ('M' / 'm') ('L' / 'l')) Name
-C
-	 * */
-
-}
-
-// homizu's unparser
-/*
-var unparser = {
-    BooleanLiteral: function (t) { B.push(t.value); },
-    NullLiteral: function (t) { B.push('null'); },
-    NumericLiteral: function (t) { B.push(t.value); },
-    RegularExpressionLiteral: function (t) { B.push(t.body, t.flags); },
-    StringLiteral: function (t) { B.push(JSON.stringify(t.value)); },
-
-    ArrayLiteral: function (t) { B.format('[', t.elements, ',', ']'); },
-    ObjectLiteral: function (t) { B.format('{', t.properties, ',', '}'); },
-
-    This: function (t) { B.push('this'); },
-
-    Function: function (t) {
-        var isBOL = bol;
-        if (t.name !== null) B.format('function ', ident(t.name), ' (');
-        else B.push('function (');
-        B.params(t.params);
-        B.format(') {', 2, newline, t.elements, ';', -2, '}');
-        if (isBOL) { B.push(';'); newline(); }
-    },
-
-    UnaryExpression: function (t) {
-        B.format('(', t.operator, ' ', t.expression, ')');
-    },
-    PostfixExpression: function (t) {
-        B.format('(', t.expression, ' ', t.operator, ')');
-    },
-    AssignmentExpression: function (t) {
-        B.format('(', t.left, ' ', t.operator, ' ', t.right, ')');
-    },
-    BinaryExpression: function (t) {
-        B.format('(', t.left, ' ', t.operator, ' ', t.right, ')');
-    },
-    ConditionalExpression: function (t) {
-        B.format('(', t.condition, '?',
-            t.trueExpression, ':', t.falseExpression, ')');
-    },
-
-    FunctionCall: function (t) {
-        B.format('(', t.name, '(', t.arguments, ',', '))');
-    },
-
-    GetterDefinition: function (t) {
-        B.format('get ', ident(t.name), ' {', 2, t.body, ';', -2, '}');
-    },
-    NewOperator: function (t) {
-        B.format('(new ', t.constructor, '(', t.arguments, ',', '))');
-    },
-    PropertyAccess: function (t) {
-        if (typeof t.name === 'string')
-            B.format('(', t.base, '.', ident(t.name), ')');
-        else B.format('(', t.base, '[', t.name, ']', ')');
-    },
-//  PropertyAccessProperty: function (t) { },
-    PropertyAssignment: function (t) {
-        B.format(t.name, ': ', t.value);
-    },
-    SetterDefinition: function (t) {
-        B.format('set ', ident(t.name), '(', t.param.map(ident), ',', ')',
-            t.body, ';');
-    },
-
-    Variable: function (t) { B.push(ident(t.name)); },
-    VariableDeclaration: function (t) {
-        if (t.value) B.format(t.name, ' = ', t.value);
-        else B.format(t.name);
-    },
-    VariableStatement: function (t) {
-        if (bol) B.format('var ', t.declarations, ',', ';', newline);
-        else B.format('var ', t.declarations, ',');
-    },
-
-    BreakStatement: function (t) {
-        if (t.label) B.format('break ', t.label);
-        else B.push('break');
-    },
-    ContinueStatement: function (t) {
-        if (t.label) B.format('continue ', t.label);
-        else B.push('continue');
-    },
-    DebuggerStatement: function (t) { B.push('debugger'); },
-    DoWhileStatement: function (t) {
-        B.format('do ', t.statement);
-        if (t.statement.type !== 'Block') B.format(';', newline);
-        B.format('while (', t.condition, ')');
-    },
-    EmptyStatement: function (t) { B.push(';'); },
-    ForInStatement: function (t) {
-        B.format('for (var ', t.iterator, ' in ', t.collection, ') ',
-            t.statement);
-    },
-    ForStatement: function (t) {
-        B.format('for (', t.initializer, '; ', t.test, '; ', t.counter, ') ',
-            t.statement, t.statement.type !== 'Block' ? ';' : '');
-    },
-    IfStatement: function (t) {
-        B.format('if (', t.condition, ') ', t.ifStatement);
-        if (t.elseStatement) {
-            B.format(newline, 'else ', t.elseStatement);
-            if (t.elseStatement !== 'Block') B.push(';');
-        }
-    },
-    LabelledStatement: function (t) { B.format(t.label, ': ', t.statement); },
-    ReturnStatement: function (t) {
-        B.format('return ', t.value ? t.value : '');
-    },
-    SwitchStatement: function (t) {
-        B.format('switch (', t.expression, ') {', 2, newline);
-        t.clauses.forEach(T);
-        B.format(-2, '}');
-    },
-    CaseClause: function (t) {
-        B.format('case ', t.selector, ': ', 2, t.statements, ';', -2);
-    },
-    DefaultClause: function (t) {
-        B.format('default: ', 2, t.statements, ';', -2);
-    },
-    TryStatement: function (t) {
-        B.format('try ', t.block, t.catch, t.finally);
-    },
-    Catch: function (t) {
-        B.format(' catch (', ident(t.identifier), ') ', t.block);
-    },
-    Finally: function (t) {
-        B.format(' finally ', t.block);
-    },
-    ThrowStatement: function (t) { B.format('throw ', t.exception); },
-    WhileStatement: function (t) {
-        B.format('while (', t.condition, ') ', t.statement);
-    },
-    WithStatement: function (t) {
-        B.format('with (', t.environment, ') ', t.statement);
-    },
-
-    Block: function (t) {
-        if (t.statements.length === 0) B.format('{}');
-        else B.format('{', 2, newline, t.statements, ';', -2, '}');
-    },
-    Program: function (t) {
-        if (t.variables)
-            t.variables.forEach(function (v) {
-                    B.format('var ', v, ';', newline);
-                });
-        t.elements.map(function (t) { T(t); });
-    },
-    ExpressionMacroDefinition: function (t) {},
-    Characterstmt: function (t) {}
-};
-*/
-
-function T(t) {
-    if (!t ) return;
-    var unparse = unparser[t.type];
-    if (unparse) return unparse(t);
-    throw(new Error({ message: 'Unknown type', t: JSON.stringify(t) }));
-}
-
-exports.convert = function (t, output) {
-    var fd = false;
-    if (typeof output === 'number') fd = output;
-    if (typeof output === 'string') {
-        fd = fs.openSync(output, 'w');
-    }
-    B.format(B.reset, t);
-    var result = B.flush(fd);
-    if (fd) fs.closeSync(fd);
-    return result;
-};
+CharNoRef = Char1

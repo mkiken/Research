@@ -78,7 +78,6 @@ module.exports = (function(){
         "ids": parse_ids,
         "Path": parse_Path,
         "StableId": parse_StableId,
-        "_StableId": parse__StableId,
         "ClassQualifier": parse_ClassQualifier,
         "Type": parse_Type,
         "FunctionArgTypes": parse_FunctionArgTypes,
@@ -88,7 +87,7 @@ module.exports = (function(){
         "CompoundType": parse_CompoundType,
         "AnnotType": parse_AnnotType,
         "SimpleType": parse_SimpleType,
-        "_SimpleType": parse__SimpleType,
+        "withId": parse_withId,
         "TypeArgs": parse_TypeArgs,
         "Types": parse_Types,
         "Refinement": parse_Refinement,
@@ -98,7 +97,6 @@ module.exports = (function(){
         "Expr1": parse_Expr1,
         "PostfixExpr": parse_PostfixExpr,
         "InfixExpr": parse_InfixExpr,
-        "_InfixExpr": parse__InfixExpr,
         "PrefixExpr": parse_PrefixExpr,
         "SimpleExpr": parse_SimpleExpr,
         "SimpleExpr1": parse_SimpleExpr1,
@@ -250,6 +248,7 @@ module.exports = (function(){
         "CharRef": parse_CharRef,
         "BaseChar": parse_BaseChar,
         "S": parse_S,
+        "XmlPattern": parse_XmlPattern,
         "ElemPattern": parse_ElemPattern,
         "EmptyElemTagP": parse_EmptyElemTagP,
         "STagP": parse_STagP,
@@ -357,13 +356,14 @@ module.exports = (function(){
         }
         
         var result0, result1, result2, result3, result4;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse___();
         if (result0 !== null) {
           result1 = [];
-          pos1 = clone(pos);
+          pos2 = clone(pos);
           result2 = parse_PACKAGE();
           if (result2 !== null) {
             result3 = parse_QualId();
@@ -373,19 +373,19 @@ module.exports = (function(){
                 result2 = [result2, result3, result4];
               } else {
                 result2 = null;
-                pos = clone(pos1);
+                pos = clone(pos2);
               }
             } else {
               result2 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           } else {
             result2 = null;
-            pos = clone(pos1);
+            pos = clone(pos2);
           }
           while (result2 !== null) {
             result1.push(result2);
-            pos1 = clone(pos);
+            pos2 = clone(pos);
             result2 = parse_PACKAGE();
             if (result2 !== null) {
               result3 = parse_QualId();
@@ -395,15 +395,15 @@ module.exports = (function(){
                   result2 = [result2, result3, result4];
                 } else {
                   result2 = null;
-                  pos = clone(pos1);
+                  pos = clone(pos2);
                 }
               } else {
                 result2 = null;
-                pos = clone(pos1);
+                pos = clone(pos2);
               }
             } else {
               result2 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           }
           if (result1 !== null) {
@@ -412,14 +412,20 @@ module.exports = (function(){
               result0 = [result0, result1, result2];
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, pcs, tss) {return {type: "CompilationUnit", packages:pcs, topStatseq:tss};})(pos0.offset, pos0.line, pos0.column, result0[1], result0[2]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -590,25 +596,62 @@ module.exports = (function(){
           return cachedResult.result;
         }
         
-        var result0, result1;
-        var pos0, pos1;
+        var result0, result1, result2;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
         pos1 = clone(pos);
-        result1 = parse_opchar();
-        if (result1 !== null) {
-          result0 = [];
-          while (result1 !== null) {
-            result0.push(result1);
-            result1 = parse_opchar();
-          }
+        pos2 = clone(pos);
+        reportFailures++;
+        if (input.substr(pos.offset, 2) === "/*") {
+          result0 = "/*";
+          advance(pos, 2);
         } else {
           result0 = null;
+          if (reportFailures === 0) {
+            matchFailed("\"/*\"");
+          }
+        }
+        if (result0 === null) {
+          if (input.substr(pos.offset, 2) === "//") {
+            result0 = "//";
+            advance(pos, 2);
+          } else {
+            result0 = null;
+            if (reportFailures === 0) {
+              matchFailed("\"//\"");
+            }
+          }
+          if (result0 === null) {
+            result0 = parse_EQUAL();
+          }
+        }
+        reportFailures--;
+        if (result0 === null) {
+          result0 = "";
+        } else {
+          result0 = null;
+          pos = clone(pos2);
         }
         if (result0 !== null) {
-          result1 = parse___();
+          result2 = parse_opchar();
+          if (result2 !== null) {
+            result1 = [];
+            while (result2 !== null) {
+              result1.push(result2);
+              result2 = parse_opchar();
+            }
+          } else {
+            result1 = null;
+          }
           if (result1 !== null) {
-            result0 = [result0, result1];
+            result2 = parse___();
+            if (result2 !== null) {
+              result0 = [result0, result1, result2];
+            } else {
+              result0 = null;
+              pos = clone(pos1);
+            }
           } else {
             result0 = null;
             pos = clone(pos1);
@@ -618,7 +661,7 @@ module.exports = (function(){
           pos = clone(pos1);
         }
         if (result0 !== null) {
-          result0 = (function(offset, line, column, chars) {return chars.join("");})(pos0.offset, pos0.line, pos0.column, result0[0]);
+          result0 = (function(offset, line, column, chars) {return chars.join("");})(pos0.offset, pos0.line, pos0.column, result0[1]);
         }
         if (result0 === null) {
           pos = clone(pos0);
@@ -728,7 +771,14 @@ module.exports = (function(){
         var result0, result1, result2, result3;
         var pos0, pos1;
         
+        pos0 = clone(pos);
         result0 = parse_plainid();
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, nm) {return { type: "Identifier", name: nm }; })(pos0.offset, pos0.line, pos0.column, result0);
+        }
+        if (result0 === null) {
+          pos = clone(pos0);
+        }
         if (result0 === null) {
           pos0 = clone(pos);
           pos1 = clone(pos);
@@ -774,7 +824,7 @@ module.exports = (function(){
             pos = clone(pos1);
           }
           if (result0 !== null) {
-            result0 = (function(offset, line, column, str) {return str;})(pos0.offset, pos0.line, pos0.column, result0[1]);
+            result0 = (function(offset, line, column, str) { return { type: "Identifier", name: str}; })(pos0.offset, pos0.line, pos0.column, result0[1]);
           }
           if (result0 === null) {
             pos = clone(pos0);
@@ -1835,7 +1885,7 @@ module.exports = (function(){
           pos = clone(pos1);
         }
         if (result0 !== null) {
-          result0 = (function(offset, line, column, ele) {return {type: "stringLiteral", value: ele};})(pos0.offset, pos0.line, pos0.column, result0[1]);
+          result0 = (function(offset, line, column, ele) {return {type: "stringLiteral", value: ele.join("")};})(pos0.offset, pos0.line, pos0.column, result0[1]);
         }
         if (result0 === null) {
           pos = clone(pos0);
@@ -2574,9 +2624,28 @@ module.exports = (function(){
           return cachedResult.result;
         }
         
-        var result0, result1;
+        var result0, result1, result2;
+        var pos0;
         
+        pos0 = clone(pos);
         result0 = parse_SEMICOLON();
+        if (result0 !== null) {
+          result1 = [];
+          result2 = parse_nl();
+          while (result2 !== null) {
+            result1.push(result2);
+            result2 = parse_nl();
+          }
+          if (result1 !== null) {
+            result0 = [result0, result1];
+          } else {
+            result0 = null;
+            pos = clone(pos0);
+          }
+        } else {
+          result0 = null;
+          pos = clone(pos0);
+        }
         if (result0 === null) {
           result1 = parse_nl();
           if (result1 !== null) {
@@ -2670,7 +2739,7 @@ module.exports = (function(){
         result0 = parse_HYPHEN();
         result0 = result0 !== null ? result0 : "";
         if (result0 !== null) {
-          result1 = parse_integerLiteral();
+          result1 = parse_floatingPointLiteral();
           if (result1 !== null) {
             result0 = [result0, result1];
           } else {
@@ -2682,7 +2751,7 @@ module.exports = (function(){
           pos = clone(pos1);
         }
         if (result0 !== null) {
-          result0 = (function(offset, line, column, minus, val) {return {type: "integerLiteral", value: minus + val}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+          result0 = (function(offset, line, column, minus, val) {return {type: "floatingPointLiteral", value: minus + val}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
         }
         if (result0 === null) {
           pos = clone(pos0);
@@ -2693,7 +2762,7 @@ module.exports = (function(){
           result0 = parse_HYPHEN();
           result0 = result0 !== null ? result0 : "";
           if (result0 !== null) {
-            result1 = parse_floatingPointLiteral();
+            result1 = parse_integerLiteral();
             if (result1 !== null) {
               result0 = [result0, result1];
             } else {
@@ -2705,7 +2774,7 @@ module.exports = (function(){
             pos = clone(pos1);
           }
           if (result0 !== null) {
-            result0 = (function(offset, line, column, val) {return {type: "floatingPointLiteral", value: minus + val}; })(pos0.offset, pos0.line, pos0.column, result0[1]);
+            result0 = (function(offset, line, column, minus, val) {return {type: "integerLiteral", value: minus + val}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
           }
           if (result0 === null) {
             pos = clone(pos0);
@@ -2785,13 +2854,14 @@ module.exports = (function(){
         }
         
         var result0, result1, result2, result3;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_id();
         if (result0 !== null) {
           result1 = [];
-          pos1 = clone(pos);
+          pos2 = clone(pos);
           result2 = parse_DOT();
           if (result2 !== null) {
             result3 = parse_id();
@@ -2799,15 +2869,15 @@ module.exports = (function(){
               result2 = [result2, result3];
             } else {
               result2 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           } else {
             result2 = null;
-            pos = clone(pos1);
+            pos = clone(pos2);
           }
           while (result2 !== null) {
             result1.push(result2);
-            pos1 = clone(pos);
+            pos2 = clone(pos);
             result2 = parse_DOT();
             if (result2 !== null) {
               result3 = parse_id();
@@ -2815,21 +2885,33 @@ module.exports = (function(){
                 result2 = [result2, result3];
               } else {
                 result2 = null;
-                pos = clone(pos1);
+                pos = clone(pos2);
               }
             } else {
               result2 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           }
           if (result1 !== null) {
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, head, tail) {
+              var result = [head];
+              for (var i = 0; i < tail.length; i++) {
+                result.push(tail[i][1]);
+              }
+              return result;
+            })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -2849,13 +2931,14 @@ module.exports = (function(){
         }
         
         var result0, result1, result2, result3;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_id();
         if (result0 !== null) {
           result1 = [];
-          pos1 = clone(pos);
+          pos2 = clone(pos);
           result2 = parse_COMMA();
           if (result2 !== null) {
             result3 = parse_id();
@@ -2863,15 +2946,15 @@ module.exports = (function(){
               result2 = [result2, result3];
             } else {
               result2 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           } else {
             result2 = null;
-            pos = clone(pos1);
+            pos = clone(pos2);
           }
           while (result2 !== null) {
             result1.push(result2);
-            pos1 = clone(pos);
+            pos2 = clone(pos);
             result2 = parse_COMMA();
             if (result2 !== null) {
               result3 = parse_id();
@@ -2879,21 +2962,33 @@ module.exports = (function(){
                 result2 = [result2, result3];
               } else {
                 result2 = null;
-                pos = clone(pos1);
+                pos = clone(pos2);
               }
             } else {
               result2 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           }
           if (result1 !== null) {
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, head, tail) {
+              var result = [head];
+              for (var i = 0; i < tail.length; i++) {
+                result.push(tail[i][1]);
+              }
+              return {type:"ids", ids:result};
+            })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -2913,15 +3008,29 @@ module.exports = (function(){
         }
         
         var result0, result1;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         result0 = parse_StableId();
         if (result0 === null) {
           pos0 = clone(pos);
           pos1 = clone(pos);
+          pos2 = clone(pos);
           result0 = parse_id();
           if (result0 !== null) {
             result1 = parse_DOT();
+            if (result1 !== null) {
+              result0 = [result0, result1];
+            } else {
+              result0 = null;
+              pos = clone(pos2);
+            }
+          } else {
+            result0 = null;
+            pos = clone(pos2);
+          }
+          result0 = result0 !== null ? result0 : "";
+          if (result0 !== null) {
+            result1 = parse_THIS();
             if (result1 !== null) {
               result0 = [result0, result1];
             } else {
@@ -2932,17 +3041,10 @@ module.exports = (function(){
             result0 = null;
             pos = clone(pos1);
           }
-          result0 = result0 !== null ? result0 : "";
           if (result0 !== null) {
-            result1 = parse_THIS();
-            if (result1 !== null) {
-              result0 = [result0, result1];
-            } else {
-              result0 = null;
-              pos = clone(pos0);
-            }
-          } else {
-            result0 = null;
+            result0 = (function(offset, line, column, pre) {return {type:"Path", id:ftr(pre, 0)};})(pos0.offset, pos0.line, pos0.column, result0[0]);
+          }
+          if (result0 === null) {
             pos = clone(pos0);
           }
         }
@@ -2963,30 +3065,129 @@ module.exports = (function(){
         }
         
         var result0, result1, result2, result3, result4, result5, result6;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_id();
         if (result0 !== null) {
-          result1 = parse__StableId();
+          result1 = [];
+          pos2 = clone(pos);
+          result2 = parse_DOT();
+          if (result2 !== null) {
+            result3 = parse_id();
+            if (result3 !== null) {
+              result2 = [result2, result3];
+            } else {
+              result2 = null;
+              pos = clone(pos2);
+            }
+          } else {
+            result2 = null;
+            pos = clone(pos2);
+          }
+          while (result2 !== null) {
+            result1.push(result2);
+            pos2 = clone(pos);
+            result2 = parse_DOT();
+            if (result2 !== null) {
+              result3 = parse_id();
+              if (result3 !== null) {
+                result2 = [result2, result3];
+              } else {
+                result2 = null;
+                pos = clone(pos2);
+              }
+            } else {
+              result2 = null;
+              pos = clone(pos2);
+            }
+          }
           if (result1 !== null) {
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, base, accessors) {
+              var result = [base];
+              for (var i = 0; i < accessors.length; i++) {
+                result.push(accessors[i][1]);
+        	  }
+              return {type:"StableId", contents:result};
+            })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         if (result0 === null) {
           pos0 = clone(pos);
           pos1 = clone(pos);
+          pos2 = clone(pos);
           result0 = parse_id();
           if (result0 !== null) {
             result1 = parse_DOT();
             if (result1 !== null) {
               result0 = [result0, result1];
+            } else {
+              result0 = null;
+              pos = clone(pos2);
+            }
+          } else {
+            result0 = null;
+            pos = clone(pos2);
+          }
+          result0 = result0 !== null ? result0 : "";
+          if (result0 !== null) {
+            result1 = parse_THIS();
+            if (result1 !== null) {
+              pos2 = clone(pos);
+              result3 = parse_DOT();
+              if (result3 !== null) {
+                result4 = parse_id();
+                if (result4 !== null) {
+                  result3 = [result3, result4];
+                } else {
+                  result3 = null;
+                  pos = clone(pos2);
+                }
+              } else {
+                result3 = null;
+                pos = clone(pos2);
+              }
+              if (result3 !== null) {
+                result2 = [];
+                while (result3 !== null) {
+                  result2.push(result3);
+                  pos2 = clone(pos);
+                  result3 = parse_DOT();
+                  if (result3 !== null) {
+                    result4 = parse_id();
+                    if (result4 !== null) {
+                      result3 = [result3, result4];
+                    } else {
+                      result3 = null;
+                      pos = clone(pos2);
+                    }
+                  } else {
+                    result3 = null;
+                    pos = clone(pos2);
+                  }
+                }
+              } else {
+                result2 = null;
+              }
+              if (result2 !== null) {
+                result0 = [result0, result1, result2];
+              } else {
+                result0 = null;
+                pos = clone(pos1);
+              }
             } else {
               result0 = null;
               pos = clone(pos1);
@@ -2995,40 +3196,22 @@ module.exports = (function(){
             result0 = null;
             pos = clone(pos1);
           }
-          result0 = result0 !== null ? result0 : "";
           if (result0 !== null) {
-            result1 = parse_THIS();
-            if (result1 !== null) {
-              result2 = parse_DOT();
-              if (result2 !== null) {
-                result3 = parse_id();
-                if (result3 !== null) {
-                  result4 = parse__StableId();
-                  if (result4 !== null) {
-                    result0 = [result0, result1, result2, result3, result4];
-                  } else {
-                    result0 = null;
-                    pos = clone(pos0);
-                  }
-                } else {
-                  result0 = null;
-                  pos = clone(pos0);
-                }
-              } else {
-                result0 = null;
-                pos = clone(pos0);
-              }
-            } else {
-              result0 = null;
-              pos = clone(pos0);
-            }
-          } else {
-            result0 = null;
+            result0 = (function(offset, line, column, pre, th, accessors) {
+                var result = pre !==""? [pre[0], th] : [th];
+                for (var i = 0; i < accessors.length; i++) {
+                  result.push(accessors[i][1]);
+          	  }
+          	  return {type:"StableId", contents:result};
+              })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1], result0[2]);
+          }
+          if (result0 === null) {
             pos = clone(pos0);
           }
           if (result0 === null) {
             pos0 = clone(pos);
             pos1 = clone(pos);
+            pos2 = clone(pos);
             result0 = parse_id();
             if (result0 !== null) {
               result1 = parse_DOT();
@@ -3036,11 +3219,11 @@ module.exports = (function(){
                 result0 = [result0, result1];
               } else {
                 result0 = null;
-                pos = clone(pos1);
+                pos = clone(pos2);
               }
             } else {
               result0 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
             result0 = result0 !== null ? result0 : "";
             if (result0 !== null) {
@@ -3059,84 +3242,80 @@ module.exports = (function(){
                   result3 = parse_ClassQualifier();
                   result3 = result3 !== null ? result3 : "";
                   if (result3 !== null) {
-                    result4 = parse_DOT();
-                    if (result4 !== null) {
-                      result5 = parse_id();
-                      if (result5 !== null) {
-                        result6 = parse__StableId();
-                        if (result6 !== null) {
-                          result0 = [result0, result1, result2, result3, result4, result5, result6];
-                        } else {
-                          result0 = null;
-                          pos = clone(pos0);
-                        }
+                    pos2 = clone(pos);
+                    result5 = parse_DOT();
+                    if (result5 !== null) {
+                      result6 = parse_id();
+                      if (result6 !== null) {
+                        result5 = [result5, result6];
                       } else {
-                        result0 = null;
-                        pos = clone(pos0);
+                        result5 = null;
+                        pos = clone(pos2);
                       }
                     } else {
+                      result5 = null;
+                      pos = clone(pos2);
+                    }
+                    if (result5 !== null) {
+                      result4 = [];
+                      while (result5 !== null) {
+                        result4.push(result5);
+                        pos2 = clone(pos);
+                        result5 = parse_DOT();
+                        if (result5 !== null) {
+                          result6 = parse_id();
+                          if (result6 !== null) {
+                            result5 = [result5, result6];
+                          } else {
+                            result5 = null;
+                            pos = clone(pos2);
+                          }
+                        } else {
+                          result5 = null;
+                          pos = clone(pos2);
+                        }
+                      }
+                    } else {
+                      result4 = null;
+                    }
+                    if (result4 !== null) {
+                      result0 = [result0, result1, result2, result3, result4];
+                    } else {
                       result0 = null;
-                      pos = clone(pos0);
+                      pos = clone(pos1);
                     }
                   } else {
                     result0 = null;
-                    pos = clone(pos0);
+                    pos = clone(pos1);
                   }
                 } else {
                   result0 = null;
-                  pos = clone(pos0);
+                  pos = clone(pos1);
                 }
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
+              pos = clone(pos1);
+            }
+            if (result0 !== null) {
+              result0 = (function(offset, line, column, pre, cl, accessors) {
+                  var result = pre !== ""? [pre[0], {type:"Keyword", word:"super"}] : [{type:"Keyword", word:"super"}];
+            if(cl !== ""){
+            	result.push(cl);
+            }
+            	  for (var i = 0; i < accessors.length; i++) {
+                    result.push(accessors[i][1]);
+            	  }
+            	  return {type:"StableId", contents:result};
+                })(pos0.offset, pos0.line, pos0.column, result0[0], result0[3], result0[4]);
+            }
+            if (result0 === null) {
               pos = clone(pos0);
             }
           }
-        }
-        
-        cache[cacheKey] = {
-          nextPos: clone(pos),
-          result:  result0
-        };
-        return result0;
-      }
-      
-      function parse__StableId() {
-        var cacheKey = "_StableId@" + pos.offset;
-        var cachedResult = cache[cacheKey];
-        if (cachedResult) {
-          pos = clone(cachedResult.nextPos);
-          return cachedResult.result;
-        }
-        
-        var result0, result1, result2;
-        var pos0;
-        
-        pos0 = clone(pos);
-        result0 = parse_DOT();
-        if (result0 !== null) {
-          result1 = parse_id();
-          if (result1 !== null) {
-            result2 = parse__StableId();
-            if (result2 !== null) {
-              result0 = [result0, result1, result2];
-            } else {
-              result0 = null;
-              pos = clone(pos0);
-            }
-          } else {
-            result0 = null;
-            pos = clone(pos0);
-          }
-        } else {
-          result0 = null;
-          pos = clone(pos0);
-        }
-        if (result0 === null) {
-          result0 = parse_Empty();
         }
         
         cache[cacheKey] = {
@@ -3155,9 +3334,10 @@ module.exports = (function(){
         }
         
         var result0, result1, result2;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_OPBRACKET();
         if (result0 !== null) {
           result1 = parse_id();
@@ -3167,14 +3347,20 @@ module.exports = (function(){
               result0 = [result0, result1, result2];
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, qual) {return {type: "ClassQualifier", id:qual};})(pos0.offset, pos0.line, pos0.column, result0[1]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -3194,9 +3380,10 @@ module.exports = (function(){
         }
         
         var result0, result1, result2;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_FunctionArgTypes();
         if (result0 !== null) {
           result1 = parse_ARROW();
@@ -3206,18 +3393,25 @@ module.exports = (function(){
               result0 = [result0, result1, result2];
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, funcarg, tp) {return {type:"FunctionType", left:funcarg, right:tp};})(pos0.offset, pos0.line, pos0.column, result0[0], result0[2]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         if (result0 === null) {
           pos0 = clone(pos);
+          pos1 = clone(pos);
           result0 = parse_InfixType();
           if (result0 !== null) {
             result1 = parse_ExistentialClause();
@@ -3226,10 +3420,16 @@ module.exports = (function(){
               result0 = [result0, result1];
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
+            pos = clone(pos1);
+          }
+          if (result0 !== null) {
+            result0 = (function(offset, line, column, tp, ext) {return {type:"Type", ext:ext, tp:tp};})(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+          }
+          if (result0 === null) {
             pos = clone(pos0);
           }
         }
@@ -3250,18 +3450,19 @@ module.exports = (function(){
         }
         
         var result0, result1, result2, result3, result4;
-        var pos0, pos1, pos2;
+        var pos0, pos1, pos2, pos3;
         
         result0 = parse_InfixType();
         if (result0 === null) {
           pos0 = clone(pos);
+          pos1 = clone(pos);
           result0 = parse_OPPAREN();
           if (result0 !== null) {
-            pos1 = clone(pos);
+            pos2 = clone(pos);
             result1 = parse_ParamType();
             if (result1 !== null) {
               result2 = [];
-              pos2 = clone(pos);
+              pos3 = clone(pos);
               result3 = parse_COMMA();
               if (result3 !== null) {
                 result4 = parse_ParamType();
@@ -3269,15 +3470,15 @@ module.exports = (function(){
                   result3 = [result3, result4];
                 } else {
                   result3 = null;
-                  pos = clone(pos2);
+                  pos = clone(pos3);
                 }
               } else {
                 result3 = null;
-                pos = clone(pos2);
+                pos = clone(pos3);
               }
               while (result3 !== null) {
                 result2.push(result3);
-                pos2 = clone(pos);
+                pos3 = clone(pos);
                 result3 = parse_COMMA();
                 if (result3 !== null) {
                   result4 = parse_ParamType();
@@ -3285,22 +3486,22 @@ module.exports = (function(){
                     result3 = [result3, result4];
                   } else {
                     result3 = null;
-                    pos = clone(pos2);
+                    pos = clone(pos3);
                   }
                 } else {
                   result3 = null;
-                  pos = clone(pos2);
+                  pos = clone(pos3);
                 }
               }
               if (result2 !== null) {
                 result1 = [result1, result2];
               } else {
                 result1 = null;
-                pos = clone(pos1);
+                pos = clone(pos2);
               }
             } else {
               result1 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
             result1 = result1 !== null ? result1 : "";
             if (result1 !== null) {
@@ -3309,14 +3510,29 @@ module.exports = (function(){
                 result0 = [result0, result1, result2];
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
+            pos = clone(pos1);
+          }
+          if (result0 !== null) {
+            result0 = (function(offset, line, column, tps) {
+                var result = [];
+          if(tps !== ""){
+          	result.push(tps[0]);
+          	for (var i = 0; i < tps[1].length; i++) {
+                  result.push(tps[1][i][1]);
+          	  }
+          }
+          	  return {type:"FunctionArgTypes", contents:result};
+              })(pos0.offset, pos0.line, pos0.column, result0[1]);
+          }
+          if (result0 === null) {
             pos = clone(pos0);
           }
         }
@@ -3337,9 +3553,10 @@ module.exports = (function(){
         }
         
         var result0, result1, result2, result3, result4, result5, result6;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         if (input.substr(pos.offset, 7) === "forSome") {
           result0 = "forSome";
           advance(pos, 7);
@@ -3357,7 +3574,7 @@ module.exports = (function(){
               result3 = parse_ExistentialDcl();
               if (result3 !== null) {
                 result4 = [];
-                pos1 = clone(pos);
+                pos2 = clone(pos);
                 result5 = parse_semi();
                 if (result5 !== null) {
                   result6 = parse_ExistentialDcl();
@@ -3365,15 +3582,15 @@ module.exports = (function(){
                     result5 = [result5, result6];
                   } else {
                     result5 = null;
-                    pos = clone(pos1);
+                    pos = clone(pos2);
                   }
                 } else {
                   result5 = null;
-                  pos = clone(pos1);
+                  pos = clone(pos2);
                 }
                 while (result5 !== null) {
                   result4.push(result5);
-                  pos1 = clone(pos);
+                  pos2 = clone(pos);
                   result5 = parse_semi();
                   if (result5 !== null) {
                     result6 = parse_ExistentialDcl();
@@ -3381,11 +3598,11 @@ module.exports = (function(){
                       result5 = [result5, result6];
                     } else {
                       result5 = null;
-                      pos = clone(pos1);
+                      pos = clone(pos2);
                     }
                   } else {
                     result5 = null;
-                    pos = clone(pos1);
+                    pos = clone(pos2);
                   }
                 }
                 if (result4 !== null) {
@@ -3394,26 +3611,38 @@ module.exports = (function(){
                     result0 = [result0, result1, result2, result3, result4, result5];
                   } else {
                     result0 = null;
-                    pos = clone(pos0);
+                    pos = clone(pos1);
                   }
                 } else {
                   result0 = null;
-                  pos = clone(pos0);
+                  pos = clone(pos1);
                 }
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, ex, exs) {
+              var result = [{type:"Keyword", word:"forSome"}];
+        	  result.push(ex);
+        	for (var i = 0; i < exs.length; i++) {
+                result.push(exs[i][1]);
+        	  }	  return {type:"ExistentialClause", contents:result};
+            })(pos0.offset, pos0.line, pos0.column, result0[3], result0[4]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -3433,9 +3662,10 @@ module.exports = (function(){
         }
         
         var result0, result1;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_TYPE();
         if (result0 !== null) {
           result1 = parse_TypeDcl();
@@ -3443,14 +3673,21 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, tp, dcl) {return {type:"ExistentialDcl", pre:tp, dcl:dcl}})(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         if (result0 === null) {
           pos0 = clone(pos);
+          pos1 = clone(pos);
           result0 = parse_VAL();
           if (result0 !== null) {
             result1 = parse_ValDcl();
@@ -3458,10 +3695,16 @@ module.exports = (function(){
               result0 = [result0, result1];
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
+            pos = clone(pos1);
+          }
+          if (result0 !== null) {
+            result0 = (function(offset, line, column, vl, dcl) {return {type:"ExistentialDcl", pre:vl, dcl:dcl}})(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+          }
+          if (result0 === null) {
             pos = clone(pos0);
           }
         }
@@ -3482,13 +3725,14 @@ module.exports = (function(){
         }
         
         var result0, result1, result2, result3, result4;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_CompoundType();
         if (result0 !== null) {
           result1 = [];
-          pos1 = clone(pos);
+          pos2 = clone(pos);
           result2 = parse_id();
           if (result2 !== null) {
             result3 = parse_nl();
@@ -3499,19 +3743,19 @@ module.exports = (function(){
                 result2 = [result2, result3, result4];
               } else {
                 result2 = null;
-                pos = clone(pos1);
+                pos = clone(pos2);
               }
             } else {
               result2 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           } else {
             result2 = null;
-            pos = clone(pos1);
+            pos = clone(pos2);
           }
           while (result2 !== null) {
             result1.push(result2);
-            pos1 = clone(pos);
+            pos2 = clone(pos);
             result2 = parse_id();
             if (result2 !== null) {
               result3 = parse_nl();
@@ -3522,25 +3766,37 @@ module.exports = (function(){
                   result2 = [result2, result3, result4];
                 } else {
                   result2 = null;
-                  pos = clone(pos1);
+                  pos = clone(pos2);
                 }
               } else {
                 result2 = null;
-                pos = clone(pos1);
+                pos = clone(pos2);
               }
             } else {
               result2 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           }
           if (result1 !== null) {
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, head, tails) {
+              var ids = [], cts = [];
+        	for (var i = 0; i < tails.length; i++) {
+                ids.push(tails[i][0]);
+                cts.push(tails[i][2]);
+        	  }	  return {type:"InfixType", compoundType:head, ids:ids, compoundTypes:cts};
+            })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -3560,12 +3816,13 @@ module.exports = (function(){
         }
         
         var result0, result1, result2;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_AnnotType();
         if (result0 !== null) {
-          pos1 = clone(pos);
+          pos2 = clone(pos);
           result1 = parse_WITH();
           if (result1 !== null) {
             result2 = parse_AnnotType();
@@ -3573,11 +3830,11 @@ module.exports = (function(){
               result1 = [result1, result2];
             } else {
               result1 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           } else {
             result1 = null;
-            pos = clone(pos1);
+            pos = clone(pos2);
           }
           result1 = result1 !== null ? result1 : "";
           if (result1 !== null) {
@@ -3587,14 +3844,20 @@ module.exports = (function(){
               result0 = [result0, result1, result2];
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, at, wat, ref) {return {type:"CompoundType", annotType:[at, ftr(wat)], ref:ftr(ref)};})(pos0.offset, pos0.line, pos0.column, result0[0], result0[1], result0[2]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         if (result0 === null) {
@@ -3617,9 +3880,10 @@ module.exports = (function(){
         }
         
         var result0, result1, result2;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_SimpleType();
         if (result0 !== null) {
           result1 = [];
@@ -3632,10 +3896,16 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, st, annotation) {return {type:"AnnotType", st:st, annotation:annotation}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -3654,75 +3924,129 @@ module.exports = (function(){
           return cachedResult.result;
         }
         
-        var result0, result1, result2, result3;
-        var pos0;
+        var result0, result1, result2, result3, result4;
+        var pos0, pos1;
         
         pos0 = clone(pos);
-        result0 = parse_StableId();
+        pos1 = clone(pos);
+        result0 = parse_Path();
         if (result0 !== null) {
-          result1 = parse__SimpleType();
+          result1 = parse_DOT();
           if (result1 !== null) {
-            result0 = [result0, result1];
+            result2 = parse_TYPE();
+            if (result2 !== null) {
+              result3 = [];
+              result4 = parse_TypeArgs();
+              if (result4 === null) {
+                result4 = parse_withId();
+              }
+              while (result4 !== null) {
+                result3.push(result4);
+                result4 = parse_TypeArgs();
+                if (result4 === null) {
+                  result4 = parse_withId();
+                }
+              }
+              if (result3 !== null) {
+                result0 = [result0, result1, result2, result3];
+              } else {
+                result0 = null;
+                pos = clone(pos1);
+              }
+            } else {
+              result0 = null;
+              pos = clone(pos1);
+            }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, path, dot, tp, tails) {return {type:"SimpleType", id:[path, dot, tp], postfix:tails}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1], result0[2], result0[3]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         if (result0 === null) {
           pos0 = clone(pos);
-          result0 = parse_Path();
+          pos1 = clone(pos);
+          result0 = parse_StableId();
           if (result0 !== null) {
-            result1 = parse_DOT();
-            if (result1 !== null) {
-              result2 = parse_TYPE();
-              if (result2 !== null) {
-                result3 = parse__SimpleType();
-                if (result3 !== null) {
-                  result0 = [result0, result1, result2, result3];
-                } else {
-                  result0 = null;
-                  pos = clone(pos0);
-                }
-              } else {
-                result0 = null;
-                pos = clone(pos0);
+            result1 = [];
+            result2 = parse_TypeArgs();
+            if (result2 === null) {
+              result2 = parse_withId();
+            }
+            while (result2 !== null) {
+              result1.push(result2);
+              result2 = parse_TypeArgs();
+              if (result2 === null) {
+                result2 = parse_withId();
               }
+            }
+            if (result1 !== null) {
+              result0 = [result0, result1];
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
+            pos = clone(pos1);
+          }
+          if (result0 !== null) {
+            result0 = (function(offset, line, column, si, tails) {return {type:"SimpleType", id:[si], postfix:tails}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+          }
+          if (result0 === null) {
             pos = clone(pos0);
           }
           if (result0 === null) {
             pos0 = clone(pos);
+            pos1 = clone(pos);
             result0 = parse_OPPAREN();
             if (result0 !== null) {
               result1 = parse_Types();
               if (result1 !== null) {
                 result2 = parse_CLPAREN();
                 if (result2 !== null) {
-                  result3 = parse__SimpleType();
+                  result3 = [];
+                  result4 = parse_TypeArgs();
+                  if (result4 === null) {
+                    result4 = parse_withId();
+                  }
+                  while (result4 !== null) {
+                    result3.push(result4);
+                    result4 = parse_TypeArgs();
+                    if (result4 === null) {
+                      result4 = parse_withId();
+                    }
+                  }
                   if (result3 !== null) {
                     result0 = [result0, result1, result2, result3];
                   } else {
                     result0 = null;
-                    pos = clone(pos0);
+                    pos = clone(pos1);
                   }
                 } else {
                   result0 = null;
-                  pos = clone(pos0);
+                  pos = clone(pos1);
                 }
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
+              pos = clone(pos1);
+            }
+            if (result0 !== null) {
+              result0 = (function(offset, line, column, op, tps, cl, tails) {return {type:"SimpleType", id:[op, tps, cl], postfix:tails}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1], result0[2], result0[3]);
+            }
+            if (result0 === null) {
               pos = clone(pos0);
             }
           }
@@ -3735,8 +4059,8 @@ module.exports = (function(){
         return result0;
       }
       
-      function parse__SimpleType() {
-        var cacheKey = "_SimpleType@" + pos.offset;
+      function parse_withId() {
+        var cacheKey = "withId@" + pos.offset;
         var cachedResult = cache[cacheKey];
         if (cachedResult) {
           pos = clone(cachedResult.nextPos);
@@ -3744,41 +4068,42 @@ module.exports = (function(){
         }
         
         var result0, result1, result2;
-        var pos0;
+        var pos0, pos1;
         
-        result0 = parse_TypeArgs();
-        if (result0 === null) {
-          pos0 = clone(pos);
-          if (input.charCodeAt(pos.offset) === 35) {
-            result0 = "#";
-            advance(pos, 1);
-          } else {
-            result0 = null;
-            if (reportFailures === 0) {
-              matchFailed("\"#\"");
-            }
+        pos0 = clone(pos);
+        pos1 = clone(pos);
+        if (input.charCodeAt(pos.offset) === 35) {
+          result0 = "#";
+          advance(pos, 1);
+        } else {
+          result0 = null;
+          if (reportFailures === 0) {
+            matchFailed("\"#\"");
           }
-          if (result0 !== null) {
-            result1 = parse___();
-            if (result1 !== null) {
-              result2 = parse_id();
-              if (result2 !== null) {
-                result0 = [result0, result1, result2];
-              } else {
-                result0 = null;
-                pos = clone(pos0);
-              }
+        }
+        if (result0 !== null) {
+          result1 = parse___();
+          if (result1 !== null) {
+            result2 = parse_id();
+            if (result2 !== null) {
+              result0 = [result0, result1, result2];
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
-          if (result0 === null) {
-            result0 = parse_Empty();
-          }
+        } else {
+          result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, id) {return {type:"withId", id:id};})(pos0.offset, pos0.line, pos0.column, result0[2]);
+        }
+        if (result0 === null) {
+          pos = clone(pos0);
         }
         
         cache[cacheKey] = {
@@ -3797,9 +4122,10 @@ module.exports = (function(){
         }
         
         var result0, result1, result2;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_OPBRACKET();
         if (result0 !== null) {
           result1 = parse_Types();
@@ -3809,14 +4135,20 @@ module.exports = (function(){
               result0 = [result0, result1, result2];
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, types) {return {type:"TypeArgs", types:types}; })(pos0.offset, pos0.line, pos0.column, result0[1]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -3836,13 +4168,14 @@ module.exports = (function(){
         }
         
         var result0, result1, result2, result3;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_Type();
         if (result0 !== null) {
           result1 = [];
-          pos1 = clone(pos);
+          pos2 = clone(pos);
           result2 = parse_COMMA();
           if (result2 !== null) {
             result3 = parse_Type();
@@ -3850,15 +4183,15 @@ module.exports = (function(){
               result2 = [result2, result3];
             } else {
               result2 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           } else {
             result2 = null;
-            pos = clone(pos1);
+            pos = clone(pos2);
           }
           while (result2 !== null) {
             result1.push(result2);
-            pos1 = clone(pos);
+            pos2 = clone(pos);
             result2 = parse_COMMA();
             if (result2 !== null) {
               result3 = parse_Type();
@@ -3866,21 +4199,33 @@ module.exports = (function(){
                 result2 = [result2, result3];
               } else {
                 result2 = null;
-                pos = clone(pos1);
+                pos = clone(pos2);
               }
             } else {
               result2 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           }
           if (result1 !== null) {
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, tp, tps) {
+              var result = [tp];
+        	  for (var i = 0; i < tps.length; i++) {
+                result.push(tps[i][1]);
+        	  }
+        	  return {type:"Types", contents:result};
+            })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -3900,9 +4245,10 @@ module.exports = (function(){
         }
         
         var result0, result1, result2, result3, result4, result5;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_nl();
         result0 = result0 !== null ? result0 : "";
         if (result0 !== null) {
@@ -3911,7 +4257,7 @@ module.exports = (function(){
             result2 = parse_RefineStat();
             if (result2 !== null) {
               result3 = [];
-              pos1 = clone(pos);
+              pos2 = clone(pos);
               result4 = parse_semi();
               if (result4 !== null) {
                 result5 = parse_RefineStat();
@@ -3919,15 +4265,15 @@ module.exports = (function(){
                   result4 = [result4, result5];
                 } else {
                   result4 = null;
-                  pos = clone(pos1);
+                  pos = clone(pos2);
                 }
               } else {
                 result4 = null;
-                pos = clone(pos1);
+                pos = clone(pos2);
               }
               while (result4 !== null) {
                 result3.push(result4);
-                pos1 = clone(pos);
+                pos2 = clone(pos);
                 result4 = parse_semi();
                 if (result4 !== null) {
                   result5 = parse_RefineStat();
@@ -3935,11 +4281,11 @@ module.exports = (function(){
                     result4 = [result4, result5];
                   } else {
                     result4 = null;
-                    pos = clone(pos1);
+                    pos = clone(pos2);
                   }
                 } else {
                   result4 = null;
-                  pos = clone(pos1);
+                  pos = clone(pos2);
                 }
               }
               if (result3 !== null) {
@@ -3948,22 +4294,34 @@ module.exports = (function(){
                   result0 = [result0, result1, result2, result3, result4];
                 } else {
                   result0 = null;
-                  pos = clone(pos0);
+                  pos = clone(pos1);
                 }
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, ref, refs) {
+              var result = [ref];
+        	  for (var i = 0; i < refs.length; i++) {
+                result.push(refs[i][1]);
+        	  }
+        	  return {type:"Refinement", contents:result};
+            })(pos0.offset, pos0.line, pos0.column, result0[2], result0[3]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -3983,11 +4341,12 @@ module.exports = (function(){
         }
         
         var result0, result1;
-        var pos0;
+        var pos0, pos1;
         
         result0 = parse_Dcl();
         if (result0 === null) {
           pos0 = clone(pos);
+          pos1 = clone(pos);
           result0 = parse_TYPE();
           if (result0 !== null) {
             result1 = parse_TypeDef();
@@ -3995,10 +4354,16 @@ module.exports = (function(){
               result0 = [result0, result1];
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
+            pos = clone(pos1);
+          }
+          if (result0 !== null) {
+            result0 = (function(offset, line, column, td) {return {type:"RefineStat", typedef:td}; })(pos0.offset, pos0.line, pos0.column, result0[1]);
+          }
+          if (result0 === null) {
             pos = clone(pos0);
           }
           if (result0 === null) {
@@ -4022,9 +4387,10 @@ module.exports = (function(){
         }
         
         var result0, result1, result2;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_COLON();
         if (result0 !== null) {
           result1 = parse_InfixType();
@@ -4032,14 +4398,21 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, infix) {return {type:"Ascription", contents:[infix]}; })(pos0.offset, pos0.line, pos0.column, result0[1]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         if (result0 === null) {
           pos0 = clone(pos);
+          pos1 = clone(pos);
           result0 = parse_COLON();
           if (result0 !== null) {
             result2 = parse_Annotation();
@@ -4056,14 +4429,21 @@ module.exports = (function(){
               result0 = [result0, result1];
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
+            pos = clone(pos1);
+          }
+          if (result0 !== null) {
+            result0 = (function(offset, line, column, as) {return {type:"Ascription", contents:as}; })(pos0.offset, pos0.line, pos0.column, result0[1]);
+          }
+          if (result0 === null) {
             pos = clone(pos0);
           }
           if (result0 === null) {
             pos0 = clone(pos);
+            pos1 = clone(pos);
             result0 = parse_COLON();
             if (result0 !== null) {
               result1 = parse_UNDER();
@@ -4073,14 +4453,20 @@ module.exports = (function(){
                   result0 = [result0, result1, result2];
                 } else {
                   result0 = null;
-                  pos = clone(pos0);
+                  pos = clone(pos1);
                 }
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
+              pos = clone(pos1);
+            }
+            if (result0 !== null) {
+              result0 = (function(offset, line, column, ud, st) {return {type:"Ascription", contents:[us,st]}; })(pos0.offset, pos0.line, pos0.column, result0[1], result0[2]);
+            }
+            if (result0 === null) {
               pos = clone(pos0);
             }
           }
@@ -4102,12 +4488,13 @@ module.exports = (function(){
         }
         
         var result0, result1, result2;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_Bindings();
         if (result0 === null) {
-          pos1 = clone(pos);
+          pos2 = clone(pos);
           result0 = parse_IMPLICIT();
           result0 = result0 !== null ? result0 : "";
           if (result0 !== null) {
@@ -4116,11 +4503,11 @@ module.exports = (function(){
               result0 = [result0, result1];
             } else {
               result0 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           } else {
             result0 = null;
-            pos = clone(pos1);
+            pos = clone(pos2);
           }
           if (result0 === null) {
             result0 = parse_UNDER();
@@ -4134,14 +4521,20 @@ module.exports = (function(){
               result0 = [result0, result1, result2];
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, left, right) {return {type:"AnonymousFunction", left:left, right:right}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[2]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         if (result0 === null) {
@@ -4164,9 +4557,10 @@ module.exports = (function(){
         }
         
         var result0, result1, result2, result3, result4, result5, result6, result7, result8, result9;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_IF();
         if (result0 !== null) {
           result1 = parse_OPPAREN();
@@ -4184,7 +4578,7 @@ module.exports = (function(){
                 if (result4 !== null) {
                   result5 = parse_Expr();
                   if (result5 !== null) {
-                    pos1 = clone(pos);
+                    pos2 = clone(pos);
                     result6 = parse_semi();
                     result6 = result6 !== null ? result6 : "";
                     if (result6 !== null) {
@@ -4205,53 +4599,67 @@ module.exports = (function(){
                             result6 = [result6, result7, result8, result9];
                           } else {
                             result6 = null;
-                            pos = clone(pos1);
+                            pos = clone(pos2);
                           }
                         } else {
                           result6 = null;
-                          pos = clone(pos1);
+                          pos = clone(pos2);
                         }
                       } else {
                         result6 = null;
-                        pos = clone(pos1);
+                        pos = clone(pos2);
                       }
                     } else {
                       result6 = null;
-                      pos = clone(pos1);
+                      pos = clone(pos2);
                     }
                     result6 = result6 !== null ? result6 : "";
                     if (result6 !== null) {
                       result0 = [result0, result1, result2, result3, result4, result5, result6];
                     } else {
                       result0 = null;
-                      pos = clone(pos0);
+                      pos = clone(pos1);
                     }
                   } else {
                     result0 = null;
-                    pos = clone(pos0);
+                    pos = clone(pos1);
                   }
                 } else {
                   result0 = null;
-                  pos = clone(pos0);
+                  pos = clone(pos1);
                 }
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, condition, ifStatement, elseStatement) {
+              return {
+                type:          "IfStatement",
+                condition:     condition,
+                ifStatement:   ifStatement,
+                elseStatement: elseStatement !== "" ? elseStatement[3] : null
+              };
+            })(pos0.offset, pos0.line, pos0.column, result0[2], result0[5], result0[6]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         if (result0 === null) {
           pos0 = clone(pos);
+          pos1 = clone(pos);
           result0 = parse_WHILE();
           if (result0 !== null) {
             result1 = parse_OPPAREN();
@@ -4272,30 +4680,43 @@ module.exports = (function(){
                       result0 = [result0, result1, result2, result3, result4, result5];
                     } else {
                       result0 = null;
-                      pos = clone(pos0);
+                      pos = clone(pos1);
                     }
                   } else {
                     result0 = null;
-                    pos = clone(pos0);
+                    pos = clone(pos1);
                   }
                 } else {
                   result0 = null;
-                  pos = clone(pos0);
+                  pos = clone(pos1);
                 }
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
+            pos = clone(pos1);
+          }
+          if (result0 !== null) {
+            result0 = (function(offset, line, column, condition, statement) {
+                return {
+                  type: "WhileStatement",
+                  condition: condition,
+                  statement: statement
+                };
+              })(pos0.offset, pos0.line, pos0.column, result0[2], result0[5]);
+          }
+          if (result0 === null) {
             pos = clone(pos0);
           }
           if (result0 === null) {
             pos0 = clone(pos);
+            pos1 = clone(pos);
             if (input.substr(pos.offset, 3) === "try") {
               result0 = "try";
               advance(pos, 3);
@@ -4314,7 +4735,7 @@ module.exports = (function(){
                   if (result3 !== null) {
                     result4 = parse_CLBRACE();
                     if (result4 !== null) {
-                      pos1 = clone(pos);
+                      pos2 = clone(pos);
                       if (input.substr(pos.offset, 5) === "catch") {
                         result5 = "catch";
                         advance(pos, 5);
@@ -4336,27 +4757,27 @@ module.exports = (function(){
                                 result5 = [result5, result6, result7, result8, result9];
                               } else {
                                 result5 = null;
-                                pos = clone(pos1);
+                                pos = clone(pos2);
                               }
                             } else {
                               result5 = null;
-                              pos = clone(pos1);
+                              pos = clone(pos2);
                             }
                           } else {
                             result5 = null;
-                            pos = clone(pos1);
+                            pos = clone(pos2);
                           }
                         } else {
                           result5 = null;
-                          pos = clone(pos1);
+                          pos = clone(pos2);
                         }
                       } else {
                         result5 = null;
-                        pos = clone(pos1);
+                        pos = clone(pos2);
                       }
                       result5 = result5 !== null ? result5 : "";
                       if (result5 !== null) {
-                        pos1 = clone(pos);
+                        pos2 = clone(pos);
                         if (input.substr(pos.offset, 7) === "finally") {
                           result6 = "finally";
                           advance(pos, 7);
@@ -4374,49 +4795,63 @@ module.exports = (function(){
                               result6 = [result6, result7, result8];
                             } else {
                               result6 = null;
-                              pos = clone(pos1);
+                              pos = clone(pos2);
                             }
                           } else {
                             result6 = null;
-                            pos = clone(pos1);
+                            pos = clone(pos2);
                           }
                         } else {
                           result6 = null;
-                          pos = clone(pos1);
+                          pos = clone(pos2);
                         }
                         result6 = result6 !== null ? result6 : "";
                         if (result6 !== null) {
                           result0 = [result0, result1, result2, result3, result4, result5, result6];
                         } else {
                           result0 = null;
-                          pos = clone(pos0);
+                          pos = clone(pos1);
                         }
                       } else {
                         result0 = null;
-                        pos = clone(pos0);
+                        pos = clone(pos1);
                       }
                     } else {
                       result0 = null;
-                      pos = clone(pos0);
+                      pos = clone(pos1);
                     }
                   } else {
                     result0 = null;
-                    pos = clone(pos0);
+                    pos = clone(pos1);
                   }
                 } else {
                   result0 = null;
-                  pos = clone(pos0);
+                  pos = clone(pos1);
                 }
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
+              pos = clone(pos1);
+            }
+            if (result0 !== null) {
+              result0 = (function(offset, line, column, block, catch_, finally_) {
+                  return {
+                    type:      "TryStatement",
+                    block:     block,
+                    "catch":   ftr(catch_, 3),
+                    "finally": ftr(finally_, 2)
+                  };
+                })(pos0.offset, pos0.line, pos0.column, result0[3], result0[5], result0[6]);
+            }
+            if (result0 === null) {
               pos = clone(pos0);
             }
             if (result0 === null) {
               pos0 = clone(pos);
+              pos1 = clone(pos);
               if (input.substr(pos.offset, 2) === "do") {
                 result0 = "do";
                 advance(pos, 2);
@@ -4445,38 +4880,51 @@ module.exports = (function(){
                               result0 = [result0, result1, result2, result3, result4, result5, result6, result7];
                             } else {
                               result0 = null;
-                              pos = clone(pos0);
+                              pos = clone(pos1);
                             }
                           } else {
                             result0 = null;
-                            pos = clone(pos0);
+                            pos = clone(pos1);
                           }
                         } else {
                           result0 = null;
-                          pos = clone(pos0);
+                          pos = clone(pos1);
                         }
                       } else {
                         result0 = null;
-                        pos = clone(pos0);
+                        pos = clone(pos1);
                       }
                     } else {
                       result0 = null;
-                      pos = clone(pos0);
+                      pos = clone(pos1);
                     }
                   } else {
                     result0 = null;
-                    pos = clone(pos0);
+                    pos = clone(pos1);
                   }
                 } else {
                   result0 = null;
-                  pos = clone(pos0);
+                  pos = clone(pos1);
                 }
               } else {
                 result0 = null;
+                pos = clone(pos1);
+              }
+              if (result0 !== null) {
+                result0 = (function(offset, line, column, statement, condition) {
+                    return {
+                      type: "DoWhileStatement",
+                      condition: condition,
+                      statement: statement
+                    };
+                  })(pos0.offset, pos0.line, pos0.column, result0[2], result0[6]);
+              }
+              if (result0 === null) {
                 pos = clone(pos0);
               }
               if (result0 === null) {
                 pos0 = clone(pos);
+                pos1 = clone(pos);
                 if (input.substr(pos.offset, 3) === "for") {
                   result0 = "for";
                   advance(pos, 3);
@@ -4489,7 +4937,7 @@ module.exports = (function(){
                 if (result0 !== null) {
                   result1 = parse___();
                   if (result1 !== null) {
-                    pos1 = clone(pos);
+                    pos2 = clone(pos);
                     result2 = parse_OPPAREN();
                     if (result2 !== null) {
                       result3 = parse_Enumerators();
@@ -4499,18 +4947,18 @@ module.exports = (function(){
                           result2 = [result2, result3, result4];
                         } else {
                           result2 = null;
-                          pos = clone(pos1);
+                          pos = clone(pos2);
                         }
                       } else {
                         result2 = null;
-                        pos = clone(pos1);
+                        pos = clone(pos2);
                       }
                     } else {
                       result2 = null;
-                      pos = clone(pos1);
+                      pos = clone(pos2);
                     }
                     if (result2 === null) {
-                      pos1 = clone(pos);
+                      pos2 = clone(pos);
                       result2 = parse_OPBRACE();
                       if (result2 !== null) {
                         result3 = parse_Enumerators();
@@ -4520,15 +4968,15 @@ module.exports = (function(){
                             result2 = [result2, result3, result4];
                           } else {
                             result2 = null;
-                            pos = clone(pos1);
+                            pos = clone(pos2);
                           }
                         } else {
                           result2 = null;
-                          pos = clone(pos1);
+                          pos = clone(pos2);
                         }
                       } else {
                         result2 = null;
-                        pos = clone(pos1);
+                        pos = clone(pos2);
                       }
                     }
                     if (result2 !== null) {
@@ -4539,7 +4987,7 @@ module.exports = (function(){
                         result4 = parse_nl();
                       }
                       if (result3 !== null) {
-                        pos1 = clone(pos);
+                        pos2 = clone(pos);
                         if (input.substr(pos.offset, 5) === "yield") {
                           result4 = "yield";
                           advance(pos, 5);
@@ -4555,11 +5003,11 @@ module.exports = (function(){
                             result4 = [result4, result5];
                           } else {
                             result4 = null;
-                            pos = clone(pos1);
+                            pos = clone(pos2);
                           }
                         } else {
                           result4 = null;
-                          pos = clone(pos1);
+                          pos = clone(pos2);
                         }
                         result4 = result4 !== null ? result4 : "";
                         if (result4 !== null) {
@@ -4568,30 +5016,44 @@ module.exports = (function(){
                             result0 = [result0, result1, result2, result3, result4, result5];
                           } else {
                             result0 = null;
-                            pos = clone(pos0);
+                            pos = clone(pos1);
                           }
                         } else {
                           result0 = null;
-                          pos = clone(pos0);
+                          pos = clone(pos1);
                         }
                       } else {
                         result0 = null;
-                        pos = clone(pos0);
+                        pos = clone(pos1);
                       }
                     } else {
                       result0 = null;
-                      pos = clone(pos0);
+                      pos = clone(pos1);
                     }
                   } else {
                     result0 = null;
-                    pos = clone(pos0);
+                    pos = clone(pos1);
                   }
                 } else {
                   result0 = null;
+                  pos = clone(pos1);
+                }
+                if (result0 !== null) {
+                  result0 = (function(offset, line, column, enums, yield, statement) {
+                      return {
+                        type:        "ForStatement",
+                        enumrator: enums[1],
+                        yield:     yield !== "" ? yield[0] : null,
+                        statement:   statement
+                      };
+                    })(pos0.offset, pos0.line, pos0.column, result0[2], result0[4], result0[5]);
+                }
+                if (result0 === null) {
                   pos = clone(pos0);
                 }
                 if (result0 === null) {
                   pos0 = clone(pos);
+                  pos1 = clone(pos);
                   if (input.substr(pos.offset, 5) === "throw") {
                     result0 = "throw";
                     advance(pos, 5);
@@ -4609,18 +5071,30 @@ module.exports = (function(){
                         result0 = [result0, result1, result2];
                       } else {
                         result0 = null;
-                        pos = clone(pos0);
+                        pos = clone(pos1);
                       }
                     } else {
                       result0 = null;
-                      pos = clone(pos0);
+                      pos = clone(pos1);
                     }
                   } else {
                     result0 = null;
+                    pos = clone(pos1);
+                  }
+                  if (result0 !== null) {
+                    result0 = (function(offset, line, column, exception) {
+                        return {
+                          type:      "ThrowStatement",
+                          exception: exception
+                        };
+                      })(pos0.offset, pos0.line, pos0.column, result0[2]);
+                  }
+                  if (result0 === null) {
                     pos = clone(pos0);
                   }
                   if (result0 === null) {
                     pos0 = clone(pos);
+                    pos1 = clone(pos);
                     if (input.substr(pos.offset, 6) === "return") {
                       result0 = "return";
                       advance(pos, 6);
@@ -4639,18 +5113,30 @@ module.exports = (function(){
                           result0 = [result0, result1, result2];
                         } else {
                           result0 = null;
-                          pos = clone(pos0);
+                          pos = clone(pos1);
                         }
                       } else {
                         result0 = null;
-                        pos = clone(pos0);
+                        pos = clone(pos1);
                       }
                     } else {
                       result0 = null;
+                      pos = clone(pos1);
+                    }
+                    if (result0 !== null) {
+                      result0 = (function(offset, line, column, value) {
+                          return {
+                            type:  "ReturnStatement",
+                            value: value !== "" ? value : null
+                          };
+                        })(pos0.offset, pos0.line, pos0.column, result0[2]);
+                    }
+                    if (result0 === null) {
                       pos = clone(pos0);
                     }
                     if (result0 === null) {
                       pos0 = clone(pos);
+                      pos1 = clone(pos);
                       result0 = parse_SimpleExpr1();
                       if (result0 !== null) {
                         result1 = parse_ArgumentExprs();
@@ -4662,22 +5148,29 @@ module.exports = (function(){
                               result0 = [result0, result1, result2, result3];
                             } else {
                               result0 = null;
-                              pos = clone(pos0);
+                              pos = clone(pos1);
                             }
                           } else {
                             result0 = null;
-                            pos = clone(pos0);
+                            pos = clone(pos1);
                           }
                         } else {
                           result0 = null;
-                          pos = clone(pos0);
+                          pos = clone(pos1);
                         }
                       } else {
                         result0 = null;
+                        pos = clone(pos1);
+                      }
+                      if (result0 !== null) {
+                        result0 = (function(offset, line, column, se1, ae, exp) {return {type:"AssignmentExpression", left:[se1, ae], right:exp}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1], result0[3]);
+                      }
+                      if (result0 === null) {
                         pos = clone(pos0);
                       }
                       if (result0 === null) {
                         pos0 = clone(pos);
+                        pos1 = clone(pos);
                         result0 = parse_PostfixExpr();
                         if (result0 !== null) {
                           result1 = parse_Ascription();
@@ -4685,14 +5178,21 @@ module.exports = (function(){
                             result0 = [result0, result1];
                           } else {
                             result0 = null;
-                            pos = clone(pos0);
+                            pos = clone(pos1);
                           }
                         } else {
                           result0 = null;
+                          pos = clone(pos1);
+                        }
+                        if (result0 !== null) {
+                          result0 = (function(offset, line, column, pe, as) {return {type:"Expr1withAscription", postfix:pe, ascription:as}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+                        }
+                        if (result0 === null) {
                           pos = clone(pos0);
                         }
                         if (result0 === null) {
                           pos0 = clone(pos);
+                          pos1 = clone(pos);
                           result0 = parse_PostfixExpr();
                           if (result0 !== null) {
                             if (input.substr(pos.offset, 5) === "match") {
@@ -4716,38 +5216,12 @@ module.exports = (function(){
                                       result0 = [result0, result1, result2, result3, result4, result5];
                                     } else {
                                       result0 = null;
-                                      pos = clone(pos0);
+                                      pos = clone(pos1);
                                     }
                                   } else {
                                     result0 = null;
-                                    pos = clone(pos0);
+                                    pos = clone(pos1);
                                   }
-                                } else {
-                                  result0 = null;
-                                  pos = clone(pos0);
-                                }
-                              } else {
-                                result0 = null;
-                                pos = clone(pos0);
-                              }
-                            } else {
-                              result0 = null;
-                              pos = clone(pos0);
-                            }
-                          } else {
-                            result0 = null;
-                            pos = clone(pos0);
-                          }
-                          if (result0 === null) {
-                            result0 = parse_PostfixExpr();
-                            if (result0 === null) {
-                              pos0 = clone(pos);
-                              pos1 = clone(pos);
-                              result0 = parse_SimpleExpr();
-                              if (result0 !== null) {
-                                result1 = parse_DOT();
-                                if (result1 !== null) {
-                                  result0 = [result0, result1];
                                 } else {
                                   result0 = null;
                                   pos = clone(pos1);
@@ -4756,31 +5230,70 @@ module.exports = (function(){
                                 result0 = null;
                                 pos = clone(pos1);
                               }
-                              result0 = result0 !== null ? result0 : "";
-                              if (result0 !== null) {
-                                result1 = parse_id();
-                                if (result1 !== null) {
-                                  result2 = parse_EQUAL();
-                                  if (result2 !== null) {
-                                    result3 = parse_Expr();
-                                    if (result3 !== null) {
-                                      result0 = [result0, result1, result2, result3];
-                                    } else {
-                                      result0 = null;
-                                      pos = clone(pos0);
-                                    }
+                            } else {
+                              result0 = null;
+                              pos = clone(pos1);
+                            }
+                          } else {
+                            result0 = null;
+                            pos = clone(pos1);
+                          }
+                          if (result0 !== null) {
+                            result0 = (function(offset, line, column, pe, cases) {return {type:"PatternMatchingExpression", postfix:pe, cases:cc}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[4]);
+                          }
+                          if (result0 === null) {
+                            pos = clone(pos0);
+                          }
+                          if (result0 === null) {
+                            pos0 = clone(pos);
+                            pos1 = clone(pos);
+                            pos2 = clone(pos);
+                            result0 = parse_SimpleExpr();
+                            if (result0 !== null) {
+                              result1 = parse_DOT();
+                              if (result1 !== null) {
+                                result0 = [result0, result1];
+                              } else {
+                                result0 = null;
+                                pos = clone(pos2);
+                              }
+                            } else {
+                              result0 = null;
+                              pos = clone(pos2);
+                            }
+                            result0 = result0 !== null ? result0 : "";
+                            if (result0 !== null) {
+                              result1 = parse_id();
+                              if (result1 !== null) {
+                                result2 = parse_EQUAL();
+                                if (result2 !== null) {
+                                  result3 = parse_Expr();
+                                  if (result3 !== null) {
+                                    result0 = [result0, result1, result2, result3];
                                   } else {
                                     result0 = null;
-                                    pos = clone(pos0);
+                                    pos = clone(pos1);
                                   }
                                 } else {
                                   result0 = null;
-                                  pos = clone(pos0);
+                                  pos = clone(pos1);
                                 }
                               } else {
                                 result0 = null;
-                                pos = clone(pos0);
+                                pos = clone(pos1);
                               }
+                            } else {
+                              result0 = null;
+                              pos = clone(pos1);
+                            }
+                            if (result0 !== null) {
+                              result0 = (function(offset, line, column, se, id, exp) {return {type:"AssignmentExpression", left:[ftr(se), id], right:exp}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1], result0[3]);
+                            }
+                            if (result0 === null) {
+                              pos = clone(pos0);
+                            }
+                            if (result0 === null) {
+                              result0 = parse_PostfixExpr();
                             }
                           }
                         }
@@ -4809,12 +5322,13 @@ module.exports = (function(){
         }
         
         var result0, result1, result2;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_InfixExpr();
         if (result0 !== null) {
-          pos1 = clone(pos);
+          pos2 = clone(pos);
           result1 = parse_id();
           if (result1 !== null) {
             result2 = parse_nl();
@@ -4823,21 +5337,27 @@ module.exports = (function(){
               result1 = [result1, result2];
             } else {
               result1 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           } else {
             result1 = null;
-            pos = clone(pos1);
+            pos = clone(pos2);
           }
           result1 = result1 !== null ? result1 : "";
           if (result1 !== null) {
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, infix, id) {return {type:"PostfixExpr", infix:infix, id: ftr(id, 0)};})(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -4856,71 +5376,81 @@ module.exports = (function(){
           return cachedResult.result;
         }
         
-        var result0, result1;
-        var pos0;
+        var result0, result1, result2, result3, result4;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_PrefixExpr();
         if (result0 !== null) {
-          result1 = parse__InfixExpr();
+          result1 = [];
+          pos2 = clone(pos);
+          result2 = parse_id();
+          if (result2 !== null) {
+            result3 = parse_nl();
+            result3 = result3 !== null ? result3 : "";
+            if (result3 !== null) {
+              result4 = parse_InfixExpr();
+              if (result4 !== null) {
+                result2 = [result2, result3, result4];
+              } else {
+                result2 = null;
+                pos = clone(pos2);
+              }
+            } else {
+              result2 = null;
+              pos = clone(pos2);
+            }
+          } else {
+            result2 = null;
+            pos = clone(pos2);
+          }
+          while (result2 !== null) {
+            result1.push(result2);
+            pos2 = clone(pos);
+            result2 = parse_id();
+            if (result2 !== null) {
+              result3 = parse_nl();
+              result3 = result3 !== null ? result3 : "";
+              if (result3 !== null) {
+                result4 = parse_InfixExpr();
+                if (result4 !== null) {
+                  result2 = [result2, result3, result4];
+                } else {
+                  result2 = null;
+                  pos = clone(pos2);
+                }
+              } else {
+                result2 = null;
+                pos = clone(pos2);
+              }
+            } else {
+              result2 = null;
+              pos = clone(pos2);
+            }
+          }
           if (result1 !== null) {
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
-          pos = clone(pos0);
+          pos = clone(pos1);
         }
-        
-        cache[cacheKey] = {
-          nextPos: clone(pos),
-          result:  result0
-        };
-        return result0;
-      }
-      
-      function parse__InfixExpr() {
-        var cacheKey = "_InfixExpr@" + pos.offset;
-        var cachedResult = cache[cacheKey];
-        if (cachedResult) {
-          pos = clone(cachedResult.nextPos);
-          return cachedResult.result;
-        }
-        
-        var result0, result1, result2, result3;
-        var pos0;
-        
-        pos0 = clone(pos);
-        result0 = parse_id();
         if (result0 !== null) {
-          result1 = parse_nl();
-          result1 = result1 !== null ? result1 : "";
-          if (result1 !== null) {
-            result2 = parse_InfixExpr();
-            if (result2 !== null) {
-              result3 = parse__InfixExpr();
-              if (result3 !== null) {
-                result0 = [result0, result1, result2, result3];
-              } else {
-                result0 = null;
-                pos = clone(pos0);
-              }
-            } else {
-              result0 = null;
-              pos = clone(pos0);
-            }
-          } else {
-            result0 = null;
-            pos = clone(pos0);
-          }
-        } else {
-          result0 = null;
-          pos = clone(pos0);
+          result0 = (function(offset, line, column, head, tails) {
+              var ids = [], exps = [];
+        	for (var i = 0; i < tails.length; i++) {
+                ids.push(tails[i][0]);
+                exps.push(tails[i][2]);
+        	  }
+        	return {type:"InfixExpression", left:head, ops:ids, rights:exps};
+            })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
         }
         if (result0 === null) {
-          result0 = parse_Empty();
+          pos = clone(pos0);
         }
         
         cache[cacheKey] = {
@@ -4939,14 +5469,15 @@ module.exports = (function(){
         }
         
         var result0, result1;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_HYPHEN();
         if (result0 === null) {
           result0 = parse_PLUS();
           if (result0 === null) {
-            pos1 = clone(pos);
+            pos2 = clone(pos);
             if (input.charCodeAt(pos.offset) === 126) {
               result0 = "~";
               advance(pos, 1);
@@ -4962,14 +5493,14 @@ module.exports = (function(){
                 result0 = [result0, result1];
               } else {
                 result0 = null;
-                pos = clone(pos1);
+                pos = clone(pos2);
               }
             } else {
               result0 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
             if (result0 === null) {
-              pos1 = clone(pos);
+              pos2 = clone(pos);
               if (input.charCodeAt(pos.offset) === 33) {
                 result0 = "!";
                 advance(pos, 1);
@@ -4985,11 +5516,11 @@ module.exports = (function(){
                   result0 = [result0, result1];
                 } else {
                   result0 = null;
-                  pos = clone(pos1);
+                  pos = clone(pos2);
                 }
               } else {
                 result0 = null;
-                pos = clone(pos1);
+                pos = clone(pos2);
               }
             }
           }
@@ -5001,10 +5532,18 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, op, expr) {
+        	return {type:"PrefixExpression", op:ftr(op), expr:expr};
+        })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -5023,10 +5562,11 @@ module.exports = (function(){
           return cachedResult.result;
         }
         
-        var result0, result1;
-        var pos0;
+        var result0, result1, result2, result3, result4;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_NEW();
         if (result0 !== null) {
           result1 = parse_ClassTemplate();
@@ -5034,32 +5574,131 @@ module.exports = (function(){
             result1 = parse_TemplateBody();
           }
           if (result1 !== null) {
-            result0 = [result0, result1];
+            result2 = parse_DOT();
+            if (result2 !== null) {
+              result3 = parse_id();
+              if (result3 !== null) {
+                result4 = parse__SimpleExpr1();
+                if (result4 !== null) {
+                  result0 = [result0, result1, result2, result3, result4];
+                } else {
+                  result0 = null;
+                  pos = clone(pos1);
+                }
+              } else {
+                result0 = null;
+                pos = clone(pos1);
+              }
+            } else {
+              result0 = null;
+              pos = clone(pos1);
+            }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, arg, id, se1) {return {type:"InstanceCreationExpressionWithId", arg:arg, id:id, suffix:se1}; })(pos0.offset, pos0.line, pos0.column, result0[1], result0[3], result0[4]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         if (result0 === null) {
-          result0 = parse_BlockExpr();
+          pos0 = clone(pos);
+          pos1 = clone(pos);
+          result0 = parse_NEW();
+          if (result0 !== null) {
+            result1 = parse_ClassTemplate();
+            if (result1 === null) {
+              result1 = parse_TemplateBody();
+            }
+            if (result1 !== null) {
+              result2 = parse_TypeArgs();
+              if (result2 !== null) {
+                result3 = parse__SimpleExpr1();
+                if (result3 !== null) {
+                  result0 = [result0, result1, result2, result3];
+                } else {
+                  result0 = null;
+                  pos = clone(pos1);
+                }
+              } else {
+                result0 = null;
+                pos = clone(pos1);
+              }
+            } else {
+              result0 = null;
+              pos = clone(pos1);
+            }
+          } else {
+            result0 = null;
+            pos = clone(pos1);
+          }
+          if (result0 !== null) {
+            result0 = (function(offset, line, column, arg, ta, se1) {return {type:"InstanceCreationExpressionWithTypes", arg:arg, types:ta, suffix:se1}; })(pos0.offset, pos0.line, pos0.column, result0[1], result0[2], result0[3]);
+          }
+          if (result0 === null) {
+            pos = clone(pos0);
+          }
           if (result0 === null) {
             pos0 = clone(pos);
-            result0 = parse_SimpleExpr1();
+            pos1 = clone(pos);
+            result0 = parse_NEW();
             if (result0 !== null) {
-              result1 = parse_UNDER();
-              result1 = result1 !== null ? result1 : "";
+              result1 = parse_ClassTemplate();
+              if (result1 === null) {
+                result1 = parse_TemplateBody();
+              }
               if (result1 !== null) {
                 result0 = [result0, result1];
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
+              pos = clone(pos1);
+            }
+            if (result0 !== null) {
+              result0 = (function(offset, line, column, arg) {
+            	return {type:"InstanceCreationExpression", arg:arg};
+            })(pos0.offset, pos0.line, pos0.column, result0[1]);
+            }
+            if (result0 === null) {
               pos = clone(pos0);
+            }
+            if (result0 === null) {
+              pos0 = clone(pos);
+              pos1 = clone(pos);
+              result0 = parse_SimpleExpr1();
+              if (result0 !== null) {
+                result1 = parse_UNDER();
+                result1 = result1 !== null ? result1 : "";
+                if (result1 !== null) {
+                  result0 = [result0, result1];
+                } else {
+                  result0 = null;
+                  pos = clone(pos1);
+                }
+              } else {
+                result0 = null;
+                pos = clone(pos1);
+              }
+              if (result0 !== null) {
+                result0 = (function(offset, line, column, expr1, ud) {
+              	return {type:"SimpleExpr", expr1:expr1, under:ftr(ud)};
+              })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+              }
+              if (result0 === null) {
+                pos = clone(pos0);
+              }
+              if (result0 === null) {
+                result0 = parse_BlockExpr();
+              }
             }
           }
         }
@@ -5080,9 +5719,10 @@ module.exports = (function(){
         }
         
         var result0, result1, result2, result3, result4;
-        var pos0;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_OPPAREN();
         if (result0 !== null) {
           result1 = parse_Exprs();
@@ -5095,22 +5735,29 @@ module.exports = (function(){
                 result0 = [result0, result1, result2, result3];
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, exp, se1) {return {type:"TupleExpression", expr:exp, suffix:se1}; })(pos0.offset, pos0.line, pos0.column, result0[1], result0[3]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         if (result0 === null) {
           pos0 = clone(pos);
+          pos1 = clone(pos);
           result0 = parse_NEW();
           if (result0 !== null) {
             result1 = parse_ClassTemplate();
@@ -5127,83 +5774,104 @@ module.exports = (function(){
                     result0 = [result0, result1, result2, result3, result4];
                   } else {
                     result0 = null;
-                    pos = clone(pos0);
+                    pos = clone(pos1);
                   }
                 } else {
                   result0 = null;
-                  pos = clone(pos0);
+                  pos = clone(pos1);
                 }
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
+            pos = clone(pos1);
+          }
+          if (result0 !== null) {
+            result0 = (function(offset, line, column, arg, id, se1) {return {type:"InstanceCreationExpressionWithId", arg:arg, id:id, suffix:se1}; })(pos0.offset, pos0.line, pos0.column, result0[1], result0[3], result0[4]);
+          }
+          if (result0 === null) {
             pos = clone(pos0);
           }
           if (result0 === null) {
             pos0 = clone(pos);
-            result0 = parse_BlockExpr();
+            pos1 = clone(pos);
+            result0 = parse_NEW();
             if (result0 !== null) {
-              result1 = parse_DOT();
+              result1 = parse_ClassTemplate();
+              if (result1 === null) {
+                result1 = parse_TemplateBody();
+              }
               if (result1 !== null) {
-                result2 = parse_id();
+                result2 = parse_TypeArgs();
                 if (result2 !== null) {
                   result3 = parse__SimpleExpr1();
                   if (result3 !== null) {
                     result0 = [result0, result1, result2, result3];
                   } else {
                     result0 = null;
-                    pos = clone(pos0);
+                    pos = clone(pos1);
                   }
                 } else {
                   result0 = null;
-                  pos = clone(pos0);
+                  pos = clone(pos1);
                 }
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
+              pos = clone(pos1);
+            }
+            if (result0 !== null) {
+              result0 = (function(offset, line, column, arg, ta, se1) {return {type:"InstanceCreationExpressionWithTypes", arg:arg, types:ta, suffix:se1}; })(pos0.offset, pos0.line, pos0.column, result0[1], result0[2], result0[3]);
+            }
+            if (result0 === null) {
               pos = clone(pos0);
             }
             if (result0 === null) {
               pos0 = clone(pos);
-              result0 = parse_NEW();
+              pos1 = clone(pos);
+              result0 = parse_BlockExpr();
               if (result0 !== null) {
-                result1 = parse_ClassTemplate();
-                if (result1 === null) {
-                  result1 = parse_TemplateBody();
-                }
+                result1 = parse_DOT();
                 if (result1 !== null) {
-                  result2 = parse_TypeArgs();
+                  result2 = parse_id();
                   if (result2 !== null) {
                     result3 = parse__SimpleExpr1();
                     if (result3 !== null) {
                       result0 = [result0, result1, result2, result3];
                     } else {
                       result0 = null;
-                      pos = clone(pos0);
+                      pos = clone(pos1);
                     }
                   } else {
                     result0 = null;
-                    pos = clone(pos0);
+                    pos = clone(pos1);
                   }
                 } else {
                   result0 = null;
-                  pos = clone(pos0);
+                  pos = clone(pos1);
                 }
               } else {
                 result0 = null;
+                pos = clone(pos1);
+              }
+              if (result0 !== null) {
+                result0 = (function(offset, line, column, bk, id, se1) {return {type:"blockExpressionWithId", block:bk, id:id, suffix:se1}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[2], result0[3]);
+              }
+              if (result0 === null) {
                 pos = clone(pos0);
               }
               if (result0 === null) {
                 pos0 = clone(pos);
+                pos1 = clone(pos);
                 result0 = parse_BlockExpr();
                 if (result0 !== null) {
                   result1 = parse_TypeArgs();
@@ -5213,18 +5881,25 @@ module.exports = (function(){
                       result0 = [result0, result1, result2];
                     } else {
                       result0 = null;
-                      pos = clone(pos0);
+                      pos = clone(pos1);
                     }
                   } else {
                     result0 = null;
-                    pos = clone(pos0);
+                    pos = clone(pos1);
                   }
                 } else {
                   result0 = null;
+                  pos = clone(pos1);
+                }
+                if (result0 !== null) {
+                  result0 = (function(offset, line, column, bk, ta, se1) {return {type:"blockExpressionWithTypes", block:bk, types:ta, suffix:se1}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1], result0[2]);
+                }
+                if (result0 === null) {
                   pos = clone(pos0);
                 }
                 if (result0 === null) {
                   pos0 = clone(pos);
+                  pos1 = clone(pos);
                   result0 = parse_XmlExpr();
                   if (result0 !== null) {
                     result1 = parse__SimpleExpr1();
@@ -5232,29 +5907,58 @@ module.exports = (function(){
                       result0 = [result0, result1];
                     } else {
                       result0 = null;
-                      pos = clone(pos0);
+                      pos = clone(pos1);
                     }
                   } else {
                     result0 = null;
+                    pos = clone(pos1);
+                  }
+                  if (result0 !== null) {
+                    result0 = (function(offset, line, column, xml, se1) {return {type:"XmlSimpleExpression", xml:xml, suffix:se1}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+                  }
+                  if (result0 === null) {
                     pos = clone(pos0);
                   }
                   if (result0 === null) {
                     pos0 = clone(pos);
-                    result0 = parse_Path();
+                    pos1 = clone(pos);
+                    result0 = parse_id();
                     if (result0 !== null) {
-                      result1 = parse__SimpleExpr1();
+                      pos2 = clone(pos);
+                      reportFailures++;
+                      result1 = parse_EQUAL();
+                      reportFailures--;
+                      if (result1 === null) {
+                        result1 = "";
+                      } else {
+                        result1 = null;
+                        pos = clone(pos2);
+                      }
                       if (result1 !== null) {
-                        result0 = [result0, result1];
+                        result2 = parse__SimpleExpr1();
+                        if (result2 !== null) {
+                          result0 = [result0, result1, result2];
+                        } else {
+                          result0 = null;
+                          pos = clone(pos1);
+                        }
                       } else {
                         result0 = null;
-                        pos = clone(pos0);
+                        pos = clone(pos1);
                       }
                     } else {
                       result0 = null;
+                      pos = clone(pos1);
+                    }
+                    if (result0 !== null) {
+                      result0 = (function(offset, line, column, path, se1) {return {type:"idSeqSimpleExpression", ids:path, suffix:se1}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[2]);
+                    }
+                    if (result0 === null) {
                       pos = clone(pos0);
                     }
                     if (result0 === null) {
                       pos0 = clone(pos);
+                      pos1 = clone(pos);
                       result0 = parse_Literal();
                       if (result0 !== null) {
                         result1 = parse__SimpleExpr1();
@@ -5262,27 +5966,17 @@ module.exports = (function(){
                           result0 = [result0, result1];
                         } else {
                           result0 = null;
-                          pos = clone(pos0);
+                          pos = clone(pos1);
                         }
                       } else {
                         result0 = null;
-                        pos = clone(pos0);
+                        pos = clone(pos1);
+                      }
+                      if (result0 !== null) {
+                        result0 = (function(offset, line, column, lt, se1) {return {type:"literalSimpleExpression", literal:lt, suffix:se1}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
                       }
                       if (result0 === null) {
-                        pos0 = clone(pos);
-                        result0 = parse_UNDER();
-                        if (result0 !== null) {
-                          result1 = parse__SimpleExpr1();
-                          if (result1 !== null) {
-                            result0 = [result0, result1];
-                          } else {
-                            result0 = null;
-                            pos = clone(pos0);
-                          }
-                        } else {
-                          result0 = null;
-                          pos = clone(pos0);
-                        }
+                        pos = clone(pos0);
                       }
                     }
                   }
@@ -5307,38 +6001,80 @@ module.exports = (function(){
           return cachedResult.result;
         }
         
-        var result0, result1, result2, result3;
-        var pos0;
+        var result0, result1, result2, result3, result4;
+        var pos0, pos1, pos2, pos3;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_UNDER();
         result0 = result0 !== null ? result0 : "";
         if (result0 !== null) {
+          pos2 = clone(pos);
+          reportFailures++;
+          pos3 = clone(pos);
           result1 = parse_DOT();
           if (result1 !== null) {
             result2 = parse_id();
             if (result2 !== null) {
-              result3 = parse__SimpleExpr1();
+              result3 = parse_EQUAL();
               if (result3 !== null) {
-                result0 = [result0, result1, result2, result3];
+                result1 = [result1, result2, result3];
+              } else {
+                result1 = null;
+                pos = clone(pos3);
+              }
+            } else {
+              result1 = null;
+              pos = clone(pos3);
+            }
+          } else {
+            result1 = null;
+            pos = clone(pos3);
+          }
+          reportFailures--;
+          if (result1 === null) {
+            result1 = "";
+          } else {
+            result1 = null;
+            pos = clone(pos2);
+          }
+          if (result1 !== null) {
+            result2 = parse_DOT();
+            if (result2 !== null) {
+              result3 = parse_id();
+              if (result3 !== null) {
+                result4 = parse__SimpleExpr1();
+                if (result4 !== null) {
+                  result0 = [result0, result1, result2, result3, result4];
+                } else {
+                  result0 = null;
+                  pos = clone(pos1);
+                }
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, ud, id, se1) {return {type:"DesignatorPostfix", under:ftr(ud), id:id, postfix:se1}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[3], result0[4]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         if (result0 === null) {
           pos0 = clone(pos);
+          pos1 = clone(pos);
           result0 = parse_UNDER();
           result0 = result0 !== null ? result0 : "";
           if (result0 !== null) {
@@ -5349,33 +6085,84 @@ module.exports = (function(){
                 result0 = [result0, result1, result2];
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
+            pos = clone(pos1);
+          }
+          if (result0 !== null) {
+            result0 = (function(offset, line, column, ud, ta, se1) {return {type:"TypeApplicationPostfix", under:ftr(ud), typeArgument:ta, postfix:se1}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1], result0[2]);
+          }
+          if (result0 === null) {
             pos = clone(pos0);
           }
           if (result0 === null) {
             pos0 = clone(pos);
-            result0 = parse_ArgumentExprs();
+            pos1 = clone(pos);
+            result0 = parse_UNDER();
             if (result0 !== null) {
               result1 = parse__SimpleExpr1();
               if (result1 !== null) {
                 result0 = [result0, result1];
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
+              pos = clone(pos1);
+            }
+            if (result0 !== null) {
+              result0 = (function(offset, line, column, ud, se1) {return {type:"SimpleExpression", expr:ud, suffix:se1}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+            }
+            if (result0 === null) {
               pos = clone(pos0);
             }
             if (result0 === null) {
-              result0 = parse_Empty();
+              pos0 = clone(pos);
+              pos1 = clone(pos);
+              result0 = parse_ArgumentExprs();
+              if (result0 !== null) {
+                pos2 = clone(pos);
+                reportFailures++;
+                result1 = parse_EQUAL();
+                reportFailures--;
+                if (result1 === null) {
+                  result1 = "";
+                } else {
+                  result1 = null;
+                  pos = clone(pos2);
+                }
+                if (result1 !== null) {
+                  result2 = parse__SimpleExpr1();
+                  if (result2 !== null) {
+                    result0 = [result0, result1, result2];
+                  } else {
+                    result0 = null;
+                    pos = clone(pos1);
+                  }
+                } else {
+                  result0 = null;
+                  pos = clone(pos1);
+                }
+              } else {
+                result0 = null;
+                pos = clone(pos1);
+              }
+              if (result0 !== null) {
+                result0 = (function(offset, line, column, ae, se1) {return {type:"FunctionApplicationPostfix", argument:ae, postfix:se1}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[2]);
+              }
+              if (result0 === null) {
+                pos = clone(pos0);
+              }
+              if (result0 === null) {
+                result0 = parse_Empty();
+              }
             }
           }
         }
@@ -5396,13 +6183,14 @@ module.exports = (function(){
         }
         
         var result0, result1, result2, result3;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_Expr();
         if (result0 !== null) {
           result1 = [];
-          pos1 = clone(pos);
+          pos2 = clone(pos);
           result2 = parse_COMMA();
           if (result2 !== null) {
             result3 = parse_Expr();
@@ -5410,15 +6198,15 @@ module.exports = (function(){
               result2 = [result2, result3];
             } else {
               result2 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           } else {
             result2 = null;
-            pos = clone(pos1);
+            pos = clone(pos2);
           }
           while (result2 !== null) {
             result1.push(result2);
-            pos1 = clone(pos);
+            pos2 = clone(pos);
             result2 = parse_COMMA();
             if (result2 !== null) {
               result3 = parse_Expr();
@@ -5426,21 +6214,33 @@ module.exports = (function(){
                 result2 = [result2, result3];
               } else {
                 result2 = null;
-                pos = clone(pos1);
+                pos = clone(pos2);
               }
             } else {
               result2 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           }
           if (result1 !== null) {
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, expr, exprs) {
+              var result = [expr];
+        	  for (var i = 0; i < exprs.length; i++) {
+                result.push(exprs[i][1]);
+        	  }
+        	  return {type:"Exprs", contents:result};
+            })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -5460,9 +6260,10 @@ module.exports = (function(){
         }
         
         var result0, result1, result2, result3, result4, result5, result6;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_OPPAREN();
         if (result0 !== null) {
           result1 = parse_Exprs();
@@ -5473,21 +6274,28 @@ module.exports = (function(){
               result0 = [result0, result1, result2];
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, exprs) {return {type:"ArgumentExprs", exprs:ftr(exprs)}; })(pos0.offset, pos0.line, pos0.column, result0[1]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         if (result0 === null) {
           pos0 = clone(pos);
+          pos1 = clone(pos);
           result0 = parse_OPPAREN();
           if (result0 !== null) {
-            pos1 = clone(pos);
+            pos2 = clone(pos);
             result1 = parse_Exprs();
             if (result1 !== null) {
               result2 = parse_COMMA();
@@ -5495,11 +6303,11 @@ module.exports = (function(){
                 result1 = [result1, result2];
               } else {
                 result1 = null;
-                pos = clone(pos1);
+                pos = clone(pos2);
               }
             } else {
               result1 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
             result1 = result1 !== null ? result1 : "";
             if (result1 !== null) {
@@ -5516,34 +6324,41 @@ module.exports = (function(){
                         result0 = [result0, result1, result2, result3, result4, result5, result6];
                       } else {
                         result0 = null;
-                        pos = clone(pos0);
+                        pos = clone(pos1);
                       }
                     } else {
                       result0 = null;
-                      pos = clone(pos0);
+                      pos = clone(pos1);
                     }
                   } else {
                     result0 = null;
-                    pos = clone(pos0);
+                    pos = clone(pos1);
                   }
                 } else {
                   result0 = null;
-                  pos = clone(pos0);
+                  pos = clone(pos1);
                 }
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
+            pos = clone(pos1);
+          }
+          if (result0 !== null) {
+            result0 = (function(offset, line, column, exprs, pfe) {return {type:"ArgumentExprsWithRepeated", exprs:ftr(exprs, 0), postfixExpr:pfe}; })(pos0.offset, pos0.line, pos0.column, result0[1], result0[2]);
+          }
+          if (result0 === null) {
             pos = clone(pos0);
           }
           if (result0 === null) {
             pos0 = clone(pos);
+            pos1 = clone(pos);
             result0 = parse_nl();
             result0 = result0 !== null ? result0 : "";
             if (result0 !== null) {
@@ -5552,10 +6367,16 @@ module.exports = (function(){
                 result0 = [result0, result1];
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
+              pos = clone(pos1);
+            }
+            if (result0 !== null) {
+              result0 = (function(offset, line, column, block) {return block; })(pos0.offset, pos0.line, pos0.column, result0[1]);
+            }
+            if (result0 === null) {
               pos = clone(pos0);
             }
           }
@@ -5577,9 +6398,10 @@ module.exports = (function(){
         }
         
         var result0, result1, result2;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_OPBRACE();
         if (result0 !== null) {
           result1 = parse_CaseClauses();
@@ -5589,18 +6411,25 @@ module.exports = (function(){
               result0 = [result0, result1, result2];
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, block) {return {type: "PatternMatchingAnonymousFunction", block:block};})(pos0.offset, pos0.line, pos0.column, result0[1]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         if (result0 === null) {
           pos0 = clone(pos);
+          pos1 = clone(pos);
           result0 = parse_OPBRACE();
           if (result0 !== null) {
             result1 = parse_Block();
@@ -5610,14 +6439,20 @@ module.exports = (function(){
                 result0 = [result0, result1, result2];
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
+            pos = clone(pos1);
+          }
+          if (result0 !== null) {
+            result0 = (function(offset, line, column, block) {return {type: "BlockExpression", block:block}; })(pos0.offset, pos0.line, pos0.column, result0[1]);
+          }
+          if (result0 === null) {
             pos = clone(pos0);
           }
         }
@@ -5638,11 +6473,12 @@ module.exports = (function(){
         }
         
         var result0, result1, result2;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
-        result0 = [];
         pos1 = clone(pos);
+        result0 = [];
+        pos2 = clone(pos);
         result1 = parse_BlockStat();
         if (result1 !== null) {
           result2 = parse_semi();
@@ -5650,15 +6486,15 @@ module.exports = (function(){
             result1 = [result1, result2];
           } else {
             result1 = null;
-            pos = clone(pos1);
+            pos = clone(pos2);
           }
         } else {
           result1 = null;
-          pos = clone(pos1);
+          pos = clone(pos2);
         }
         while (result1 !== null) {
           result0.push(result1);
-          pos1 = clone(pos);
+          pos2 = clone(pos);
           result1 = parse_BlockStat();
           if (result1 !== null) {
             result2 = parse_semi();
@@ -5666,11 +6502,11 @@ module.exports = (function(){
               result1 = [result1, result2];
             } else {
               result1 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           } else {
             result1 = null;
-            pos = clone(pos1);
+            pos = clone(pos2);
           }
         }
         if (result0 !== null) {
@@ -5680,10 +6516,22 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, blocks, res) {
+              var result = [];
+        	  for (var i = 0; i < blocks.length; i++) {
+                result.push(blocks[i][0]);
+        	  }
+        	  return {type:"Block", contents:result,res:ftr(res)};
+            })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -5703,11 +6551,12 @@ module.exports = (function(){
         }
         
         var result0, result1, result2;
-        var pos0;
+        var pos0, pos1;
         
         result0 = parse_Import();
         if (result0 === null) {
           pos0 = clone(pos);
+          pos1 = clone(pos);
           result0 = [];
           result1 = parse_Annotation();
           while (result1 !== null) {
@@ -5726,18 +6575,25 @@ module.exports = (function(){
                 result0 = [result0, result1, result2];
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
+            pos = clone(pos1);
+          }
+          if (result0 !== null) {
+            result0 = (function(offset, line, column, an, md, def) {return {type:"BlockStat", annotations:an, modifier:ftr(md), def:def}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1], result0[2]);
+          }
+          if (result0 === null) {
             pos = clone(pos0);
           }
           if (result0 === null) {
             pos0 = clone(pos);
+            pos1 = clone(pos);
             result0 = [];
             result1 = parse_Annotation();
             while (result1 !== null) {
@@ -5757,14 +6613,20 @@ module.exports = (function(){
                   result0 = [result0, result1, result2];
                 } else {
                   result0 = null;
-                  pos = clone(pos0);
+                  pos = clone(pos1);
                 }
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
+              pos = clone(pos1);
+            }
+            if (result0 !== null) {
+              result0 = (function(offset, line, column, an, lm, td) {return {type:"BlockStat", annotations:an, modifier:lm, def:td}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1], result0[2]);
+            }
+            if (result0 === null) {
               pos = clone(pos0);
             }
             if (result0 === null) {
@@ -5792,21 +6654,37 @@ module.exports = (function(){
         }
         
         var result0, result1, result2;
-        var pos0, pos1, pos2;
+        var pos0, pos1, pos2, pos3;
         
-        result0 = parse_Expr1();
+        pos0 = clone(pos);
+        pos1 = clone(pos);
+        result0 = parse_Bindings();
         if (result0 === null) {
-          pos0 = clone(pos);
-          result0 = parse_Bindings();
+          pos2 = clone(pos);
+          pos3 = clone(pos);
+          result0 = parse_IMPLICIT();
+          result0 = result0 !== null ? result0 : "";
+          if (result0 !== null) {
+            result1 = parse_id();
+            if (result1 !== null) {
+              result0 = [result0, result1];
+            } else {
+              result0 = null;
+              pos = clone(pos3);
+            }
+          } else {
+            result0 = null;
+            pos = clone(pos3);
+          }
           if (result0 === null) {
-            pos1 = clone(pos);
-            pos2 = clone(pos);
-            result0 = parse_IMPLICIT();
-            result0 = result0 !== null ? result0 : "";
-            if (result0 !== null) {
-              result1 = parse_id();
-              if (result1 !== null) {
-                result0 = [result0, result1];
+            result0 = parse_UNDER();
+          }
+          if (result0 !== null) {
+            result1 = parse_COLON();
+            if (result1 !== null) {
+              result2 = parse_CompoundType();
+              if (result2 !== null) {
+                result0 = [result0, result1, result2];
               } else {
                 result0 = null;
                 pos = clone(pos2);
@@ -5815,46 +6693,37 @@ module.exports = (function(){
               result0 = null;
               pos = clone(pos2);
             }
-            if (result0 === null) {
-              result0 = parse_UNDER();
-            }
-            if (result0 !== null) {
-              result1 = parse_COLON();
-              if (result1 !== null) {
-                result2 = parse_CompoundType();
-                if (result2 !== null) {
-                  result0 = [result0, result1, result2];
-                } else {
-                  result0 = null;
-                  pos = clone(pos1);
-                }
-              } else {
-                result0 = null;
-                pos = clone(pos1);
-              }
+          } else {
+            result0 = null;
+            pos = clone(pos2);
+          }
+        }
+        if (result0 !== null) {
+          result1 = parse_ARROW();
+          if (result1 !== null) {
+            result2 = parse_Block();
+            if (result2 !== null) {
+              result0 = [result0, result1, result2];
             } else {
               result0 = null;
               pos = clone(pos1);
             }
-          }
-          if (result0 !== null) {
-            result1 = parse_ARROW();
-            if (result1 !== null) {
-              result2 = parse_Block();
-              if (result2 !== null) {
-                result0 = [result0, result1, result2];
-              } else {
-                result0 = null;
-                pos = clone(pos0);
-              }
-            } else {
-              result0 = null;
-              pos = clone(pos0);
-            }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
+        } else {
+          result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, left, right) {return {type:"AnonymousFunction", left:left, right:right}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[2]);
+        }
+        if (result0 === null) {
+          pos = clone(pos0);
+        }
+        if (result0 === null) {
+          result0 = parse_Expr1();
         }
         
         cache[cacheKey] = {
@@ -5873,13 +6742,14 @@ module.exports = (function(){
         }
         
         var result0, result1, result2, result3;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_Generator();
         if (result0 !== null) {
           result1 = [];
-          pos1 = clone(pos);
+          pos2 = clone(pos);
           result2 = parse_semi();
           if (result2 !== null) {
             result3 = parse_Enumerator();
@@ -5887,15 +6757,15 @@ module.exports = (function(){
               result2 = [result2, result3];
             } else {
               result2 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           } else {
             result2 = null;
-            pos = clone(pos1);
+            pos = clone(pos2);
           }
           while (result2 !== null) {
             result1.push(result2);
-            pos1 = clone(pos);
+            pos2 = clone(pos);
             result2 = parse_semi();
             if (result2 !== null) {
               result3 = parse_Enumerator();
@@ -5903,21 +6773,33 @@ module.exports = (function(){
                 result2 = [result2, result3];
               } else {
                 result2 = null;
-                pos = clone(pos1);
+                pos = clone(pos2);
               }
             } else {
               result2 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           }
           if (result1 !== null) {
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, gen, enums) {
+              var result = [];
+        	  for (var i = 0; i < enums.length; i++) {
+                result.push(enums[i][1]);
+        	  }
+        	  return {type:"Exprs", gen:gen, enums:result};
+            })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -5937,13 +6819,14 @@ module.exports = (function(){
         }
         
         var result0, result1, result2, result3;
-        var pos0;
+        var pos0, pos1;
         
         result0 = parse_Generator();
         if (result0 === null) {
           result0 = parse_Guard();
           if (result0 === null) {
             pos0 = clone(pos);
+            pos1 = clone(pos);
             result0 = parse_VAL();
             if (result0 !== null) {
               result1 = parse_Pattern1();
@@ -5955,18 +6838,24 @@ module.exports = (function(){
                     result0 = [result0, result1, result2, result3];
                   } else {
                     result0 = null;
-                    pos = clone(pos0);
+                    pos = clone(pos1);
                   }
                 } else {
                   result0 = null;
-                  pos = clone(pos0);
+                  pos = clone(pos1);
                 }
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
+              pos = clone(pos1);
+            }
+            if (result0 !== null) {
+              result0 = (function(offset, line, column, pt1, exp) {return {type:"Enumerator", left:pt1, right:exp}; })(pos0.offset, pos0.line, pos0.column, result0[1], result0[3]);
+            }
+            if (result0 === null) {
               pos = clone(pos0);
             }
           }
@@ -5988,9 +6877,10 @@ module.exports = (function(){
         }
         
         var result0, result1, result2, result3, result4;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_Pattern1();
         if (result0 !== null) {
           if (input.substr(pos.offset, 2) === "<-") {
@@ -6013,22 +6903,28 @@ module.exports = (function(){
                   result0 = [result0, result1, result2, result3, result4];
                 } else {
                   result0 = null;
-                  pos = clone(pos0);
+                  pos = clone(pos1);
                 }
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, pt1, expr, guard) {return {type: "Generator", pt1:pt1, expr:expr, guard:guard}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[3], result0[4]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -6048,7 +6944,9 @@ module.exports = (function(){
         }
         
         var result0, result1;
+        var pos0;
         
+        pos0 = clone(pos);
         result1 = parse_CaseClause();
         if (result1 !== null) {
           result0 = [];
@@ -6058,6 +6956,12 @@ module.exports = (function(){
           }
         } else {
           result0 = null;
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, cls) {return {type: "CaseClauses", cls:cls};})(pos0.offset, pos0.line, pos0.column, result0);
+        }
+        if (result0 === null) {
+          pos = clone(pos0);
         }
         
         cache[cacheKey] = {
@@ -6076,9 +6980,10 @@ module.exports = (function(){
         }
         
         var result0, result1, result2, result3, result4;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_CASE();
         if (result0 !== null) {
           result1 = parse_Pattern();
@@ -6093,22 +6998,28 @@ module.exports = (function(){
                   result0 = [result0, result1, result2, result3, result4];
                 } else {
                   result0 = null;
-                  pos = clone(pos0);
+                  pos = clone(pos1);
                 }
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, pt, guard, block) {return {type: "Generator", pt:pt, guard:ftr(guard), block:block}; })(pos0.offset, pos0.line, pos0.column, result0[1], result0[2], result0[4]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -6128,9 +7039,10 @@ module.exports = (function(){
         }
         
         var result0, result1;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_IF();
         if (result0 !== null) {
           result1 = parse_PostfixExpr();
@@ -6138,10 +7050,16 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, postfix) {return {type: "Guard", postfix:postfix};})(pos0.offset, pos0.line, pos0.column, result0[1]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -6161,20 +7079,21 @@ module.exports = (function(){
         }
         
         var result0, result1, result2, result3, result4;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_Pattern1();
         if (result0 !== null) {
           result1 = [];
-          pos1 = clone(pos);
-          if (input.charCodeAt(pos.offset) === 47) {
-            result2 = "/";
+          pos2 = clone(pos);
+          if (input.charCodeAt(pos.offset) === 124) {
+            result2 = "|";
             advance(pos, 1);
           } else {
             result2 = null;
             if (reportFailures === 0) {
-              matchFailed("\"/\"");
+              matchFailed("\"|\"");
             }
           }
           if (result2 !== null) {
@@ -6185,26 +7104,26 @@ module.exports = (function(){
                 result2 = [result2, result3, result4];
               } else {
                 result2 = null;
-                pos = clone(pos1);
+                pos = clone(pos2);
               }
             } else {
               result2 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           } else {
             result2 = null;
-            pos = clone(pos1);
+            pos = clone(pos2);
           }
           while (result2 !== null) {
             result1.push(result2);
-            pos1 = clone(pos);
-            if (input.charCodeAt(pos.offset) === 47) {
-              result2 = "/";
+            pos2 = clone(pos);
+            if (input.charCodeAt(pos.offset) === 124) {
+              result2 = "|";
               advance(pos, 1);
             } else {
               result2 = null;
               if (reportFailures === 0) {
-                matchFailed("\"/\"");
+                matchFailed("\"|\"");
               }
             }
             if (result2 !== null) {
@@ -6215,25 +7134,37 @@ module.exports = (function(){
                   result2 = [result2, result3, result4];
                 } else {
                   result2 = null;
-                  pos = clone(pos1);
+                  pos = clone(pos2);
                 }
               } else {
                 result2 = null;
-                pos = clone(pos1);
+                pos = clone(pos2);
               }
             } else {
               result2 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           }
           if (result1 !== null) {
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, pt1, pt1s) {
+              var result = [pt1];
+        	  for (var i = 0; i < pt1s.length; i++) {
+                result.push(pt1s[i][2]);
+        	  }
+        	  return {type:"PatternAlternatives", pts:result};
+            })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -6253,9 +7184,10 @@ module.exports = (function(){
         }
         
         var result0, result1, result2;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_varid();
         if (result0 !== null) {
           result1 = parse_COLON();
@@ -6265,18 +7197,25 @@ module.exports = (function(){
               result0 = [result0, result1, result2];
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, id, tp) {return {type: "TypedPattern", id:id, tp:tp};})(pos0.offset, pos0.line, pos0.column, result0[0], result0[2]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         if (result0 === null) {
           pos0 = clone(pos);
+          pos1 = clone(pos);
           result0 = parse_UNDER();
           if (result0 !== null) {
             result1 = parse_COLON();
@@ -6286,14 +7225,20 @@ module.exports = (function(){
                 result0 = [result0, result1, result2];
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
+            pos = clone(pos1);
+          }
+          if (result0 !== null) {
+            result0 = (function(offset, line, column, id, tp) {return {type: "TypedPattern", id:id, tp:tp};})(pos0.offset, pos0.line, pos0.column, result0[0], result0[2]);
+          }
+          if (result0 === null) {
             pos = clone(pos0);
           }
           if (result0 === null) {
@@ -6317,12 +7262,13 @@ module.exports = (function(){
         }
         
         var result0, result1, result2;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_varid();
         if (result0 !== null) {
-          pos1 = clone(pos);
+          pos2 = clone(pos);
           result1 = parse_AT();
           if (result1 !== null) {
             result2 = parse_Pattern3();
@@ -6330,21 +7276,27 @@ module.exports = (function(){
               result1 = [result1, result2];
             } else {
               result1 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           } else {
             result1 = null;
-            pos = clone(pos1);
+            pos = clone(pos2);
           }
           result1 = result1 !== null ? result1 : "";
           if (result1 !== null) {
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, id, pt) {return {type: "PatternBinder", id:id, pt:pt!== ""? pt[1] : null};})(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         if (result0 === null) {
@@ -6366,70 +7318,110 @@ module.exports = (function(){
           return cachedResult.result;
         }
         
-        var result0, result1, result2, result3, result4;
-        var pos0, pos1;
+        var result0, result1, result2, result3, result4, result5;
+        var pos0, pos1, pos2, pos3;
         
+        pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_SimplePattern();
-        if (result0 === null) {
-          pos0 = clone(pos);
-          result0 = parse_SimplePattern();
-          if (result0 !== null) {
-            result1 = [];
-            pos1 = clone(pos);
-            result2 = parse_id();
-            if (result2 !== null) {
-              result3 = parse_nl();
-              result3 = result3 !== null ? result3 : "";
-              if (result3 !== null) {
-                result4 = parse_SimplePattern();
-                if (result4 !== null) {
-                  result2 = [result2, result3, result4];
+        if (result0 !== null) {
+          result1 = [];
+          pos2 = clone(pos);
+          pos3 = clone(pos);
+          reportFailures++;
+          result2 = parse_EQUAL();
+          reportFailures--;
+          if (result2 === null) {
+            result2 = "";
+          } else {
+            result2 = null;
+            pos = clone(pos3);
+          }
+          if (result2 !== null) {
+            result3 = parse_id();
+            if (result3 !== null) {
+              result4 = parse_nl();
+              result4 = result4 !== null ? result4 : "";
+              if (result4 !== null) {
+                result5 = parse_SimplePattern();
+                if (result5 !== null) {
+                  result2 = [result2, result3, result4, result5];
                 } else {
                   result2 = null;
-                  pos = clone(pos1);
+                  pos = clone(pos2);
                 }
               } else {
                 result2 = null;
-                pos = clone(pos1);
+                pos = clone(pos2);
               }
             } else {
               result2 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
-            while (result2 !== null) {
-              result1.push(result2);
-              pos1 = clone(pos);
-              result2 = parse_id();
-              if (result2 !== null) {
-                result3 = parse_nl();
-                result3 = result3 !== null ? result3 : "";
-                if (result3 !== null) {
-                  result4 = parse_SimplePattern();
-                  if (result4 !== null) {
-                    result2 = [result2, result3, result4];
+          } else {
+            result2 = null;
+            pos = clone(pos2);
+          }
+          while (result2 !== null) {
+            result1.push(result2);
+            pos2 = clone(pos);
+            pos3 = clone(pos);
+            reportFailures++;
+            result2 = parse_EQUAL();
+            reportFailures--;
+            if (result2 === null) {
+              result2 = "";
+            } else {
+              result2 = null;
+              pos = clone(pos3);
+            }
+            if (result2 !== null) {
+              result3 = parse_id();
+              if (result3 !== null) {
+                result4 = parse_nl();
+                result4 = result4 !== null ? result4 : "";
+                if (result4 !== null) {
+                  result5 = parse_SimplePattern();
+                  if (result5 !== null) {
+                    result2 = [result2, result3, result4, result5];
                   } else {
                     result2 = null;
-                    pos = clone(pos1);
+                    pos = clone(pos2);
                   }
                 } else {
                   result2 = null;
-                  pos = clone(pos1);
+                  pos = clone(pos2);
                 }
               } else {
                 result2 = null;
-                pos = clone(pos1);
+                pos = clone(pos2);
               }
-            }
-            if (result1 !== null) {
-              result0 = [result0, result1];
             } else {
-              result0 = null;
-              pos = clone(pos0);
+              result2 = null;
+              pos = clone(pos2);
             }
+          }
+          if (result1 !== null) {
+            result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
+        } else {
+          result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, head, tails) {
+              var ids = [], cts = [];
+        	for (var i = 0; i < tails.length; i++) {
+                ids.push(tails[i][0]);
+                cts.push(tails[i][2]);
+        	  }	  return {type:"InfixOperatorPattern", SimplePattern:head, ids:ids, SimplePatterns:cts};
+            })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+        }
+        if (result0 === null) {
+          pos = clone(pos0);
         }
         
         cache[cacheKey] = {
@@ -6448,7 +7440,7 @@ module.exports = (function(){
         }
         
         var result0, result1, result2, result3, result4, result5, result6;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         result0 = parse_UNDER();
         if (result0 === null) {
@@ -6456,110 +7448,125 @@ module.exports = (function(){
           if (result0 === null) {
             result0 = parse_Literal();
             if (result0 === null) {
+              pos0 = clone(pos);
+              pos1 = clone(pos);
               result0 = parse_StableId();
+              if (result0 !== null) {
+                result1 = parse_OPPAREN();
+                if (result1 !== null) {
+                  result2 = parse_Patterns();
+                  result2 = result2 !== null ? result2 : "";
+                  if (result2 !== null) {
+                    result3 = parse_CLPAREN();
+                    if (result3 !== null) {
+                      result0 = [result0, result1, result2, result3];
+                    } else {
+                      result0 = null;
+                      pos = clone(pos1);
+                    }
+                  } else {
+                    result0 = null;
+                    pos = clone(pos1);
+                  }
+                } else {
+                  result0 = null;
+                  pos = clone(pos1);
+                }
+              } else {
+                result0 = null;
+                pos = clone(pos1);
+              }
+              if (result0 !== null) {
+                result0 = (function(offset, line, column, si, pts) {return {type: "ConstructorPattern", id:si, pattern:pts};})(pos0.offset, pos0.line, pos0.column, result0[0], result0[2]);
+              }
+              if (result0 === null) {
+                pos = clone(pos0);
+              }
               if (result0 === null) {
                 pos0 = clone(pos);
+                pos1 = clone(pos);
                 result0 = parse_StableId();
                 if (result0 !== null) {
                   result1 = parse_OPPAREN();
                   if (result1 !== null) {
+                    pos2 = clone(pos);
                     result2 = parse_Patterns();
-                    result2 = result2 !== null ? result2 : "";
                     if (result2 !== null) {
-                      result3 = parse_CLPAREN();
+                      result3 = parse_COMMA();
                       if (result3 !== null) {
-                        result0 = [result0, result1, result2, result3];
-                      } else {
-                        result0 = null;
-                        pos = clone(pos0);
-                      }
-                    } else {
-                      result0 = null;
-                      pos = clone(pos0);
-                    }
-                  } else {
-                    result0 = null;
-                    pos = clone(pos0);
-                  }
-                } else {
-                  result0 = null;
-                  pos = clone(pos0);
-                }
-                if (result0 === null) {
-                  pos0 = clone(pos);
-                  result0 = parse_StableId();
-                  if (result0 !== null) {
-                    result1 = parse_OPPAREN();
-                    if (result1 !== null) {
-                      pos1 = clone(pos);
-                      result2 = parse_Patterns();
-                      if (result2 !== null) {
-                        result3 = parse_COMMA();
-                        if (result3 !== null) {
-                          result2 = [result2, result3];
-                        } else {
-                          result2 = null;
-                          pos = clone(pos1);
-                        }
+                        result2 = [result2, result3];
                       } else {
                         result2 = null;
-                        pos = clone(pos1);
+                        pos = clone(pos2);
                       }
-                      result2 = result2 !== null ? result2 : "";
-                      if (result2 !== null) {
-                        pos1 = clone(pos);
-                        result3 = parse_varid();
-                        if (result3 !== null) {
-                          result4 = parse_AT();
-                          if (result4 !== null) {
-                            result3 = [result3, result4];
-                          } else {
-                            result3 = null;
-                            pos = clone(pos1);
-                          }
+                    } else {
+                      result2 = null;
+                      pos = clone(pos2);
+                    }
+                    result2 = result2 !== null ? result2 : "";
+                    if (result2 !== null) {
+                      pos2 = clone(pos);
+                      result3 = parse_varid();
+                      if (result3 !== null) {
+                        result4 = parse_AT();
+                        if (result4 !== null) {
+                          result3 = [result3, result4];
                         } else {
                           result3 = null;
-                          pos = clone(pos1);
+                          pos = clone(pos2);
                         }
-                        result3 = result3 !== null ? result3 : "";
-                        if (result3 !== null) {
-                          result4 = parse_UNDER();
-                          if (result4 !== null) {
-                            result5 = parse_STAR();
-                            if (result5 !== null) {
-                              result6 = parse_CLPAREN();
-                              if (result6 !== null) {
-                                result0 = [result0, result1, result2, result3, result4, result5, result6];
-                              } else {
-                                result0 = null;
-                                pos = clone(pos0);
-                              }
+                      } else {
+                        result3 = null;
+                        pos = clone(pos2);
+                      }
+                      result3 = result3 !== null ? result3 : "";
+                      if (result3 !== null) {
+                        result4 = parse_UNDER();
+                        if (result4 !== null) {
+                          result5 = parse_STAR();
+                          if (result5 !== null) {
+                            result6 = parse_CLPAREN();
+                            if (result6 !== null) {
+                              result0 = [result0, result1, result2, result3, result4, result5, result6];
                             } else {
                               result0 = null;
-                              pos = clone(pos0);
+                              pos = clone(pos1);
                             }
                           } else {
                             result0 = null;
-                            pos = clone(pos0);
+                            pos = clone(pos1);
                           }
                         } else {
                           result0 = null;
-                          pos = clone(pos0);
+                          pos = clone(pos1);
                         }
                       } else {
                         result0 = null;
-                        pos = clone(pos0);
+                        pos = clone(pos1);
                       }
                     } else {
                       result0 = null;
-                      pos = clone(pos0);
+                      pos = clone(pos1);
                     }
                   } else {
                     result0 = null;
-                    pos = clone(pos0);
+                    pos = clone(pos1);
                   }
+                } else {
+                  result0 = null;
+                  pos = clone(pos1);
+                }
+                if (result0 !== null) {
+                  result0 = (function(offset, line, column, id, pts, vi) {return {type: "PatternSequences", id:si, pattern:ftr(pts, 0), varid:ftr(vi, 0)};})(pos0.offset, pos0.line, pos0.column, result0[0], result0[2], result0[3]);
+                }
+                if (result0 === null) {
+                  pos = clone(pos0);
+                }
+                if (result0 === null) {
+                  result0 = parse_StableId();
                   if (result0 === null) {
                     pos0 = clone(pos);
+                    pos1 = clone(pos);
                     result0 = parse_OPPAREN();
                     if (result0 !== null) {
                       result1 = parse_Patterns();
@@ -6570,18 +7577,24 @@ module.exports = (function(){
                           result0 = [result0, result1, result2];
                         } else {
                           result0 = null;
-                          pos = clone(pos0);
+                          pos = clone(pos1);
                         }
                       } else {
                         result0 = null;
-                        pos = clone(pos0);
+                        pos = clone(pos1);
                       }
                     } else {
                       result0 = null;
+                      pos = clone(pos1);
+                    }
+                    if (result0 !== null) {
+                      result0 = (function(offset, line, column, pts) {return {type: "TuplePattern", id:null, pattern:ftr(pts)};})(pos0.offset, pos0.line, pos0.column, result0[1]);
+                    }
+                    if (result0 === null) {
                       pos = clone(pos0);
                     }
                     if (result0 === null) {
-                      result0 = parse_ElemPattern();
+                      result0 = parse_XmlPattern();
                     }
                   }
                 }
@@ -6606,12 +7619,13 @@ module.exports = (function(){
         }
         
         var result0, result1, result2;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_Pattern();
         if (result0 !== null) {
-          pos1 = clone(pos);
+          pos2 = clone(pos);
           result1 = parse_COMMA();
           if (result1 !== null) {
             result2 = parse_Patterns();
@@ -6619,29 +7633,50 @@ module.exports = (function(){
               result1 = [result1, result2];
             } else {
               result1 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           } else {
             result1 = null;
-            pos = clone(pos1);
+            pos = clone(pos2);
           }
           result1 = result1 !== null ? result1 : "";
           if (result1 !== null) {
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, head, tail) {return {type: "Patterns", pattern:[head, tail]};})(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         if (result0 === null) {
-          result0 = [];
-          result1 = parse_UNDER();
-          while (result1 !== null) {
-            result0.push(result1);
-            result1 = parse_UNDER();
+          pos0 = clone(pos);
+          pos1 = clone(pos);
+          result0 = parse_UNDER();
+          if (result0 !== null) {
+            result1 = parse_STAR();
+            if (result1 !== null) {
+              result0 = [result0, result1];
+            } else {
+              result0 = null;
+              pos = clone(pos1);
+            }
+          } else {
+            result0 = null;
+            pos = clone(pos1);
+          }
+          if (result0 !== null) {
+            result0 = (function(offset, line, column, ud, st) {return {type: "Patterns", pattern:[ud, st]};})(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+          }
+          if (result0 === null) {
+            pos = clone(pos0);
           }
         }
         
@@ -6661,15 +7696,16 @@ module.exports = (function(){
         }
         
         var result0, result1, result2, result3, result4;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_OPBRACKET();
         if (result0 !== null) {
           result1 = parse_VariantTypeParam();
           if (result1 !== null) {
             result2 = [];
-            pos1 = clone(pos);
+            pos2 = clone(pos);
             result3 = parse_COMMA();
             if (result3 !== null) {
               result4 = parse_VariantTypeParam();
@@ -6677,15 +7713,15 @@ module.exports = (function(){
                 result3 = [result3, result4];
               } else {
                 result3 = null;
-                pos = clone(pos1);
+                pos = clone(pos2);
               }
             } else {
               result3 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
             while (result3 !== null) {
               result2.push(result3);
-              pos1 = clone(pos);
+              pos2 = clone(pos);
               result3 = parse_COMMA();
               if (result3 !== null) {
                 result4 = parse_VariantTypeParam();
@@ -6693,11 +7729,11 @@ module.exports = (function(){
                   result3 = [result3, result4];
                 } else {
                   result3 = null;
-                  pos = clone(pos1);
+                  pos = clone(pos2);
                 }
               } else {
                 result3 = null;
-                pos = clone(pos1);
+                pos = clone(pos2);
               }
             }
             if (result2 !== null) {
@@ -6706,18 +7742,30 @@ module.exports = (function(){
                 result0 = [result0, result1, result2, result3];
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, param, params) {
+              var result = [param];
+        	  for (var i = 0; i < params.length; i++) {
+                result.push(params[i][1]);
+        	  }
+        	  return {type:"TypeParamClause", params:result};
+            })(pos0.offset, pos0.line, pos0.column, result0[1], result0[2]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -6737,15 +7785,16 @@ module.exports = (function(){
         }
         
         var result0, result1, result2, result3, result4;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_OPBRACKET();
         if (result0 !== null) {
           result1 = parse_TypeParam();
           if (result1 !== null) {
             result2 = [];
-            pos1 = clone(pos);
+            pos2 = clone(pos);
             result3 = parse_COMMA();
             if (result3 !== null) {
               result4 = parse_TypeParam();
@@ -6753,15 +7802,15 @@ module.exports = (function(){
                 result3 = [result3, result4];
               } else {
                 result3 = null;
-                pos = clone(pos1);
+                pos = clone(pos2);
               }
             } else {
               result3 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
             while (result3 !== null) {
               result2.push(result3);
-              pos1 = clone(pos);
+              pos2 = clone(pos);
               result3 = parse_COMMA();
               if (result3 !== null) {
                 result4 = parse_TypeParam();
@@ -6769,11 +7818,11 @@ module.exports = (function(){
                   result3 = [result3, result4];
                 } else {
                   result3 = null;
-                  pos = clone(pos1);
+                  pos = clone(pos2);
                 }
               } else {
                 result3 = null;
-                pos = clone(pos1);
+                pos = clone(pos2);
               }
             }
             if (result2 !== null) {
@@ -6782,18 +7831,30 @@ module.exports = (function(){
                 result0 = [result0, result1, result2, result3];
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, param, params) {
+              var result = [param];
+        	  for (var i = 0; i < params.length; i++) {
+                result.push(params[i][1]);
+        	  }
+        	  return {type:"FunTypeParamClause", params:result};
+            })(pos0.offset, pos0.line, pos0.column, result0[1], result0[2]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -6813,9 +7874,10 @@ module.exports = (function(){
         }
         
         var result0, result1, result2;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = [];
         result1 = parse_Annotation();
         while (result1 !== null) {
@@ -6834,14 +7896,20 @@ module.exports = (function(){
               result0 = [result0, result1, result2];
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, ans, sign, param) {return {type: "VariantTypeParam", annotations:ans, sign:sign, param:param};})(pos0.offset, pos0.line, pos0.column, result0[0], result0[1], result0[2]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -6861,9 +7929,10 @@ module.exports = (function(){
         }
         
         var result0, result1, result2, result3, result4, result5, result6, result7;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_id();
         if (result0 === null) {
           result0 = parse_UNDER();
@@ -6872,7 +7941,7 @@ module.exports = (function(){
           result1 = parse_TypeParamClause();
           result1 = result1 !== null ? result1 : "";
           if (result1 !== null) {
-            pos1 = clone(pos);
+            pos2 = clone(pos);
             result2 = parse_LEFTANGLE();
             if (result2 !== null) {
               result3 = parse_Type();
@@ -6880,15 +7949,15 @@ module.exports = (function(){
                 result2 = [result2, result3];
               } else {
                 result2 = null;
-                pos = clone(pos1);
+                pos = clone(pos2);
               }
             } else {
               result2 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
             result2 = result2 !== null ? result2 : "";
             if (result2 !== null) {
-              pos1 = clone(pos);
+              pos2 = clone(pos);
               result3 = parse_RIGHTANGLE();
               if (result3 !== null) {
                 result4 = parse_Type();
@@ -6896,16 +7965,16 @@ module.exports = (function(){
                   result3 = [result3, result4];
                 } else {
                   result3 = null;
-                  pos = clone(pos1);
+                  pos = clone(pos2);
                 }
               } else {
                 result3 = null;
-                pos = clone(pos1);
+                pos = clone(pos2);
               }
               result3 = result3 !== null ? result3 : "";
               if (result3 !== null) {
                 result4 = [];
-                pos1 = clone(pos);
+                pos2 = clone(pos);
                 if (input.substr(pos.offset, 2) === "<%") {
                   result5 = "<%";
                   advance(pos, 2);
@@ -6923,19 +7992,19 @@ module.exports = (function(){
                       result5 = [result5, result6, result7];
                     } else {
                       result5 = null;
-                      pos = clone(pos1);
+                      pos = clone(pos2);
                     }
                   } else {
                     result5 = null;
-                    pos = clone(pos1);
+                    pos = clone(pos2);
                   }
                 } else {
                   result5 = null;
-                  pos = clone(pos1);
+                  pos = clone(pos2);
                 }
                 while (result5 !== null) {
                   result4.push(result5);
-                  pos1 = clone(pos);
+                  pos2 = clone(pos);
                   if (input.substr(pos.offset, 2) === "<%") {
                     result5 = "<%";
                     advance(pos, 2);
@@ -6953,20 +8022,20 @@ module.exports = (function(){
                         result5 = [result5, result6, result7];
                       } else {
                         result5 = null;
-                        pos = clone(pos1);
+                        pos = clone(pos2);
                       }
                     } else {
                       result5 = null;
-                      pos = clone(pos1);
+                      pos = clone(pos2);
                     }
                   } else {
                     result5 = null;
-                    pos = clone(pos1);
+                    pos = clone(pos2);
                   }
                 }
                 if (result4 !== null) {
                   result5 = [];
-                  pos1 = clone(pos);
+                  pos2 = clone(pos);
                   result6 = parse_COLON();
                   if (result6 !== null) {
                     result7 = parse_Type();
@@ -6974,15 +8043,15 @@ module.exports = (function(){
                       result6 = [result6, result7];
                     } else {
                       result6 = null;
-                      pos = clone(pos1);
+                      pos = clone(pos2);
                     }
                   } else {
                     result6 = null;
-                    pos = clone(pos1);
+                    pos = clone(pos2);
                   }
                   while (result6 !== null) {
                     result5.push(result6);
-                    pos1 = clone(pos);
+                    pos2 = clone(pos);
                     result6 = parse_COLON();
                     if (result6 !== null) {
                       result7 = parse_Type();
@@ -6990,37 +8059,43 @@ module.exports = (function(){
                         result6 = [result6, result7];
                       } else {
                         result6 = null;
-                        pos = clone(pos1);
+                        pos = clone(pos2);
                       }
                     } else {
                       result6 = null;
-                      pos = clone(pos1);
+                      pos = clone(pos2);
                     }
                   }
                   if (result5 !== null) {
                     result0 = [result0, result1, result2, result3, result4, result5];
                   } else {
                     result0 = null;
-                    pos = clone(pos0);
+                    pos = clone(pos1);
                   }
                 } else {
                   result0 = null;
-                  pos = clone(pos0);
+                  pos = clone(pos1);
                 }
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, id, cl, tp1, tp2, tp3, tp4) {return {type: "TypeParam", id:id, clause:cl,type1:tp1, type2:tp2, type3:tp3, type4:tp4};})(pos0.offset, pos0.line, pos0.column, result0[0], result0[1], result0[2], result0[3], result0[4], result0[5]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -7040,9 +8115,10 @@ module.exports = (function(){
         }
         
         var result0, result1, result2, result3, result4, result5;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = [];
         result1 = parse_ParamClause();
         while (result1 !== null) {
@@ -7050,7 +8126,7 @@ module.exports = (function(){
           result1 = parse_ParamClause();
         }
         if (result0 !== null) {
-          pos1 = clone(pos);
+          pos2 = clone(pos);
           result1 = parse_nl();
           result1 = result1 !== null ? result1 : "";
           if (result1 !== null) {
@@ -7065,33 +8141,39 @@ module.exports = (function(){
                     result1 = [result1, result2, result3, result4, result5];
                   } else {
                     result1 = null;
-                    pos = clone(pos1);
+                    pos = clone(pos2);
                   }
                 } else {
                   result1 = null;
-                  pos = clone(pos1);
+                  pos = clone(pos2);
                 }
               } else {
                 result1 = null;
-                pos = clone(pos1);
+                pos = clone(pos2);
               }
             } else {
               result1 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           } else {
             result1 = null;
-            pos = clone(pos1);
+            pos = clone(pos2);
           }
           result1 = result1 !== null ? result1 : "";
           if (result1 !== null) {
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, pc, pm) {return {type: "ParamClauses", clause:pc, params:pm !== ""? pm[3] : null};})(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -7111,9 +8193,10 @@ module.exports = (function(){
         }
         
         var result0, result1, result2, result3;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_nl();
         result0 = result0 !== null ? result0 : "";
         if (result0 !== null) {
@@ -7127,18 +8210,24 @@ module.exports = (function(){
                 result0 = [result0, result1, result2, result3];
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, pm) {return {type: "ParamClause", params:pm !== ""? pm : null};})(pos0.offset, pos0.line, pos0.column, result0[2]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -7158,13 +8247,14 @@ module.exports = (function(){
         }
         
         var result0, result1, result2, result3;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_Param();
         if (result0 !== null) {
           result1 = [];
-          pos1 = clone(pos);
+          pos2 = clone(pos);
           result2 = parse_COMMA();
           if (result2 !== null) {
             result3 = parse_Param();
@@ -7172,15 +8262,15 @@ module.exports = (function(){
               result2 = [result2, result3];
             } else {
               result2 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           } else {
             result2 = null;
-            pos = clone(pos1);
+            pos = clone(pos2);
           }
           while (result2 !== null) {
             result1.push(result2);
-            pos1 = clone(pos);
+            pos2 = clone(pos);
             result2 = parse_COMMA();
             if (result2 !== null) {
               result3 = parse_Param();
@@ -7188,21 +8278,33 @@ module.exports = (function(){
                 result2 = [result2, result3];
               } else {
                 result2 = null;
-                pos = clone(pos1);
+                pos = clone(pos2);
               }
             } else {
               result2 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           }
           if (result1 !== null) {
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, param, params) {
+              var result = [param];
+        	  for (var i = 0; i < params.length; i++) {
+                result.push(params[i][1]);
+        	  }
+        	  return {type:"Params", params:result};
+            })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -7222,9 +8324,10 @@ module.exports = (function(){
         }
         
         var result0, result1, result2, result3, result4;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = [];
         result1 = parse_Annotation();
         while (result1 !== null) {
@@ -7234,7 +8337,7 @@ module.exports = (function(){
         if (result0 !== null) {
           result1 = parse_id();
           if (result1 !== null) {
-            pos1 = clone(pos);
+            pos2 = clone(pos);
             result2 = parse_COLON();
             if (result2 !== null) {
               result3 = parse_ParamType();
@@ -7242,15 +8345,15 @@ module.exports = (function(){
                 result2 = [result2, result3];
               } else {
                 result2 = null;
-                pos = clone(pos1);
+                pos = clone(pos2);
               }
             } else {
               result2 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
             result2 = result2 !== null ? result2 : "";
             if (result2 !== null) {
-              pos1 = clone(pos);
+              pos2 = clone(pos);
               result3 = parse_EQUAL();
               if (result3 !== null) {
                 result4 = parse_Expr();
@@ -7258,29 +8361,35 @@ module.exports = (function(){
                   result3 = [result3, result4];
                 } else {
                   result3 = null;
-                  pos = clone(pos1);
+                  pos = clone(pos2);
                 }
               } else {
                 result3 = null;
-                pos = clone(pos1);
+                pos = clone(pos2);
               }
               result3 = result3 !== null ? result3 : "";
               if (result3 !== null) {
                 result0 = [result0, result1, result2, result3];
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, an, id, pt, expr) {return {type:"Param", annotations:an, id:id, paramType:ftr(pt, 1), expr:expr}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1], result0[2], result0[3]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -7300,39 +8409,51 @@ module.exports = (function(){
         }
         
         var result0, result1;
-        var pos0;
+        var pos0, pos1;
         
-        result0 = parse_Type();
+        pos0 = clone(pos);
+        pos1 = clone(pos);
+        result0 = parse_ARROW();
+        if (result0 !== null) {
+          result1 = parse_Type();
+          if (result1 !== null) {
+            result0 = [result0, result1];
+          } else {
+            result0 = null;
+            pos = clone(pos1);
+          }
+        } else {
+          result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, ar, tp) {return {type:"ParamType", allow:ar, tp:tp, star:null}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+        }
+        if (result0 === null) {
+          pos = clone(pos0);
+        }
         if (result0 === null) {
           pos0 = clone(pos);
-          result0 = parse_ARROW();
+          pos1 = clone(pos);
+          result0 = parse_Type();
           if (result0 !== null) {
-            result1 = parse_Type();
+            result1 = parse_STAR();
+            result1 = result1 !== null ? result1 : "";
             if (result1 !== null) {
               result0 = [result0, result1];
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
+          }
+          if (result0 !== null) {
+            result0 = (function(offset, line, column, tp, st) {return {type:"ParamType", allow:null, tp:tp, star:ftr(st)}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
           }
           if (result0 === null) {
-            pos0 = clone(pos);
-            result0 = parse_Type();
-            if (result0 !== null) {
-              result1 = parse_STAR();
-              if (result1 !== null) {
-                result0 = [result0, result1];
-              } else {
-                result0 = null;
-                pos = clone(pos0);
-              }
-            } else {
-              result0 = null;
-              pos = clone(pos0);
-            }
+            pos = clone(pos0);
           }
         }
         
@@ -7352,9 +8473,10 @@ module.exports = (function(){
         }
         
         var result0, result1, result2, result3, result4, result5;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = [];
         result1 = parse_ClassParamClause();
         while (result1 !== null) {
@@ -7362,7 +8484,7 @@ module.exports = (function(){
           result1 = parse_ClassParamClause();
         }
         if (result0 !== null) {
-          pos1 = clone(pos);
+          pos2 = clone(pos);
           result1 = parse_nl();
           result1 = result1 !== null ? result1 : "";
           if (result1 !== null) {
@@ -7377,33 +8499,39 @@ module.exports = (function(){
                     result1 = [result1, result2, result3, result4, result5];
                   } else {
                     result1 = null;
-                    pos = clone(pos1);
+                    pos = clone(pos2);
                   }
                 } else {
                   result1 = null;
-                  pos = clone(pos1);
+                  pos = clone(pos2);
                 }
               } else {
                 result1 = null;
-                pos = clone(pos1);
+                pos = clone(pos2);
               }
             } else {
               result1 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           } else {
             result1 = null;
-            pos = clone(pos1);
+            pos = clone(pos2);
           }
           result1 = result1 !== null ? result1 : "";
           if (result1 !== null) {
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, cls, params) {return {type:"ClassParamClauses", cls:cls, params:params !== ""? params[3] : null}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -7423,9 +8551,10 @@ module.exports = (function(){
         }
         
         var result0, result1, result2, result3;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_nl();
         result0 = result0 !== null ? result0 : "";
         if (result0 !== null) {
@@ -7439,18 +8568,24 @@ module.exports = (function(){
                 result0 = [result0, result1, result2, result3];
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, cp) {return {type:"ClassParamClause", params:ftr(cp)}; })(pos0.offset, pos0.line, pos0.column, result0[2]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -7470,13 +8605,14 @@ module.exports = (function(){
         }
         
         var result0, result1, result2, result3;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_ClassParam();
         if (result0 !== null) {
           result1 = [];
-          pos1 = clone(pos);
+          pos2 = clone(pos);
           if (input.charCodeAt(pos.offset) === 32) {
             result2 = " ";
             advance(pos, 1);
@@ -7492,15 +8628,15 @@ module.exports = (function(){
               result2 = [result2, result3];
             } else {
               result2 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           } else {
             result2 = null;
-            pos = clone(pos1);
+            pos = clone(pos2);
           }
           while (result2 !== null) {
             result1.push(result2);
-            pos1 = clone(pos);
+            pos2 = clone(pos);
             if (input.charCodeAt(pos.offset) === 32) {
               result2 = " ";
               advance(pos, 1);
@@ -7516,21 +8652,33 @@ module.exports = (function(){
                 result2 = [result2, result3];
               } else {
                 result2 = null;
-                pos = clone(pos1);
+                pos = clone(pos2);
               }
             } else {
               result2 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           }
           if (result1 !== null) {
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, param, params) {
+              var result = [param];
+        	  for (var i = 0; i < params.length; i++) {
+                result.push(params[i][1]);
+        	  }
+        	  return {type:"ClassParams", params:result};
+            })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -7550,9 +8698,10 @@ module.exports = (function(){
         }
         
         var result0, result1, result2, result3, result4, result5, result6;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = [];
         result1 = parse_Annotation();
         while (result1 !== null) {
@@ -7560,7 +8709,7 @@ module.exports = (function(){
           result1 = parse_Annotation();
         }
         if (result0 !== null) {
-          pos1 = clone(pos);
+          pos2 = clone(pos);
           result1 = [];
           result2 = parse_Modifier();
           while (result2 !== null) {
@@ -7576,11 +8725,11 @@ module.exports = (function(){
               result1 = [result1, result2];
             } else {
               result1 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           } else {
             result1 = null;
-            pos = clone(pos1);
+            pos = clone(pos2);
           }
           result1 = result1 !== null ? result1 : "";
           if (result1 !== null) {
@@ -7590,7 +8739,7 @@ module.exports = (function(){
               if (result3 !== null) {
                 result4 = parse_ParamType();
                 if (result4 !== null) {
-                  pos1 = clone(pos);
+                  pos2 = clone(pos);
                   result5 = parse_EQUAL();
                   if (result5 !== null) {
                     result6 = parse_Expr();
@@ -7598,37 +8747,43 @@ module.exports = (function(){
                       result5 = [result5, result6];
                     } else {
                       result5 = null;
-                      pos = clone(pos1);
+                      pos = clone(pos2);
                     }
                   } else {
                     result5 = null;
-                    pos = clone(pos1);
+                    pos = clone(pos2);
                   }
                   result5 = result5 !== null ? result5 : "";
                   if (result5 !== null) {
                     result0 = [result0, result1, result2, result3, result4, result5];
                   } else {
                     result0 = null;
-                    pos = clone(pos0);
+                    pos = clone(pos1);
                   }
                 } else {
                   result0 = null;
-                  pos = clone(pos0);
+                  pos = clone(pos1);
                 }
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, an, md, id, pt, exp) {return {type:"ClassParam", annotations:an, modifier:ftr(md, 0), vax:ftr(md, 1), id:id, paramType:pt, exp:ftr(exp, 1)}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1], result0[2], result0[4], result0[5]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -7647,70 +8802,77 @@ module.exports = (function(){
           return cachedResult.result;
         }
         
-        var result0, result1, result2, result3, result4, result5;
-        var pos0, pos1;
+        var result0, result1, result2, result3, result4;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_OPPAREN();
         if (result0 !== null) {
           result1 = parse_Binding();
           if (result1 !== null) {
             result2 = [];
-            pos1 = clone(pos);
+            pos2 = clone(pos);
             result3 = parse_COMMA();
             if (result3 !== null) {
               result4 = parse_Binding();
               if (result4 !== null) {
-                result5 = parse_CLPAREN();
-                if (result5 !== null) {
-                  result3 = [result3, result4, result5];
-                } else {
-                  result3 = null;
-                  pos = clone(pos1);
-                }
+                result3 = [result3, result4];
               } else {
                 result3 = null;
-                pos = clone(pos1);
+                pos = clone(pos2);
               }
             } else {
               result3 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
             while (result3 !== null) {
               result2.push(result3);
-              pos1 = clone(pos);
+              pos2 = clone(pos);
               result3 = parse_COMMA();
               if (result3 !== null) {
                 result4 = parse_Binding();
                 if (result4 !== null) {
-                  result5 = parse_CLPAREN();
-                  if (result5 !== null) {
-                    result3 = [result3, result4, result5];
-                  } else {
-                    result3 = null;
-                    pos = clone(pos1);
-                  }
+                  result3 = [result3, result4];
                 } else {
                   result3 = null;
-                  pos = clone(pos1);
+                  pos = clone(pos2);
                 }
               } else {
                 result3 = null;
-                pos = clone(pos1);
+                pos = clone(pos2);
               }
             }
             if (result2 !== null) {
-              result0 = [result0, result1, result2];
+              result3 = parse_CLPAREN();
+              if (result3 !== null) {
+                result0 = [result0, result1, result2, result3];
+              } else {
+                result0 = null;
+                pos = clone(pos1);
+              }
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, bd, bds) {
+              var result = [bd];
+        	  for (var i = 0; i < bds.length; i++) {
+                result.push(bds[i][1]);
+        	  }
+        	  return {type:"Bindings", bindings:result};
+            })(pos0.offset, pos0.line, pos0.column, result0[1], result0[2]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -7730,15 +8892,16 @@ module.exports = (function(){
         }
         
         var result0, result1, result2;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_id();
         if (result0 === null) {
           result0 = parse_UNDER();
         }
         if (result0 !== null) {
-          pos1 = clone(pos);
+          pos2 = clone(pos);
           result1 = parse_COLON();
           if (result1 !== null) {
             result2 = parse_Type();
@@ -7746,21 +8909,27 @@ module.exports = (function(){
               result1 = [result1, result2];
             } else {
               result1 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           } else {
             result1 = null;
-            pos = clone(pos1);
+            pos = clone(pos2);
           }
           result1 = result1 !== null ? result1 : "";
           if (result1 !== null) {
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, id, tp) {return {type:"Bindings", id:id, tp:ftr(tp, 1)}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -7780,13 +8949,14 @@ module.exports = (function(){
         }
         
         var result0, result1;
-        var pos0;
+        var pos0, pos1;
         
         result0 = parse_LocalModifier();
         if (result0 === null) {
           result0 = parse_AccessModifier();
           if (result0 === null) {
             pos0 = clone(pos);
+            pos1 = clone(pos);
             if (input.substr(pos.offset, 8) === "override") {
               result0 = "override";
               advance(pos, 8);
@@ -7802,10 +8972,16 @@ module.exports = (function(){
                 result0 = [result0, result1];
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
+              pos = clone(pos1);
+            }
+            if (result0 !== null) {
+              result0 = (function(offset, line, column) {return makeKeyword("override");})(pos0.offset, pos0.line, pos0.column);
+            }
+            if (result0 === null) {
               pos = clone(pos0);
             }
           }
@@ -7827,9 +9003,10 @@ module.exports = (function(){
         }
         
         var result0, result1;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         if (input.substr(pos.offset, 8) === "abstract") {
           result0 = "abstract";
           advance(pos, 8);
@@ -7845,14 +9022,21 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column) {return makeKeyword("abstract");})(pos0.offset, pos0.line, pos0.column);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         if (result0 === null) {
           pos0 = clone(pos);
+          pos1 = clone(pos);
           if (input.substr(pos.offset, 5) === "final") {
             result0 = "final";
             advance(pos, 5);
@@ -7868,14 +9052,21 @@ module.exports = (function(){
               result0 = [result0, result1];
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
+            pos = clone(pos1);
+          }
+          if (result0 !== null) {
+            result0 = (function(offset, line, column) {return makeKeyword("final");})(pos0.offset, pos0.line, pos0.column);
+          }
+          if (result0 === null) {
             pos = clone(pos0);
           }
           if (result0 === null) {
             pos0 = clone(pos);
+            pos1 = clone(pos);
             if (input.substr(pos.offset, 6) === "sealed") {
               result0 = "sealed";
               advance(pos, 6);
@@ -7891,10 +9082,16 @@ module.exports = (function(){
                 result0 = [result0, result1];
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
+              pos = clone(pos1);
+            }
+            if (result0 !== null) {
+              result0 = (function(offset, line, column) {return makeKeyword("sealed");})(pos0.offset, pos0.line, pos0.column);
+            }
+            if (result0 === null) {
               pos = clone(pos0);
             }
             if (result0 === null) {
@@ -7922,9 +9119,10 @@ module.exports = (function(){
         }
         
         var result0, result1, result2;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         if (input.substr(pos.offset, 7) === "private") {
           result0 = "private";
           advance(pos, 7);
@@ -7954,14 +9152,20 @@ module.exports = (function(){
               result0 = [result0, result1, result2];
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, md, qual) {return {type:"AccessModifier", modifier:makeKeyword(md), qualifier:ftr(qual)};})(pos0.offset, pos0.line, pos0.column, result0[0], result0[2]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -7981,9 +9185,10 @@ module.exports = (function(){
         }
         
         var result0, result1, result2;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_OPBRACKET();
         if (result0 !== null) {
           result1 = parse_id();
@@ -7996,14 +9201,20 @@ module.exports = (function(){
               result0 = [result0, result1, result2];
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, id) {return {type:"AccessQualifier", id:id};})(pos0.offset, pos0.line, pos0.column, result0[1]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -8023,9 +9234,10 @@ module.exports = (function(){
         }
         
         var result0, result1, result2, result3;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_AT();
         if (result0 !== null) {
           result1 = parse_SimpleType();
@@ -8040,14 +9252,20 @@ module.exports = (function(){
               result0 = [result0, result1, result2];
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, stype, exprs) {return {type:"Annotation", stype:tp, exprs:exprs};})(pos0.offset, pos0.line, pos0.column, result0[1], result0[2]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -8067,9 +9285,10 @@ module.exports = (function(){
         }
         
         var result0, result1, result2;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_AT();
         if (result0 !== null) {
           result1 = parse_SimpleType();
@@ -8079,14 +9298,20 @@ module.exports = (function(){
               result0 = [result0, result1, result2];
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, tp, exprs) {return {type:"ConstrAnnotation", stype:tp, exprs:exprs};})(pos0.offset, pos0.line, pos0.column, result0[1], result0[2]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -8106,9 +9331,10 @@ module.exports = (function(){
         }
         
         var result0, result1, result2, result3;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_VAL();
         if (result0 !== null) {
           result1 = parse_id();
@@ -8120,18 +9346,24 @@ module.exports = (function(){
                 result0 = [result0, result1, result2, result3];
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, id, prefix) {return {type:"NameValuePair", id:id, prefix:prefix};})(pos0.offset, pos0.line, pos0.column, result0[1], result0[3]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -8150,10 +9382,11 @@ module.exports = (function(){
           return cachedResult.result;
         }
         
-        var result0, result1, result2, result3, result4, result5, result6;
-        var pos0, pos1;
+        var result0, result1, result2, result3, result4, result5, result6, result7;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_nl();
         result0 = result0 !== null ? result0 : "";
         if (result0 !== null) {
@@ -8162,66 +9395,92 @@ module.exports = (function(){
             result2 = parse_SelfType();
             result2 = result2 !== null ? result2 : "";
             if (result2 !== null) {
-              result3 = parse_TemplateStat();
+              result3 = parse_nl();
+              result3 = result3 !== null ? result3 : "";
               if (result3 !== null) {
-                result4 = [];
-                pos1 = clone(pos);
-                result5 = parse_semi();
-                if (result5 !== null) {
-                  result6 = parse_TemplateStat();
+                result4 = parse_TemplateStat();
+                if (result4 !== null) {
+                  result5 = [];
+                  pos2 = clone(pos);
+                  result6 = parse_semi();
                   if (result6 !== null) {
-                    result5 = [result5, result6];
-                  } else {
-                    result5 = null;
-                    pos = clone(pos1);
-                  }
-                } else {
-                  result5 = null;
-                  pos = clone(pos1);
-                }
-                while (result5 !== null) {
-                  result4.push(result5);
-                  pos1 = clone(pos);
-                  result5 = parse_semi();
-                  if (result5 !== null) {
-                    result6 = parse_TemplateStat();
-                    if (result6 !== null) {
-                      result5 = [result5, result6];
+                    result7 = parse_TemplateStat();
+                    if (result7 !== null) {
+                      result6 = [result6, result7];
                     } else {
-                      result5 = null;
+                      result6 = null;
+                      pos = clone(pos2);
+                    }
+                  } else {
+                    result6 = null;
+                    pos = clone(pos2);
+                  }
+                  while (result6 !== null) {
+                    result5.push(result6);
+                    pos2 = clone(pos);
+                    result6 = parse_semi();
+                    if (result6 !== null) {
+                      result7 = parse_TemplateStat();
+                      if (result7 !== null) {
+                        result6 = [result6, result7];
+                      } else {
+                        result6 = null;
+                        pos = clone(pos2);
+                      }
+                    } else {
+                      result6 = null;
+                      pos = clone(pos2);
+                    }
+                  }
+                  if (result5 !== null) {
+                    result6 = parse_nl();
+                    result6 = result6 !== null ? result6 : "";
+                    if (result6 !== null) {
+                      result7 = parse_CLBRACE();
+                      if (result7 !== null) {
+                        result0 = [result0, result1, result2, result3, result4, result5, result6, result7];
+                      } else {
+                        result0 = null;
+                        pos = clone(pos1);
+                      }
+                    } else {
+                      result0 = null;
                       pos = clone(pos1);
                     }
                   } else {
-                    result5 = null;
-                    pos = clone(pos1);
-                  }
-                }
-                if (result4 !== null) {
-                  result5 = parse_CLBRACE();
-                  if (result5 !== null) {
-                    result0 = [result0, result1, result2, result3, result4, result5];
-                  } else {
                     result0 = null;
-                    pos = clone(pos0);
+                    pos = clone(pos1);
                   }
                 } else {
                   result0 = null;
-                  pos = clone(pos0);
+                  pos = clone(pos1);
                 }
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, tp, ts, tss) {
+              var result = [ts];
+        	  for (var i = 0; i < tss.length; i++) {
+                result.push(tss[i][1]);
+        	  }
+        	  return {type:"TemplateBody", selftype:ftr(tp), state:result};
+            })(pos0.offset, pos0.line, pos0.column, result0[2], result0[4], result0[5]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -8241,13 +9500,14 @@ module.exports = (function(){
         }
         
         var result0, result1, result2;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         result0 = parse_Import();
         if (result0 === null) {
           pos0 = clone(pos);
-          result0 = [];
           pos1 = clone(pos);
+          result0 = [];
+          pos2 = clone(pos);
           result1 = parse_Annotation();
           if (result1 !== null) {
             result2 = parse_nl();
@@ -8256,15 +9516,15 @@ module.exports = (function(){
               result1 = [result1, result2];
             } else {
               result1 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           } else {
             result1 = null;
-            pos = clone(pos1);
+            pos = clone(pos2);
           }
           while (result1 !== null) {
             result0.push(result1);
-            pos1 = clone(pos);
+            pos2 = clone(pos);
             result1 = parse_Annotation();
             if (result1 !== null) {
               result2 = parse_nl();
@@ -8273,11 +9533,11 @@ module.exports = (function(){
                 result1 = [result1, result2];
               } else {
                 result1 = null;
-                pos = clone(pos1);
+                pos = clone(pos2);
               }
             } else {
               result1 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           }
           if (result0 !== null) {
@@ -8289,84 +9549,39 @@ module.exports = (function(){
             }
             if (result1 !== null) {
               result2 = parse_Def();
+              if (result2 === null) {
+                result2 = parse_Dcl();
+              }
               if (result2 !== null) {
                 result0 = [result0, result1, result2];
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
+            pos = clone(pos1);
+          }
+          if (result0 !== null) {
+            result0 = (function(offset, line, column, ats, modifier, def) {
+                var result = [];
+          	  for (var i = 0; i < ats.length; i++) {
+                  result.push(ats[i][0]);
+          	  }
+          	  return {type:"TemplateStatement", annotation:result, modifier:modifier, definition:def};
+              })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1], result0[2]);
+          }
+          if (result0 === null) {
             pos = clone(pos0);
           }
           if (result0 === null) {
-            pos0 = clone(pos);
-            result0 = [];
-            pos1 = clone(pos);
-            result1 = parse_Annotation();
-            if (result1 !== null) {
-              result2 = parse_nl();
-              result2 = result2 !== null ? result2 : "";
-              if (result2 !== null) {
-                result1 = [result1, result2];
-              } else {
-                result1 = null;
-                pos = clone(pos1);
-              }
-            } else {
-              result1 = null;
-              pos = clone(pos1);
-            }
-            while (result1 !== null) {
-              result0.push(result1);
-              pos1 = clone(pos);
-              result1 = parse_Annotation();
-              if (result1 !== null) {
-                result2 = parse_nl();
-                result2 = result2 !== null ? result2 : "";
-                if (result2 !== null) {
-                  result1 = [result1, result2];
-                } else {
-                  result1 = null;
-                  pos = clone(pos1);
-                }
-              } else {
-                result1 = null;
-                pos = clone(pos1);
-              }
-            }
-            if (result0 !== null) {
-              result1 = [];
-              result2 = parse_Modifier();
-              while (result2 !== null) {
-                result1.push(result2);
-                result2 = parse_Modifier();
-              }
-              if (result1 !== null) {
-                result2 = parse_Dcl();
-                if (result2 !== null) {
-                  result0 = [result0, result1, result2];
-                } else {
-                  result0 = null;
-                  pos = clone(pos0);
-                }
-              } else {
-                result0 = null;
-                pos = clone(pos0);
-              }
-            } else {
-              result0 = null;
-              pos = clone(pos0);
-            }
+            result0 = parse_Expr();
             if (result0 === null) {
-              result0 = parse_Expr();
-              if (result0 === null) {
-                result0 = parse_Empty();
-              }
+              result0 = parse_Empty();
             }
           }
         }
@@ -8387,12 +9602,13 @@ module.exports = (function(){
         }
         
         var result0, result1, result2, result3;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_id();
         if (result0 !== null) {
-          pos1 = clone(pos);
+          pos2 = clone(pos);
           result1 = parse_COLON();
           if (result1 !== null) {
             result2 = parse_Type();
@@ -8400,11 +9616,11 @@ module.exports = (function(){
               result1 = [result1, result2];
             } else {
               result1 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           } else {
             result1 = null;
-            pos = clone(pos1);
+            pos = clone(pos2);
           }
           result1 = result1 !== null ? result1 : "";
           if (result1 !== null) {
@@ -8413,18 +9629,25 @@ module.exports = (function(){
               result0 = [result0, result1, result2];
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, id, tp) {return {type:"SelfType", id:id, tp:ftr(tp,1)};})(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         if (result0 === null) {
           pos0 = clone(pos);
+          pos1 = clone(pos);
           result0 = parse_THIS();
           if (result0 !== null) {
             result1 = parse_COLON();
@@ -8436,18 +9659,24 @@ module.exports = (function(){
                   result0 = [result0, result1, result2, result3];
                 } else {
                   result0 = null;
-                  pos = clone(pos0);
+                  pos = clone(pos1);
                 }
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
+            pos = clone(pos1);
+          }
+          if (result0 !== null) {
+            result0 = (function(offset, line, column, id, tp) {return {type:"SelfType", id:id, tp:tp};})(pos0.offset, pos0.line, pos0.column, result0[0], result0[2]);
+          }
+          if (result0 === null) {
             pos = clone(pos0);
           }
         }
@@ -8468,9 +9697,10 @@ module.exports = (function(){
         }
         
         var result0, result1, result2, result3, result4, result5;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         if (input.substr(pos.offset, 6) === "import") {
           result0 = "import";
           advance(pos, 6);
@@ -8486,7 +9716,7 @@ module.exports = (function(){
             result2 = parse_ImportExpr();
             if (result2 !== null) {
               result3 = [];
-              pos1 = clone(pos);
+              pos2 = clone(pos);
               result4 = parse_COMMA();
               if (result4 !== null) {
                 result5 = parse_ImportExpr();
@@ -8494,15 +9724,15 @@ module.exports = (function(){
                   result4 = [result4, result5];
                 } else {
                   result4 = null;
-                  pos = clone(pos1);
+                  pos = clone(pos2);
                 }
               } else {
                 result4 = null;
-                pos = clone(pos1);
+                pos = clone(pos2);
               }
               while (result4 !== null) {
                 result3.push(result4);
-                pos1 = clone(pos);
+                pos2 = clone(pos);
                 result4 = parse_COMMA();
                 if (result4 !== null) {
                   result5 = parse_ImportExpr();
@@ -8510,29 +9740,41 @@ module.exports = (function(){
                     result4 = [result4, result5];
                   } else {
                     result4 = null;
-                    pos = clone(pos1);
+                    pos = clone(pos2);
                   }
                 } else {
                   result4 = null;
-                  pos = clone(pos1);
+                  pos = clone(pos2);
                 }
               }
               if (result3 !== null) {
                 result0 = [result0, result1, result2, result3];
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, head, tail) {
+        	var result = [head];
+        	for (var i = 0; i < tail.length; i++) {
+        		result.push(tail[i][1]);
+        	}
+        	return {type:"ImportStatement", exprs:result};
+        })(pos0.offset, pos0.line, pos0.column, result0[2], result0[3]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -8552,12 +9794,13 @@ module.exports = (function(){
         }
         
         var result0, result1, result2;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_StableId();
         if (result0 !== null) {
-          pos1 = clone(pos);
+          pos2 = clone(pos);
           result1 = parse_DOT();
           if (result1 !== null) {
             result2 = parse_UNDER();
@@ -8568,21 +9811,27 @@ module.exports = (function(){
               result1 = [result1, result2];
             } else {
               result1 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           } else {
             result1 = null;
-            pos = clone(pos1);
+            pos = clone(pos2);
           }
           result1 = result1 !== null ? result1 : "";
           if (result1 !== null) {
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, id, sel) {return {type:"ImportExpr", id:id, selector:ftr(sel,1)};})(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -8602,13 +9851,14 @@ module.exports = (function(){
         }
         
         var result0, result1, result2, result3;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_OPBRACE();
         if (result0 !== null) {
           result1 = [];
-          pos1 = clone(pos);
+          pos2 = clone(pos);
           result2 = parse_ImportSelector();
           if (result2 !== null) {
             result3 = parse_COMMA();
@@ -8616,15 +9866,15 @@ module.exports = (function(){
               result2 = [result2, result3];
             } else {
               result2 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           } else {
             result2 = null;
-            pos = clone(pos1);
+            pos = clone(pos2);
           }
           while (result2 !== null) {
             result1.push(result2);
-            pos1 = clone(pos);
+            pos2 = clone(pos);
             result2 = parse_ImportSelector();
             if (result2 !== null) {
               result3 = parse_COMMA();
@@ -8632,11 +9882,11 @@ module.exports = (function(){
                 result2 = [result2, result3];
               } else {
                 result2 = null;
-                pos = clone(pos1);
+                pos = clone(pos2);
               }
             } else {
               result2 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           }
           if (result1 !== null) {
@@ -8650,18 +9900,31 @@ module.exports = (function(){
                 result0 = [result0, result1, result2, result3];
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, heads, tail) {
+        	var result = [];
+        	for (var i = 0; i < heads.length; i++) {
+        		result.push(heads[i][0]);
+        	}
+        	result.push(tail);
+        	return {type:"ImportSelectors", selectors:result};
+        })(pos0.offset, pos0.line, pos0.column, result0[1], result0[2]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -8681,12 +9944,13 @@ module.exports = (function(){
         }
         
         var result0, result1, result2;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_id();
         if (result0 !== null) {
-          pos1 = clone(pos);
+          pos2 = clone(pos);
           result1 = parse_ARROW();
           if (result1 !== null) {
             result2 = parse_id();
@@ -8694,14 +9958,14 @@ module.exports = (function(){
               result1 = [result1, result2];
             } else {
               result1 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           } else {
             result1 = null;
-            pos = clone(pos1);
+            pos = clone(pos2);
           }
           if (result1 === null) {
-            pos1 = clone(pos);
+            pos2 = clone(pos);
             result1 = parse_ARROW();
             if (result1 !== null) {
               result2 = parse_UNDER();
@@ -8709,11 +9973,11 @@ module.exports = (function(){
                 result1 = [result1, result2];
               } else {
                 result1 = null;
-                pos = clone(pos1);
+                pos = clone(pos2);
               }
             } else {
               result1 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           }
           result1 = result1 !== null ? result1 : "";
@@ -8721,10 +9985,16 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, head, tail) {return {type:"ImportSelector", src:head, dest:ftr(tail,1)};})(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -8744,9 +10014,10 @@ module.exports = (function(){
         }
         
         var result0, result1, result2;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_VAL();
         if (result0 !== null) {
           result1 = parse_ValDcl();
@@ -8754,14 +10025,21 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, dcl, body) {return {type:"Declaration", dcl:dcl, body:body};})(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         if (result0 === null) {
           pos0 = clone(pos);
+          pos1 = clone(pos);
           result0 = parse_VAR();
           if (result0 !== null) {
             result1 = parse_VarDcl();
@@ -8769,14 +10047,21 @@ module.exports = (function(){
               result0 = [result0, result1];
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
+            pos = clone(pos1);
+          }
+          if (result0 !== null) {
+            result0 = (function(offset, line, column, dcl, body) {return {type:"Declaration", dcl:dcl, body:body};})(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+          }
+          if (result0 === null) {
             pos = clone(pos0);
           }
           if (result0 === null) {
             pos0 = clone(pos);
+            pos1 = clone(pos);
             result0 = parse_DEF();
             if (result0 !== null) {
               result1 = parse_FunDcl();
@@ -8784,14 +10069,21 @@ module.exports = (function(){
                 result0 = [result0, result1];
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
+              pos = clone(pos1);
+            }
+            if (result0 !== null) {
+              result0 = (function(offset, line, column, dcl, body) {return {type:"Declaration", dcl:dcl, body:body};})(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+            }
+            if (result0 === null) {
               pos = clone(pos0);
             }
             if (result0 === null) {
               pos0 = clone(pos);
+              pos1 = clone(pos);
               result0 = parse_TYPE();
               if (result0 !== null) {
                 result1 = [];
@@ -8806,14 +10098,20 @@ module.exports = (function(){
                     result0 = [result0, result1, result2];
                   } else {
                     result0 = null;
-                    pos = clone(pos0);
+                    pos = clone(pos1);
                   }
                 } else {
                   result0 = null;
-                  pos = clone(pos0);
+                  pos = clone(pos1);
                 }
               } else {
                 result0 = null;
+                pos = clone(pos1);
+              }
+              if (result0 !== null) {
+                result0 = (function(offset, line, column, dcl, body) {return {type:"Declaration", dcl:dcl, body:body};})(pos0.offset, pos0.line, pos0.column, result0[0], result0[2]);
+              }
+              if (result0 === null) {
                 pos = clone(pos0);
               }
             }
@@ -8836,9 +10134,10 @@ module.exports = (function(){
         }
         
         var result0, result1, result2;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_ids();
         if (result0 !== null) {
           result1 = parse_COLON();
@@ -8848,14 +10147,20 @@ module.exports = (function(){
               result0 = [result0, result1, result2];
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, id, tp) {return {type:"ValueDeclaration", id:id, tp:tp};})(pos0.offset, pos0.line, pos0.column, result0[0], result0[2]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -8875,9 +10180,10 @@ module.exports = (function(){
         }
         
         var result0, result1, result2;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_ids();
         if (result0 !== null) {
           result1 = parse_COLON();
@@ -8887,14 +10193,20 @@ module.exports = (function(){
               result0 = [result0, result1, result2];
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, id, tp) {return {type:"VariableDeclaration", id:id, tp:tp};})(pos0.offset, pos0.line, pos0.column, result0[0], result0[2]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -8914,12 +10226,13 @@ module.exports = (function(){
         }
         
         var result0, result1, result2;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_FunSig();
         if (result0 !== null) {
-          pos1 = clone(pos);
+          pos2 = clone(pos);
           result1 = parse_COLON();
           if (result1 !== null) {
             result2 = parse_Type();
@@ -8927,21 +10240,27 @@ module.exports = (function(){
               result1 = [result1, result2];
             } else {
               result1 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           } else {
             result1 = null;
-            pos = clone(pos1);
+            pos = clone(pos2);
           }
           result1 = result1 !== null ? result1 : "";
           if (result1 !== null) {
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, sig, tp) {return {type:"FunctionDeclaration", signature:sig, tp:ftr(tp, 1)};})(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -8961,9 +10280,10 @@ module.exports = (function(){
         }
         
         var result0, result1, result2;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_id();
         if (result0 !== null) {
           result1 = parse_FunTypeParamClause();
@@ -8974,14 +10294,20 @@ module.exports = (function(){
               result0 = [result0, result1, result2];
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, id, funtype, param) {return {type:"FunctionSignature", id:id, funtype:ftr(funtype), param:param};})(pos0.offset, pos0.line, pos0.column, result0[0], result0[1], result0[2]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -9001,15 +10327,16 @@ module.exports = (function(){
         }
         
         var result0, result1, result2, result3, result4;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_id();
         if (result0 !== null) {
           result1 = parse_TypeParamClause();
           result1 = result1 !== null ? result1 : "";
           if (result1 !== null) {
-            pos1 = clone(pos);
+            pos2 = clone(pos);
             result2 = parse_LEFTANGLE();
             if (result2 !== null) {
               result3 = parse_Type();
@@ -9017,15 +10344,15 @@ module.exports = (function(){
                 result2 = [result2, result3];
               } else {
                 result2 = null;
-                pos = clone(pos1);
+                pos = clone(pos2);
               }
             } else {
               result2 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
             result2 = result2 !== null ? result2 : "";
             if (result2 !== null) {
-              pos1 = clone(pos);
+              pos2 = clone(pos);
               result3 = parse_RIGHTANGLE();
               if (result3 !== null) {
                 result4 = parse_Type();
@@ -9033,29 +10360,35 @@ module.exports = (function(){
                   result3 = [result3, result4];
                 } else {
                   result3 = null;
-                  pos = clone(pos1);
+                  pos = clone(pos2);
                 }
               } else {
                 result3 = null;
-                pos = clone(pos1);
+                pos = clone(pos2);
               }
               result3 = result3 !== null ? result3 : "";
               if (result3 !== null) {
                 result0 = [result0, result1, result2, result3];
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, id, tpc, t1, t2) {return {type:"TypeDeclaration", id:id, typeparam:ftr(tpc), type1:ftr(t1), type2:ftr(t2)};})(pos0.offset, pos0.line, pos0.column, result0[0], result0[1], result0[2], result0[3]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -9075,9 +10408,10 @@ module.exports = (function(){
         }
         
         var result0, result1;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_VAL();
         if (result0 !== null) {
           result1 = parse_PatDef();
@@ -9085,14 +10419,21 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, dcl, body) {return {type:"PatValDef", body:body};})(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         if (result0 === null) {
           pos0 = clone(pos);
+          pos1 = clone(pos);
           result0 = parse_VAR();
           if (result0 !== null) {
             result1 = parse_VarDef();
@@ -9100,10 +10441,16 @@ module.exports = (function(){
               result0 = [result0, result1];
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
+            pos = clone(pos1);
+          }
+          if (result0 !== null) {
+            result0 = (function(offset, line, column, dcl, body) {return {type:"PatVarDef", body:body};})(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+          }
+          if (result0 === null) {
             pos = clone(pos0);
           }
         }
@@ -9124,11 +10471,12 @@ module.exports = (function(){
         }
         
         var result0, result1, result2;
-        var pos0;
+        var pos0, pos1;
         
         result0 = parse_PatVarDef();
         if (result0 === null) {
           pos0 = clone(pos);
+          pos1 = clone(pos);
           result0 = parse_DEF();
           if (result0 !== null) {
             result1 = parse_FunDef();
@@ -9136,14 +10484,21 @@ module.exports = (function(){
               result0 = [result0, result1];
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
+            pos = clone(pos1);
+          }
+          if (result0 !== null) {
+            result0 = (function(offset, line, column, dcl, body) {return {type:"Definition", dcl:dcl, body:body};})(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+          }
+          if (result0 === null) {
             pos = clone(pos0);
           }
           if (result0 === null) {
             pos0 = clone(pos);
+            pos1 = clone(pos);
             result0 = parse_TYPE();
             if (result0 !== null) {
               result1 = [];
@@ -9158,14 +10513,20 @@ module.exports = (function(){
                   result0 = [result0, result1, result2];
                 } else {
                   result0 = null;
-                  pos = clone(pos0);
+                  pos = clone(pos1);
                 }
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
+              pos = clone(pos1);
+            }
+            if (result0 !== null) {
+              result0 = (function(offset, line, column, dcl, body) {return {type:"Definition", dcl:dcl, body:body};})(pos0.offset, pos0.line, pos0.column, result0[0], result0[2]);
+            }
+            if (result0 === null) {
               pos = clone(pos0);
             }
             if (result0 === null) {
@@ -9190,13 +10551,14 @@ module.exports = (function(){
         }
         
         var result0, result1, result2, result3, result4;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_Pattern2();
         if (result0 !== null) {
           result1 = [];
-          pos1 = clone(pos);
+          pos2 = clone(pos);
           result2 = parse_COMMA();
           if (result2 !== null) {
             result3 = parse_Pattern2();
@@ -9204,15 +10566,15 @@ module.exports = (function(){
               result2 = [result2, result3];
             } else {
               result2 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           } else {
             result2 = null;
-            pos = clone(pos1);
+            pos = clone(pos2);
           }
           while (result2 !== null) {
             result1.push(result2);
-            pos1 = clone(pos);
+            pos2 = clone(pos);
             result2 = parse_COMMA();
             if (result2 !== null) {
               result3 = parse_Pattern2();
@@ -9220,15 +10582,15 @@ module.exports = (function(){
                 result2 = [result2, result3];
               } else {
                 result2 = null;
-                pos = clone(pos1);
+                pos = clone(pos2);
               }
             } else {
               result2 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           }
           if (result1 !== null) {
-            pos1 = clone(pos);
+            pos2 = clone(pos);
             result2 = parse_COLON();
             if (result2 !== null) {
               result3 = parse_Type();
@@ -9236,11 +10598,11 @@ module.exports = (function(){
                 result2 = [result2, result3];
               } else {
                 result2 = null;
-                pos = clone(pos1);
+                pos = clone(pos2);
               }
             } else {
               result2 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
             result2 = result2 !== null ? result2 : "";
             if (result2 !== null) {
@@ -9251,22 +10613,34 @@ module.exports = (function(){
                   result0 = [result0, result1, result2, result3, result4];
                 } else {
                   result0 = null;
-                  pos = clone(pos0);
+                  pos = clone(pos1);
                 }
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, ptn, ptns, tp, expr) {
+        	var result = [ptn];
+        	for (var i = 0; i < ptns.length; i++) {
+        		result.push(ptns[i][1]);
+        	}
+        	return {type:"PatDef", patterns:result, tp:ftr(tp, 1), expr:expr};
+        })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1], result0[2], result0[4]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -9286,11 +10660,12 @@ module.exports = (function(){
         }
         
         var result0, result1, result2, result3, result4;
-        var pos0;
+        var pos0, pos1;
         
         result0 = parse_PatDef();
         if (result0 === null) {
           pos0 = clone(pos);
+          pos1 = clone(pos);
           result0 = parse_ids();
           if (result0 !== null) {
             result1 = parse_COLON();
@@ -9304,22 +10679,28 @@ module.exports = (function(){
                     result0 = [result0, result1, result2, result3, result4];
                   } else {
                     result0 = null;
-                    pos = clone(pos0);
+                    pos = clone(pos1);
                   }
                 } else {
                   result0 = null;
-                  pos = clone(pos0);
+                  pos = clone(pos1);
                 }
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
+            pos = clone(pos1);
+          }
+          if (result0 !== null) {
+            result0 = (function(offset, line, column, id, tp) {return {type:"VarDef", ids:id, tp:tp};})(pos0.offset, pos0.line, pos0.column, result0[0], result0[2]);
+          }
+          if (result0 === null) {
             pos = clone(pos0);
           }
         }
@@ -9340,12 +10721,13 @@ module.exports = (function(){
         }
         
         var result0, result1, result2, result3, result4;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_FunSig();
         if (result0 !== null) {
-          pos1 = clone(pos);
+          pos2 = clone(pos);
           result1 = parse_COLON();
           if (result1 !== null) {
             result2 = parse_Type();
@@ -9353,11 +10735,11 @@ module.exports = (function(){
               result1 = [result1, result2];
             } else {
               result1 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           } else {
             result1 = null;
-            pos = clone(pos1);
+            pos = clone(pos2);
           }
           result1 = result1 !== null ? result1 : "";
           if (result1 !== null) {
@@ -9368,22 +10750,29 @@ module.exports = (function(){
                 result0 = [result0, result1, result2, result3];
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, fs, tp, exp) {return {type:"FunctionDefinition", signature:fs, tp:ftr(tp), expr:exp}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1], result0[3]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         if (result0 === null) {
           pos0 = clone(pos);
+          pos1 = clone(pos);
           result0 = parse_FunSig();
           if (result0 !== null) {
             result1 = parse_nl();
@@ -9398,33 +10787,40 @@ module.exports = (function(){
                     result0 = [result0, result1, result2, result3, result4];
                   } else {
                     result0 = null;
-                    pos = clone(pos0);
+                    pos = clone(pos1);
                   }
                 } else {
                   result0 = null;
-                  pos = clone(pos0);
+                  pos = clone(pos1);
                 }
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
+            pos = clone(pos1);
+          }
+          if (result0 !== null) {
+            result0 = (function(offset, line, column, fs, bk) {return {type:"Procedure", signature:fs, block:bk}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[3]);
+          }
+          if (result0 === null) {
             pos = clone(pos0);
           }
           if (result0 === null) {
             pos0 = clone(pos);
+            pos1 = clone(pos);
             result0 = parse_THIS();
             if (result0 !== null) {
               result1 = parse_ParamClause();
               if (result1 !== null) {
                 result2 = parse_ParamClauses();
                 if (result2 !== null) {
-                  pos1 = clone(pos);
+                  pos2 = clone(pos);
                   result3 = parse_EQUAL();
                   if (result3 !== null) {
                     result4 = parse_ConstrExpr();
@@ -9432,14 +10828,14 @@ module.exports = (function(){
                       result3 = [result3, result4];
                     } else {
                       result3 = null;
-                      pos = clone(pos1);
+                      pos = clone(pos2);
                     }
                   } else {
                     result3 = null;
-                    pos = clone(pos1);
+                    pos = clone(pos2);
                   }
                   if (result3 === null) {
-                    pos1 = clone(pos);
+                    pos2 = clone(pos);
                     result3 = parse_nl();
                     result3 = result3 !== null ? result3 : "";
                     if (result3 !== null) {
@@ -9448,29 +10844,35 @@ module.exports = (function(){
                         result3 = [result3, result4];
                       } else {
                         result3 = null;
-                        pos = clone(pos1);
+                        pos = clone(pos2);
                       }
                     } else {
                       result3 = null;
-                      pos = clone(pos1);
+                      pos = clone(pos2);
                     }
                   }
                   if (result3 !== null) {
                     result0 = [result0, result1, result2, result3];
                   } else {
                     result0 = null;
-                    pos = clone(pos0);
+                    pos = clone(pos1);
                   }
                 } else {
                   result0 = null;
-                  pos = clone(pos0);
+                  pos = clone(pos1);
                 }
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
+              pos = clone(pos1);
+            }
+            if (result0 !== null) {
+              result0 = (function(offset, line, column, pc, pcs, body) {return {type:"ConstructorDefinition", param:pc, params:pcs, body:body}; })(pos0.offset, pos0.line, pos0.column, result0[1], result0[2], result0[3]);
+            }
+            if (result0 === null) {
               pos = clone(pos0);
             }
           }
@@ -9492,9 +10894,10 @@ module.exports = (function(){
         }
         
         var result0, result1, result2, result3;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_id();
         if (result0 !== null) {
           result1 = parse_TypeParamClause();
@@ -9507,18 +10910,24 @@ module.exports = (function(){
                 result0 = [result0, result1, result2, result3];
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, id, pm, tp) {return {type:"TypeDef", id:id, param:ftr(pm), tp:tp}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1], result0[3]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -9538,9 +10947,10 @@ module.exports = (function(){
         }
         
         var result0, result1, result2, result3;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_CASE();
         result0 = result0 !== null ? result0 : "";
         if (result0 !== null) {
@@ -9561,22 +10971,29 @@ module.exports = (function(){
                 result0 = [result0, result1, result2, result3];
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, cs, def) {return {type:"TmplDef", prefix:[ftr(cs), makeKeyword("class")], def:def}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[3]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         if (result0 === null) {
           pos0 = clone(pos);
+          pos1 = clone(pos);
           result0 = parse_CASE();
           result0 = result0 !== null ? result0 : "";
           if (result0 !== null) {
@@ -9587,18 +11004,25 @@ module.exports = (function(){
                 result0 = [result0, result1, result2];
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
+            pos = clone(pos1);
+          }
+          if (result0 !== null) {
+            result0 = (function(offset, line, column, cs, obj, def) {return {type:"TmplDef", prefix:[ftr(cs), obj], def:def}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1], result0[2]);
+          }
+          if (result0 === null) {
             pos = clone(pos0);
           }
           if (result0 === null) {
             pos0 = clone(pos);
+            pos1 = clone(pos);
             if (input.substr(pos.offset, 5) === "trait") {
               result0 = "trait";
               advance(pos, 5);
@@ -9616,14 +11040,20 @@ module.exports = (function(){
                   result0 = [result0, result1, result2];
                 } else {
                   result0 = null;
-                  pos = clone(pos0);
+                  pos = clone(pos1);
                 }
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
+              pos = clone(pos1);
+            }
+            if (result0 !== null) {
+              result0 = (function(offset, line, column, def) {return {type:"TmplDef", prefix:[makeKeyword("trait")], def:def}; })(pos0.offset, pos0.line, pos0.column, result0[2]);
+            }
+            if (result0 === null) {
               pos = clone(pos0);
             }
           }
@@ -9645,9 +11075,10 @@ module.exports = (function(){
         }
         
         var result0, result1, result2, result3, result4, result5;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_id();
         if (result0 !== null) {
           result1 = parse_TypeParamClause();
@@ -9670,26 +11101,32 @@ module.exports = (function(){
                     result0 = [result0, result1, result2, result3, result4, result5];
                   } else {
                     result0 = null;
-                    pos = clone(pos0);
+                    pos = clone(pos1);
                   }
                 } else {
                   result0 = null;
-                  pos = clone(pos0);
+                  pos = clone(pos1);
                 }
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, id, tpc, ca, am, cpc, cto) {return {type:"ClassDef", id:id, typeParam:ftr(tpc), annotation:ca, modifier:ftr(am), classParam:cpc, classTemplate:cto}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1], result0[2], result0[3], result0[4], result0[5]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -9709,9 +11146,10 @@ module.exports = (function(){
         }
         
         var result0, result1, result2;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_id();
         if (result0 !== null) {
           result1 = parse_TypeParamClause();
@@ -9722,14 +11160,20 @@ module.exports = (function(){
               result0 = [result0, result1, result2];
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, id, tpc, tto) {return {type:"TraitDef", id:id, typeParam:tpc, traitTemplate:tto}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1], result0[2]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -9749,9 +11193,10 @@ module.exports = (function(){
         }
         
         var result0, result1;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_id();
         if (result0 !== null) {
           result1 = parse_ClassTemplateOpt();
@@ -9759,10 +11204,16 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, id, cto) {return {type:"ObjectDef", id:id, classTemplate:cto}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -9782,9 +11233,10 @@ module.exports = (function(){
         }
         
         var result0, result1;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_EXTENDS();
         if (result0 !== null) {
           result1 = parse_ClassTemplate();
@@ -9792,14 +11244,21 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, ext, ct) {return {type:"ClassTemplateOpt", extend:ext, body:ct}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         if (result0 === null) {
           pos0 = clone(pos);
+          pos1 = clone(pos);
           result0 = parse_EXTENDS();
           result0 = result0 !== null ? result0 : "";
           if (result0 !== null) {
@@ -9808,13 +11267,19 @@ module.exports = (function(){
               result0 = [result0, result1];
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
           result0 = result0 !== null ? result0 : "";
+          if (result0 !== null) {
+            result0 = (function(offset, line, column, tmpl) {return {type:"ClassTemplateOpt", extend:ftr(ftr(tmpl, 0)), body:ftr(tmpl, 1)}; })(pos0.offset, pos0.line, pos0.column, result0);
+          }
+          if (result0 === null) {
+            pos = clone(pos0);
+          }
         }
         
         cache[cacheKey] = {
@@ -9833,9 +11298,10 @@ module.exports = (function(){
         }
         
         var result0, result1;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_EXTENDS();
         if (result0 !== null) {
           result1 = parse_TraitTemplate();
@@ -9843,14 +11309,21 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, ext, tt) {return {type:"TraitTemplateOpt", extend:ext, body:tt}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         if (result0 === null) {
           pos0 = clone(pos);
+          pos1 = clone(pos);
           result0 = parse_EXTENDS();
           result0 = result0 !== null ? result0 : "";
           if (result0 !== null) {
@@ -9859,13 +11332,19 @@ module.exports = (function(){
               result0 = [result0, result1];
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
           result0 = result0 !== null ? result0 : "";
+          if (result0 !== null) {
+            result0 = (function(offset, line, column) {return {type:"TraitTemplateOpt", extend:ftr(ftr(tmpl, 0)), body:ftr(tmpl, 1)}; })(pos0.offset, pos0.line, pos0.column);
+          }
+          if (result0 === null) {
+            pos = clone(pos0);
+          }
         }
         
         cache[cacheKey] = {
@@ -9884,9 +11363,10 @@ module.exports = (function(){
         }
         
         var result0, result1, result2;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_EarlyDefs();
         result0 = result0 !== null ? result0 : "";
         if (result0 !== null) {
@@ -9898,14 +11378,20 @@ module.exports = (function(){
               result0 = [result0, result1, result2];
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, ed, cp, tb) {return {type:"ClassTemplate", def:ftr(ed), classParent:cp, body:ftr(tb)}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1], result0[2]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -9925,9 +11411,10 @@ module.exports = (function(){
         }
         
         var result0, result1, result2;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_EarlyDefs();
         result0 = result0 !== null ? result0 : "";
         if (result0 !== null) {
@@ -9939,14 +11426,20 @@ module.exports = (function(){
               result0 = [result0, result1, result2];
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, ed, tp, tb) {return {type:"TraitTemplate", def:ftr(ed), traitParent:tp, body:ftr(tb)}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1], result0[2]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -9966,13 +11459,14 @@ module.exports = (function(){
         }
         
         var result0, result1, result2, result3;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_Constr();
         if (result0 !== null) {
           result1 = [];
-          pos1 = clone(pos);
+          pos2 = clone(pos);
           result2 = parse_WITH();
           if (result2 !== null) {
             result3 = parse_AnnotType();
@@ -9980,15 +11474,15 @@ module.exports = (function(){
               result2 = [result2, result3];
             } else {
               result2 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           } else {
             result2 = null;
-            pos = clone(pos1);
+            pos = clone(pos2);
           }
           while (result2 !== null) {
             result1.push(result2);
-            pos1 = clone(pos);
+            pos2 = clone(pos);
             result2 = parse_WITH();
             if (result2 !== null) {
               result3 = parse_AnnotType();
@@ -9996,21 +11490,27 @@ module.exports = (function(){
                 result2 = [result2, result3];
               } else {
                 result2 = null;
-                pos = clone(pos1);
+                pos = clone(pos2);
               }
             } else {
               result2 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           }
           if (result1 !== null) {
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, cst, ats) {return {type:"ClassParents", constr:cst, annotType:ats}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -10030,13 +11530,14 @@ module.exports = (function(){
         }
         
         var result0, result1, result2, result3;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_AnnotType();
         if (result0 !== null) {
           result1 = [];
-          pos1 = clone(pos);
+          pos2 = clone(pos);
           result2 = parse_WITH();
           if (result2 !== null) {
             result3 = parse_AnnotType();
@@ -10044,15 +11545,15 @@ module.exports = (function(){
               result2 = [result2, result3];
             } else {
               result2 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           } else {
             result2 = null;
-            pos = clone(pos1);
+            pos = clone(pos2);
           }
           while (result2 !== null) {
             result1.push(result2);
-            pos1 = clone(pos);
+            pos2 = clone(pos);
             result2 = parse_WITH();
             if (result2 !== null) {
               result3 = parse_AnnotType();
@@ -10060,21 +11561,27 @@ module.exports = (function(){
                 result2 = [result2, result3];
               } else {
                 result2 = null;
-                pos = clone(pos1);
+                pos = clone(pos2);
               }
             } else {
               result2 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           }
           if (result1 !== null) {
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, at, ats) {return {type:"TraitParents", annotType:at, annotType:ats}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -10094,9 +11601,10 @@ module.exports = (function(){
         }
         
         var result0, result1, result2;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_AnnotType();
         if (result0 !== null) {
           result1 = [];
@@ -10109,10 +11617,16 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, at, ae) {return {type:"Constr", annotType:at, exprs:ae}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -10132,16 +11646,17 @@ module.exports = (function(){
         }
         
         var result0, result1, result2, result3, result4;
-        var pos0, pos1, pos2;
+        var pos0, pos1, pos2, pos3;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_OPBRACE();
         if (result0 !== null) {
-          pos1 = clone(pos);
+          pos2 = clone(pos);
           result1 = parse_EarlyDef();
           if (result1 !== null) {
             result2 = [];
-            pos2 = clone(pos);
+            pos3 = clone(pos);
             result3 = parse_semi();
             if (result3 !== null) {
               result4 = parse_EarlyDef();
@@ -10149,15 +11664,15 @@ module.exports = (function(){
                 result3 = [result3, result4];
               } else {
                 result3 = null;
-                pos = clone(pos2);
+                pos = clone(pos3);
               }
             } else {
               result3 = null;
-              pos = clone(pos2);
+              pos = clone(pos3);
             }
             while (result3 !== null) {
               result2.push(result3);
-              pos2 = clone(pos);
+              pos3 = clone(pos);
               result3 = parse_semi();
               if (result3 !== null) {
                 result4 = parse_EarlyDef();
@@ -10165,22 +11680,22 @@ module.exports = (function(){
                   result3 = [result3, result4];
                 } else {
                   result3 = null;
-                  pos = clone(pos2);
+                  pos = clone(pos3);
                 }
               } else {
                 result3 = null;
-                pos = clone(pos2);
+                pos = clone(pos3);
               }
             }
             if (result2 !== null) {
               result1 = [result1, result2];
             } else {
               result1 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           } else {
             result1 = null;
-            pos = clone(pos1);
+            pos = clone(pos2);
           }
           result1 = result1 !== null ? result1 : "";
           if (result1 !== null) {
@@ -10191,18 +11706,32 @@ module.exports = (function(){
                 result0 = [result0, result1, result2, result3];
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, eds) {
+              var result = ftr(eds);
+        	  if(eds !== null){
+        		  for (var i = 0; i < eds[1].length; i++) {
+        			  result.push(eds[1][i][1]);
+        		  }
+        	  }
+        	  return {type:"EarlyDefs", earlyDefs:result};
+            })(pos0.offset, pos0.line, pos0.column, result0[1]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -10222,11 +11751,12 @@ module.exports = (function(){
         }
         
         var result0, result1, result2;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
-        result0 = [];
         pos1 = clone(pos);
+        result0 = [];
+        pos2 = clone(pos);
         result1 = parse_Annotation();
         if (result1 !== null) {
           result2 = parse_nl();
@@ -10235,15 +11765,15 @@ module.exports = (function(){
             result1 = [result1, result2];
           } else {
             result1 = null;
-            pos = clone(pos1);
+            pos = clone(pos2);
           }
         } else {
           result1 = null;
-          pos = clone(pos1);
+          pos = clone(pos2);
         }
         while (result1 !== null) {
           result0.push(result1);
-          pos1 = clone(pos);
+          pos2 = clone(pos);
           result1 = parse_Annotation();
           if (result1 !== null) {
             result2 = parse_nl();
@@ -10252,11 +11782,11 @@ module.exports = (function(){
               result1 = [result1, result2];
             } else {
               result1 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           } else {
             result1 = null;
-            pos = clone(pos1);
+            pos = clone(pos2);
           }
         }
         if (result0 !== null) {
@@ -10272,14 +11802,26 @@ module.exports = (function(){
               result0 = [result0, result1, result2];
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, an, md, pvd) {
+              var result = [];
+        	  for (var i = 0; i < an.length; i++) {
+                result.push(an[i][0]);
+        	  }
+        	  return {type:"EarlyDef", annotation:an, modifier:md, def:pvd};
+            })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1], result0[2]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -10321,15 +11863,16 @@ module.exports = (function(){
         }
         
         var result0, result1, result2, result3, result4;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_OPBRACE();
         if (result0 !== null) {
           result1 = parse_SelfInvocation();
           if (result1 !== null) {
             result2 = [];
-            pos1 = clone(pos);
+            pos2 = clone(pos);
             result3 = parse_semi();
             if (result3 !== null) {
               result4 = parse_BlockStat();
@@ -10337,15 +11880,15 @@ module.exports = (function(){
                 result3 = [result3, result4];
               } else {
                 result3 = null;
-                pos = clone(pos1);
+                pos = clone(pos2);
               }
             } else {
               result3 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
             while (result3 !== null) {
               result2.push(result3);
-              pos1 = clone(pos);
+              pos2 = clone(pos);
               result3 = parse_semi();
               if (result3 !== null) {
                 result4 = parse_BlockStat();
@@ -10353,11 +11896,11 @@ module.exports = (function(){
                   result3 = [result3, result4];
                 } else {
                   result3 = null;
-                  pos = clone(pos1);
+                  pos = clone(pos2);
                 }
               } else {
                 result3 = null;
-                pos = clone(pos1);
+                pos = clone(pos2);
               }
             }
             if (result2 !== null) {
@@ -10366,18 +11909,30 @@ module.exports = (function(){
                 result0 = [result0, result1, result2, result3];
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, si, bss) {
+              var result = [];
+        	  for (var i = 0; i < bss.length; i++) {
+                result.push(bss[i][1]);
+        	  }
+        	  return {type:"TypeParamClause", params:result};
+            })(pos0.offset, pos0.line, pos0.column, result0[1], result0[2]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -10397,9 +11952,10 @@ module.exports = (function(){
         }
         
         var result0, result1, result2;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_THIS();
         if (result0 !== null) {
           result2 = parse_ArgumentExprs();
@@ -10416,10 +11972,16 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, ae) {return {type:"SelfInvocation", exprs:ae}; })(pos0.offset, pos0.line, pos0.column, result0[1]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -10439,13 +12001,14 @@ module.exports = (function(){
         }
         
         var result0, result1, result2, result3;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_TopStat();
         if (result0 !== null) {
           result1 = [];
-          pos1 = clone(pos);
+          pos2 = clone(pos);
           result2 = parse_semi();
           if (result2 !== null) {
             result3 = parse_TopStat();
@@ -10453,15 +12016,15 @@ module.exports = (function(){
               result2 = [result2, result3];
             } else {
               result2 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           } else {
             result2 = null;
-            pos = clone(pos1);
+            pos = clone(pos2);
           }
           while (result2 !== null) {
             result1.push(result2);
-            pos1 = clone(pos);
+            pos2 = clone(pos);
             result2 = parse_semi();
             if (result2 !== null) {
               result3 = parse_TopStat();
@@ -10469,21 +12032,33 @@ module.exports = (function(){
                 result2 = [result2, result3];
               } else {
                 result2 = null;
-                pos = clone(pos1);
+                pos = clone(pos2);
               }
             } else {
               result2 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           }
           if (result1 !== null) {
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, tp, tps) {
+              var result = [tp];
+        	  for (var i = 0; i < tps.length; i++) {
+                result.push(tps[i][1]);
+        	  }
+        	  return {type:"TopStatSeq", topstat:result};
+            })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -10503,11 +12078,12 @@ module.exports = (function(){
         }
         
         var result0, result1, result2;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
-        result0 = [];
         pos1 = clone(pos);
+        result0 = [];
+        pos2 = clone(pos);
         result1 = parse_Annotation();
         if (result1 !== null) {
           result2 = parse_nl();
@@ -10516,15 +12092,15 @@ module.exports = (function(){
             result1 = [result1, result2];
           } else {
             result1 = null;
-            pos = clone(pos1);
+            pos = clone(pos2);
           }
         } else {
           result1 = null;
-          pos = clone(pos1);
+          pos = clone(pos2);
         }
         while (result1 !== null) {
           result0.push(result1);
-          pos1 = clone(pos);
+          pos2 = clone(pos);
           result1 = parse_Annotation();
           if (result1 !== null) {
             result2 = parse_nl();
@@ -10533,11 +12109,11 @@ module.exports = (function(){
               result1 = [result1, result2];
             } else {
               result1 = null;
-              pos = clone(pos1);
+              pos = clone(pos2);
             }
           } else {
             result1 = null;
-            pos = clone(pos1);
+            pos = clone(pos2);
           }
         }
         if (result0 !== null) {
@@ -10553,14 +12129,26 @@ module.exports = (function(){
               result0 = [result0, result1, result2];
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, an, md, td) {
+              var result = [];
+        	  for (var i = 0; i < an.length; i++) {
+                result.push(an[i][0]);
+        	  }
+        	  return {type:"TopStat", annotation:an, modifier:md, def:td};
+            })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1], result0[2]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         if (result0 === null) {
@@ -10592,9 +12180,10 @@ module.exports = (function(){
         }
         
         var result0, result1, result2, result3, result4, result5;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_PACKAGE();
         if (result0 !== null) {
           result1 = parse_QualId();
@@ -10611,26 +12200,32 @@ module.exports = (function(){
                     result0 = [result0, result1, result2, result3, result4, result5];
                   } else {
                     result0 = null;
-                    pos = clone(pos0);
+                    pos = clone(pos1);
                   }
                 } else {
                   result0 = null;
-                  pos = clone(pos0);
+                  pos = clone(pos1);
                 }
               } else {
                 result0 = null;
-                pos = clone(pos0);
+                pos = clone(pos1);
               }
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, qi, tss) {return {type:"Packaging", qualId:qi, topStatseq:tss}; })(pos0.offset, pos0.line, pos0.column, result0[1], result0[4]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -10650,9 +12245,10 @@ module.exports = (function(){
         }
         
         var result0, result1, result2;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_PACKAGE();
         if (result0 !== null) {
           result1 = parse_OBJECT();
@@ -10662,14 +12258,20 @@ module.exports = (function(){
               result0 = [result0, result1, result2];
             } else {
               result0 = null;
-              pos = clone(pos0);
+              pos = clone(pos1);
             }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, od) {return {type:"PackageObject", def:od}; })(pos0.offset, pos0.line, pos0.column, result0[2]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -10908,10 +12510,11 @@ module.exports = (function(){
         }
         
         var result0, result1;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
         pos1 = clone(pos);
+        pos2 = clone(pos);
         reportFailures++;
         result0 = parse_charEscapeSeq();
         reportFailures--;
@@ -10919,7 +12522,7 @@ module.exports = (function(){
           result0 = "";
         } else {
           result0 = null;
-          pos = clone(pos1);
+          pos = clone(pos2);
         }
         if (result0 !== null) {
           if (input.length > pos.offset) {
@@ -10935,10 +12538,16 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, chr) {return chr;})(pos0.offset, pos0.line, pos0.column, result0[1]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -10958,10 +12567,11 @@ module.exports = (function(){
         }
         
         var result0, result1;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
         pos1 = clone(pos);
+        pos2 = clone(pos);
         reportFailures++;
         if (input.charCodeAt(pos.offset) === 34) {
           result0 = "\"";
@@ -10977,7 +12587,7 @@ module.exports = (function(){
           result0 = "";
         } else {
           result0 = null;
-          pos = clone(pos1);
+          pos = clone(pos2);
         }
         if (result0 !== null) {
           result1 = parse_printableChar();
@@ -10985,10 +12595,16 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, chr) {return chr;})(pos0.offset, pos0.line, pos0.column, result0[1]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -11008,10 +12624,11 @@ module.exports = (function(){
         }
         
         var result0, result1;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
         pos1 = clone(pos);
+        pos2 = clone(pos);
         reportFailures++;
         if (input.charCodeAt(pos.offset) === 34) {
           result0 = "\"";
@@ -11027,7 +12644,7 @@ module.exports = (function(){
           result0 = "";
         } else {
           result0 = null;
-          pos = clone(pos1);
+          pos = clone(pos2);
         }
         if (result0 !== null) {
           if (input.length > pos.offset) {
@@ -11043,10 +12660,16 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, chr) {return chr;})(pos0.offset, pos0.line, pos0.column, result0[1]);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -11069,42 +12692,12 @@ module.exports = (function(){
         var pos0;
         
         pos0 = clone(pos);
-        reportFailures++;
-        if (input.length > pos.offset) {
-          result0 = input.charAt(pos.offset);
-          advance(pos, 1);
-        } else {
-          result0 = null;
-          if (reportFailures === 0) {
-            matchFailed("any character");
-          }
-        }
-        reportFailures--;
+        result0 = (function(offset, line, column) {return true;})(pos.offset, pos.line, pos.column) ? "" : null;
         if (result0 !== null) {
-          result0 = "";
-          pos = clone(pos0);
-        } else {
-          result0 = null;
+          result0 = (function(offset, line, column) {return {type:"Empty", value:null};})(pos0.offset, pos0.line, pos0.column);
         }
         if (result0 === null) {
-          pos0 = clone(pos);
-          reportFailures++;
-          if (input.length > pos.offset) {
-            result0 = input.charAt(pos.offset);
-            advance(pos, 1);
-          } else {
-            result0 = null;
-            if (reportFailures === 0) {
-              matchFailed("any character");
-            }
-          }
-          reportFailures--;
-          if (result0 === null) {
-            result0 = "";
-          } else {
-            result0 = null;
-            pos = clone(pos0);
-          }
+          pos = clone(pos0);
         }
         
         cache[cacheKey] = {
@@ -11123,9 +12716,10 @@ module.exports = (function(){
         }
         
         var result0, result1;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         if (input.substr(pos.offset, 7) === "package") {
           result0 = "package";
           advance(pos, 7);
@@ -11141,10 +12735,16 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column) {return {type:"Keyword", word:"package"}})(pos0.offset, pos0.line, pos0.column);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -11164,9 +12764,10 @@ module.exports = (function(){
         }
         
         var result0, result1;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         if (input.charCodeAt(pos.offset) === 59) {
           result0 = ";";
           advance(pos, 1);
@@ -11182,10 +12783,16 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column) {return {type:"Keyword", word:";"}})(pos0.offset, pos0.line, pos0.column);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -11205,9 +12812,10 @@ module.exports = (function(){
         }
         
         var result0, result1;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         if (input.charCodeAt(pos.offset) === 45) {
           result0 = "-";
           advance(pos, 1);
@@ -11223,10 +12831,16 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column) {return {type:"Keyword", word:"-"}})(pos0.offset, pos0.line, pos0.column);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -11246,9 +12860,10 @@ module.exports = (function(){
         }
         
         var result0, result1;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         if (input.charCodeAt(pos.offset) === 46) {
           result0 = ".";
           advance(pos, 1);
@@ -11264,10 +12879,16 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column) {return {type:"Keyword", word:"."}})(pos0.offset, pos0.line, pos0.column);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -11287,9 +12908,10 @@ module.exports = (function(){
         }
         
         var result0, result1;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         if (input.charCodeAt(pos.offset) === 44) {
           result0 = ",";
           advance(pos, 1);
@@ -11305,10 +12927,16 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column) {return {type:"Keyword", word:","}})(pos0.offset, pos0.line, pos0.column);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -11328,9 +12956,10 @@ module.exports = (function(){
         }
         
         var result0, result1;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         if (input.substr(pos.offset, 4) === "this") {
           result0 = "this";
           advance(pos, 4);
@@ -11346,10 +12975,16 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column) {return {type:"Keyword", word:"this"}})(pos0.offset, pos0.line, pos0.column);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -11369,9 +13004,10 @@ module.exports = (function(){
         }
         
         var result0, result1;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         if (input.charCodeAt(pos.offset) === 91) {
           result0 = "[";
           advance(pos, 1);
@@ -11387,10 +13023,16 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column) {return {type:"Keyword", word:"["}})(pos0.offset, pos0.line, pos0.column);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -11410,9 +13052,10 @@ module.exports = (function(){
         }
         
         var result0, result1;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         if (input.charCodeAt(pos.offset) === 93) {
           result0 = "]";
           advance(pos, 1);
@@ -11428,10 +13071,16 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column) {return {type:"Keyword", word:"]"}})(pos0.offset, pos0.line, pos0.column);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -11451,9 +13100,10 @@ module.exports = (function(){
         }
         
         var result0, result1;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         if (input.substr(pos.offset, 2) === "=>") {
           result0 = "=>";
           advance(pos, 2);
@@ -11469,10 +13119,16 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column) {return {type:"Keyword", word:"=>"}})(pos0.offset, pos0.line, pos0.column);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -11492,9 +13148,10 @@ module.exports = (function(){
         }
         
         var result0, result1;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         if (input.charCodeAt(pos.offset) === 40) {
           result0 = "(";
           advance(pos, 1);
@@ -11510,10 +13167,16 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column) {return {type:"Keyword", word:"("}})(pos0.offset, pos0.line, pos0.column);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -11533,9 +13196,10 @@ module.exports = (function(){
         }
         
         var result0, result1;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         if (input.charCodeAt(pos.offset) === 41) {
           result0 = ")";
           advance(pos, 1);
@@ -11551,10 +13215,16 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column) {return {type:"Keyword", word:")"}})(pos0.offset, pos0.line, pos0.column);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -11574,9 +13244,10 @@ module.exports = (function(){
         }
         
         var result0, result1;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         if (input.charCodeAt(pos.offset) === 123) {
           result0 = "{";
           advance(pos, 1);
@@ -11592,10 +13263,16 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column) {return {type:"Keyword", word:String.fromCharCode(123)}})(pos0.offset, pos0.line, pos0.column);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -11615,9 +13292,10 @@ module.exports = (function(){
         }
         
         var result0, result1;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         if (input.charCodeAt(pos.offset) === 125) {
           result0 = "}";
           advance(pos, 1);
@@ -11633,10 +13311,16 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column) {return {type:"Keyword", word:String.fromCharCode(125)}})(pos0.offset, pos0.line, pos0.column);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -11656,9 +13340,10 @@ module.exports = (function(){
         }
         
         var result0, result1;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         if (input.substr(pos.offset, 4) === "type") {
           result0 = "type";
           advance(pos, 4);
@@ -11674,10 +13359,16 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column) {return {type:"Keyword", word:"type"}})(pos0.offset, pos0.line, pos0.column);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -11697,9 +13388,10 @@ module.exports = (function(){
         }
         
         var result0, result1;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         if (input.substr(pos.offset, 3) === "val") {
           result0 = "val";
           advance(pos, 3);
@@ -11715,10 +13407,16 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column) {return {type:"Keyword", word:"val"}})(pos0.offset, pos0.line, pos0.column);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -11738,9 +13436,10 @@ module.exports = (function(){
         }
         
         var result0, result1;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         if (input.substr(pos.offset, 4) === "with") {
           result0 = "with";
           advance(pos, 4);
@@ -11756,10 +13455,16 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column) {return {type:"Keyword", word:"with"}})(pos0.offset, pos0.line, pos0.column);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -11779,9 +13484,10 @@ module.exports = (function(){
         }
         
         var result0, result1;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         if (input.charCodeAt(pos.offset) === 58) {
           result0 = ":";
           advance(pos, 1);
@@ -11797,10 +13503,16 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column) {return {type:"Keyword", word:":"}})(pos0.offset, pos0.line, pos0.column);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -11820,9 +13532,10 @@ module.exports = (function(){
         }
         
         var result0, result1;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         if (input.charCodeAt(pos.offset) === 95) {
           result0 = "_";
           advance(pos, 1);
@@ -11838,10 +13551,16 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column) {return {type:"Keyword", word:"_"}})(pos0.offset, pos0.line, pos0.column);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -11861,9 +13580,10 @@ module.exports = (function(){
         }
         
         var result0, result1;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         if (input.charCodeAt(pos.offset) === 42) {
           result0 = "*";
           advance(pos, 1);
@@ -11879,10 +13599,16 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column) {return {type:"Keyword", word:"*"}})(pos0.offset, pos0.line, pos0.column);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -11902,9 +13628,10 @@ module.exports = (function(){
         }
         
         var result0, result1;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         if (input.substr(pos.offset, 8) === "implicit") {
           result0 = "implicit";
           advance(pos, 8);
@@ -11920,10 +13647,16 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column) {return {type:"Keyword", word:"implicit"}})(pos0.offset, pos0.line, pos0.column);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -11943,9 +13676,10 @@ module.exports = (function(){
         }
         
         var result0, result1;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         if (input.substr(pos.offset, 2) === "if") {
           result0 = "if";
           advance(pos, 2);
@@ -11961,10 +13695,16 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column) {return {type:"Keyword", word:"if"}})(pos0.offset, pos0.line, pos0.column);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -11984,9 +13724,10 @@ module.exports = (function(){
         }
         
         var result0, result1;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         if (input.substr(pos.offset, 5) === "while") {
           result0 = "while";
           advance(pos, 5);
@@ -12002,10 +13743,16 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column) {return {type:"Keyword", word:"while"}})(pos0.offset, pos0.line, pos0.column);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -12024,10 +13771,11 @@ module.exports = (function(){
           return cachedResult.result;
         }
         
-        var result0, result1;
-        var pos0;
+        var result0, result1, result2;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         if (input.charCodeAt(pos.offset) === 61) {
           result0 = "=";
           advance(pos, 1);
@@ -12038,15 +13786,36 @@ module.exports = (function(){
           }
         }
         if (result0 !== null) {
-          result1 = parse___();
+          pos2 = clone(pos);
+          reportFailures++;
+          result1 = parse_opchar();
+          reportFailures--;
+          if (result1 === null) {
+            result1 = "";
+          } else {
+            result1 = null;
+            pos = clone(pos2);
+          }
           if (result1 !== null) {
-            result0 = [result0, result1];
+            result2 = parse___();
+            if (result2 !== null) {
+              result0 = [result0, result1, result2];
+            } else {
+              result0 = null;
+              pos = clone(pos1);
+            }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column) {return {type:"Keyword", word:"="}})(pos0.offset, pos0.line, pos0.column);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -12065,10 +13834,11 @@ module.exports = (function(){
           return cachedResult.result;
         }
         
-        var result0, result1;
-        var pos0;
+        var result0, result1, result2;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         if (input.charCodeAt(pos.offset) === 43) {
           result0 = "+";
           advance(pos, 1);
@@ -12079,15 +13849,36 @@ module.exports = (function(){
           }
         }
         if (result0 !== null) {
-          result1 = parse___();
+          pos2 = clone(pos);
+          reportFailures++;
+          result1 = parse_opchar();
+          reportFailures--;
+          if (result1 === null) {
+            result1 = "";
+          } else {
+            result1 = null;
+            pos = clone(pos2);
+          }
           if (result1 !== null) {
-            result0 = [result0, result1];
+            result2 = parse___();
+            if (result2 !== null) {
+              result0 = [result0, result1, result2];
+            } else {
+              result0 = null;
+              pos = clone(pos1);
+            }
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column) {return {type:"Keyword", word:"+"}})(pos0.offset, pos0.line, pos0.column);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -12107,9 +13898,10 @@ module.exports = (function(){
         }
         
         var result0, result1;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         if (input.substr(pos.offset, 3) === "new") {
           result0 = "new";
           advance(pos, 3);
@@ -12125,10 +13917,16 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column) {return {type:"Keyword", word:"new"}})(pos0.offset, pos0.line, pos0.column);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -12148,9 +13946,10 @@ module.exports = (function(){
         }
         
         var result0, result1;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         if (input.substr(pos.offset, 4) === "lazy") {
           result0 = "lazy";
           advance(pos, 4);
@@ -12166,10 +13965,16 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column) {return {type:"Keyword", word:"lazy"}})(pos0.offset, pos0.line, pos0.column);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -12189,9 +13994,10 @@ module.exports = (function(){
         }
         
         var result0, result1;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         if (input.substr(pos.offset, 4) === "case") {
           result0 = "case";
           advance(pos, 4);
@@ -12207,10 +14013,16 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column) {return {type:"Keyword", word:"case"}})(pos0.offset, pos0.line, pos0.column);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -12230,9 +14042,10 @@ module.exports = (function(){
         }
         
         var result0, result1;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         if (input.charCodeAt(pos.offset) === 64) {
           result0 = "@";
           advance(pos, 1);
@@ -12248,10 +14061,16 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column) {return {type:"Keyword", word:"@"}})(pos0.offset, pos0.line, pos0.column);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -12271,9 +14090,10 @@ module.exports = (function(){
         }
         
         var result0, result1;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         if (input.substr(pos.offset, 2) === ">:") {
           result0 = ">:";
           advance(pos, 2);
@@ -12289,10 +14109,16 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column) {return {type:"Keyword", word:">:"}})(pos0.offset, pos0.line, pos0.column);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -12312,9 +14138,10 @@ module.exports = (function(){
         }
         
         var result0, result1;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         if (input.substr(pos.offset, 2) === "<:") {
           result0 = "<:";
           advance(pos, 2);
@@ -12330,10 +14157,16 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column) {return {type:"Keyword", word:"<:"}})(pos0.offset, pos0.line, pos0.column);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -12353,9 +14186,10 @@ module.exports = (function(){
         }
         
         var result0, result1;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         if (input.substr(pos.offset, 3) === "var") {
           result0 = "var";
           advance(pos, 3);
@@ -12371,10 +14205,16 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column) {return {type:"Keyword", word:"var"}})(pos0.offset, pos0.line, pos0.column);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -12394,9 +14234,10 @@ module.exports = (function(){
         }
         
         var result0, result1;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         if (input.substr(pos.offset, 3) === "def") {
           result0 = "def";
           advance(pos, 3);
@@ -12412,10 +14253,16 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column) {return {type:"Keyword", word:"def"}})(pos0.offset, pos0.line, pos0.column);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -12435,9 +14282,10 @@ module.exports = (function(){
         }
         
         var result0, result1;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         if (input.substr(pos.offset, 6) === "object") {
           result0 = "object";
           advance(pos, 6);
@@ -12453,10 +14301,16 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column) {return {type:"Keyword", word:"object"}})(pos0.offset, pos0.line, pos0.column);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -12476,9 +14330,10 @@ module.exports = (function(){
         }
         
         var result0, result1;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         if (input.substr(pos.offset, 7) === "extends") {
           result0 = "extends";
           advance(pos, 7);
@@ -12494,10 +14349,16 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column) {return {type:"Keyword", word:"extends"}})(pos0.offset, pos0.line, pos0.column);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -12517,9 +14378,10 @@ module.exports = (function(){
         }
         
         var result0, result1, result2;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = clone(pos);
+        pos1 = clone(pos);
         result0 = parse_XmlContent();
         if (result0 !== null) {
           result1 = [];
@@ -12532,10 +14394,16 @@ module.exports = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = clone(pos0);
+            pos = clone(pos1);
           }
         } else {
           result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column) {return {type:"XmlExpr"};})(pos0.offset, pos0.line, pos0.column);
+        }
+        if (result0 === null) {
           pos = clone(pos0);
         }
         
@@ -16785,6 +18653,33 @@ module.exports = (function(){
         return result0;
       }
       
+      function parse_XmlPattern() {
+        var cacheKey = "XmlPattern@" + pos.offset;
+        var cachedResult = cache[cacheKey];
+        if (cachedResult) {
+          pos = clone(cachedResult.nextPos);
+          return cachedResult.result;
+        }
+        
+        var result0;
+        var pos0;
+        
+        pos0 = clone(pos);
+        result0 = parse_ElemPattern();
+        if (result0 !== null) {
+          result0 = (function(offset, line, column) {return {type:"XmlPattern"};})(pos0.offset, pos0.line, pos0.column);
+        }
+        if (result0 === null) {
+          pos = clone(pos0);
+        }
+        
+        cache[cacheKey] = {
+          nextPos: clone(pos),
+          result:  result0
+        };
+        return result0;
+      }
+      
       function parse_ElemPattern() {
         var cacheKey = "ElemPattern@" + pos.offset;
         var cachedResult = cache[cacheKey];
@@ -17576,6 +19471,22 @@ module.exports = (function(){
       
       
       
+      	//引数をフィルターして適切な形に変形する
+      	//もしidxが入っていればarg[idx]を戻り値とする
+      	function ftr(arg, idx){
+      		//空文字列はnull
+      		if(typeof idx === 'undefined') idx = -1;
+      		if(arg === "") return null;
+      		return idx == -1? arg : arg[idx];
+      	}
+      
+      	//keyをキーワードとする
+      	function makeKeyword(key){
+      		return {type:"Keyword", word:key};
+      	}
+      
+      
+      
       var result = parseFunctions[startRule]();
       
       /*
@@ -17607,6 +19518,14 @@ module.exports = (function(){
         var found = offset < input.length ? input.charAt(offset) : null;
         var errorPosition = pos.offset > rightmostFailuresPos.offset ? pos : rightmostFailuresPos;
         
+if(offset < input.length){
+var range = 10;
+var lines = input.substr(0, offset).split("\n").length-1
+console.log("\n!!Error occurs");
+console.log("------------------------")
+console.log(input.substr(Math.max(0, offset - range), Math.min(input.length - offset, 2*range)));
+console.log("------------------------" + "(around " + lines + " line.)\n");
+}
         throw new this.SyntaxError(
           cleanupExpected(rightmostFailuresExpected),
           found,

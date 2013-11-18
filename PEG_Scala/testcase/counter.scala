@@ -8,14 +8,17 @@ object ClosureSample extends App {
     }
   }
   var count = 100;
-  val counter = makeCounter()
+  val counter = makeCounter();
 
-  println(counter()) // 1
-  println(counter()) // 2
-  println(counter()) // 3
+  // println(counter()); // 1
+  // println(counter()); // 2
+  // println(counter()) // 333333
+  myFunc(); // 333333
 
-  val counter2 = makeCounter()
+  // val counter2 = makeCounter()
+  // val acounter = makeCounter() //55555
 
-  println("------------")
-  println(counter2()) // 1
+  println("------------"); //3
+  println(counter2())
+  // aaaaa 1
 }

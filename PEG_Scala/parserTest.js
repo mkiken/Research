@@ -2,6 +2,7 @@ var parser = require('./scala-parser.js');
 var fs = require("fs");
 var names = [
 	'testcase/_A.scala',
+	'testcase/anagram.scala',
 	'testcase/Test.scala',
 	'test.pegjs'
 ];

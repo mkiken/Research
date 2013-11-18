@@ -1,10 +1,14 @@
-var PEG = require("pegjs");
+// var PEG = require("pegjs");
+PEG = require("/usr/local/share/npm/lib/node_modules/pegjs");
 var names = [
 	'./scala.pegjs',
+	'./_scala.pegjs',
 	'./test.pegjs'
 ];
 var fs = require("fs");
 var name = names[0];
+var dt = new Date();
+console.log(dt);
 console.log("grammar is " + name);
 //var args = process.argv;
 var gram = fs.readFileSync( name, 'utf8');
@@ -16,13 +20,22 @@ console.log("parser built!");
 //console.log(ns);
 
 var scalas = [
+	'./testcase/totr.scala',
+	'./testcase/utopian-tree.scala',
+	'./testcase/counter.scala',
+	'./testcase/power-of-large-numbers.scala',
+	'./testcase/leballs.scala',
+	'./testcase/anagram.scala', //5
+	'./testcase/bday-gift.scala',
 	'./testcase/A.scala',
 	'./testcase/Test.scala',
 	'./testcase/util.scala',
 	'./input.txt'
 ];
-var scala = fs.readFileSync( scalas[0], 'utf8');
-	console.log(JSON.stringify(parser.parse(scala), null,  1 ));
+var sname = scalas[7];
+var scala = fs.readFileSync( sname, 'utf8');
+console.log("scala file is " + sname);
+	console.log(JSON.stringify(parser.parse(scala), null,  2 ));
 
 // var readline = require('readline');
 // var rl = readline.createInterface({
@@ -37,3 +50,8 @@ var scala = fs.readFileSync( scalas[0], 'utf8');
 	// console.log(JSON.stringify(ns[start](0, cmd, memory, ns, 0)));
 	// console.log("\n\ninput start.\n\n");
 // });
+// http://d.hatena.ne.jp/dany1468/20111008/1318050210
+function at(date) {
+  if (!date) return '';
+  return '' + date.getFullYear() + '-' + ('00' + (date.getMonth() + 1)).slice(-2) + '-' + ('00' + date.getDate()).slice(-2);
+}
