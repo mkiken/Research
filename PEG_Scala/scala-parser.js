@@ -52,7 +52,6 @@ module.exports = (function(){
         "decimalNumeral": parse_decimalNumeral,
         "hexNumeral": parse_hexNumeral,
         "octalNumeral": parse_octalNumeral,
-        "digit": parse_digit,
         "nonZeroDigit": parse_nonZeroDigit,
         "octalDigit": parse_octalDigit,
         "floatingPointLiteral": parse_floatingPointLiteral,
@@ -72,7 +71,6 @@ module.exports = (function(){
         "nl": parse_nl,
         "semi": parse_semi,
         "whitespace": parse_whitespace,
-        "__": parse___,
         "Literal": parse_Literal,
         "QualId": parse_QualId,
         "ids": parse_ids,
@@ -423,7 +421,13 @@ module.exports = (function(){
           pos = clone(pos1);
         }
         if (result0 !== null) {
-          result0 = (function(offset, line, column, pcs, tss) {return {type: "CompilationUnit", packages:pcs, topStatseq:tss};})(pos0.offset, pos0.line, pos0.column, result0[1], result0[2]);
+          result0 = (function(offset, line, column, pcs, tss) {
+              var result = [];
+              for (var i = 0; i < pcs.length; i++) {
+                result.push(pcs[i][1]);
+              }
+        	  return {type: "CompilationUnit", packages:result, topStatseq:tss};
+            })(pos0.offset, pos0.line, pos0.column, result0[1], result0[2]);
         }
         if (result0 === null) {
           pos = clone(pos0);
@@ -824,7 +828,7 @@ module.exports = (function(){
             pos = clone(pos1);
           }
           if (result0 !== null) {
-            result0 = (function(offset, line, column, str) { return { type: "Identifier", name: str}; })(pos0.offset, pos0.line, pos0.column, result0[1]);
+            result0 = (function(offset, line, column, str) { return { type: "Identifier2", name: '`' + str + '`'}; })(pos0.offset, pos0.line, pos0.column, result0[1]);
           }
           if (result0 === null) {
             pos = clone(pos0);
@@ -1210,36 +1214,6 @@ module.exports = (function(){
         }
         if (result0 === null) {
           pos = clone(pos0);
-        }
-        
-        cache[cacheKey] = {
-          nextPos: clone(pos),
-          result:  result0
-        };
-        return result0;
-      }
-      
-      function parse_digit() {
-        var cacheKey = "digit@" + pos.offset;
-        var cachedResult = cache[cacheKey];
-        if (cachedResult) {
-          pos = clone(cachedResult.nextPos);
-          return cachedResult.result;
-        }
-        
-        var result0;
-        
-        if (input.charCodeAt(pos.offset) === 48) {
-          result0 = "0";
-          advance(pos, 1);
-        } else {
-          result0 = null;
-          if (reportFailures === 0) {
-            matchFailed("\"0\"");
-          }
-        }
-        if (result0 === null) {
-          result0 = parse_nonZeroDigit();
         }
         
         cache[cacheKey] = {
@@ -1921,7 +1895,7 @@ module.exports = (function(){
             pos = clone(pos1);
           }
           if (result0 !== null) {
-            result0 = (function(offset, line, column, chrs) {return {type: "stringLiteral", value: chrs};})(pos0.offset, pos0.line, pos0.column, result0[1]);
+            result0 = (function(offset, line, column, chrs) {return {type: "stringLiteralMulti", value: chrs};})(pos0.offset, pos0.line, pos0.column, result0[1]);
           }
           if (result0 === null) {
             pos = clone(pos0);
@@ -2683,36 +2657,6 @@ module.exports = (function(){
           result0 = null;
           if (reportFailures === 0) {
             matchFailed("[ \\t]");
-          }
-        }
-        
-        cache[cacheKey] = {
-          nextPos: clone(pos),
-          result:  result0
-        };
-        return result0;
-      }
-      
-      function parse___() {
-        var cacheKey = "__@" + pos.offset;
-        var cachedResult = cache[cacheKey];
-        if (cachedResult) {
-          pos = clone(cachedResult.nextPos);
-          return cachedResult.result;
-        }
-        
-        var result0, result1;
-        
-        result0 = [];
-        result1 = parse_whitespace();
-        if (result1 === null) {
-          result1 = parse_comment();
-        }
-        while (result1 !== null) {
-          result0.push(result1);
-          result1 = parse_whitespace();
-          if (result1 === null) {
-            result1 = parse_comment();
           }
         }
         
@@ -5355,7 +5299,7 @@ module.exports = (function(){
           pos = clone(pos1);
         }
         if (result0 !== null) {
-          result0 = (function(offset, line, column, infix, id) {return {type:"PostfixExpr", infix:infix, id: ftr(id, 0)};})(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+          result0 = (function(offset, line, column, infix, id) {return {type:"PostfixExpression", infix:infix, id: ftr(id, 0)};})(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
         }
         if (result0 === null) {
           pos = clone(pos0);
@@ -5689,8 +5633,8 @@ module.exports = (function(){
                 pos = clone(pos1);
               }
               if (result0 !== null) {
-                result0 = (function(offset, line, column, expr1, ud) {
-              	return {type:"SimpleExpr", expr1:expr1, under:ftr(ud)};
+                result0 = (function(offset, line, column, expr, ud) {
+              	return {type:"SimpleExpression", expr:expr, under:ftr(ud)};
               })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
               }
               if (result0 === null) {
@@ -6285,7 +6229,7 @@ module.exports = (function(){
           pos = clone(pos1);
         }
         if (result0 !== null) {
-          result0 = (function(offset, line, column, exprs) {return {type:"ArgumentExprs", exprs:ftr(exprs)}; })(pos0.offset, pos0.line, pos0.column, result0[1]);
+          result0 = (function(offset, line, column, exprs) {return {type:"ArgumentExpression", exprs:ftr(exprs)}; })(pos0.offset, pos0.line, pos0.column, result0[1]);
         }
         if (result0 === null) {
           pos = clone(pos0);
@@ -6528,7 +6472,7 @@ module.exports = (function(){
         	  for (var i = 0; i < blocks.length; i++) {
                 result.push(blocks[i][0]);
         	  }
-        	  return {type:"Block", contents:result,res:ftr(res)};
+        	  return {type:"Block", states:result,res:ftr(res)};
             })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
         }
         if (result0 === null) {
@@ -6796,7 +6740,7 @@ module.exports = (function(){
         	  for (var i = 0; i < enums.length; i++) {
                 result.push(enums[i][1]);
         	  }
-        	  return {type:"Exprs", gen:gen, enums:result};
+        	  return {type:"Enumerators", gen:gen, enums:result};
             })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
         }
         if (result0 === null) {
@@ -8171,7 +8115,7 @@ module.exports = (function(){
           pos = clone(pos1);
         }
         if (result0 !== null) {
-          result0 = (function(offset, line, column, pc, pm) {return {type: "ParamClauses", clause:pc, params:pm !== ""? pm[3] : null};})(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+          result0 = (function(offset, line, column, pc, pm) {return {type: "ParamClauses", clauses:pc, params:pm !== ""? pm[3] : null};})(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
         }
         if (result0 === null) {
           pos = clone(pos0);
@@ -9477,7 +9421,7 @@ module.exports = (function(){
         	  for (var i = 0; i < tss.length; i++) {
                 result.push(tss[i][1]);
         	  }
-        	  return {type:"TemplateBody", selftype:ftr(tp), state:result};
+        	  return {type:"TemplateBody", selftype:ftr(tp), states:result};
             })(pos0.offset, pos0.line, pos0.column, result0[2], result0[4], result0[5]);
         }
         if (result0 === null) {
@@ -10986,7 +10930,7 @@ module.exports = (function(){
           pos = clone(pos1);
         }
         if (result0 !== null) {
-          result0 = (function(offset, line, column, cs, def) {return {type:"TmplDef", prefix:[ftr(cs), makeKeyword("class")], def:def}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[3]);
+          result0 = (function(offset, line, column, cs, def) {return {type:"TemplateDefinition", prefix:[ftr(cs), makeKeyword("class")], def:def}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[3]);
         }
         if (result0 === null) {
           pos = clone(pos0);
@@ -11015,7 +10959,7 @@ module.exports = (function(){
             pos = clone(pos1);
           }
           if (result0 !== null) {
-            result0 = (function(offset, line, column, cs, obj, def) {return {type:"TmplDef", prefix:[ftr(cs), obj], def:def}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1], result0[2]);
+            result0 = (function(offset, line, column, cs, obj, def) {return {type:"TemplateDefinition", prefix:[ftr(cs), obj], def:def}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1], result0[2]);
           }
           if (result0 === null) {
             pos = clone(pos0);
@@ -11051,7 +10995,7 @@ module.exports = (function(){
               pos = clone(pos1);
             }
             if (result0 !== null) {
-              result0 = (function(offset, line, column, def) {return {type:"TmplDef", prefix:[makeKeyword("trait")], def:def}; })(pos0.offset, pos0.line, pos0.column, result0[2]);
+              result0 = (function(offset, line, column, def) {return {type:"TemplateDefinition", prefix:[makeKeyword("trait")], def:def}; })(pos0.offset, pos0.line, pos0.column, result0[2]);
             }
             if (result0 === null) {
               pos = clone(pos0);
@@ -11211,7 +11155,7 @@ module.exports = (function(){
           pos = clone(pos1);
         }
         if (result0 !== null) {
-          result0 = (function(offset, line, column, id, cto) {return {type:"ObjectDef", id:id, classTemplate:cto}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+          result0 = (function(offset, line, column, id, cto) {return {type:"ObjectDefinition", id:id, classTemplate:cto}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
         }
         if (result0 === null) {
           pos = clone(pos0);
@@ -12694,7 +12638,7 @@ module.exports = (function(){
         pos0 = clone(pos);
         result0 = (function(offset, line, column) {return true;})(pos.offset, pos.line, pos.column) ? "" : null;
         if (result0 !== null) {
-          result0 = (function(offset, line, column) {return {type:"Empty", value:null};})(pos0.offset, pos0.line, pos0.column);
+          result0 = (function(offset, line, column) {return {type:"Empty"};})(pos0.offset, pos0.line, pos0.column);
         }
         if (result0 === null) {
           pos = clone(pos0);

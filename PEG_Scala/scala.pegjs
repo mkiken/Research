@@ -29,7 +29,13 @@ The lexical syntax of Scala is given by the following grammar in EBNF form.
 }
 
 /* CompilationUnit ::= {‘package’ QualId semi} TopStatSeq */
-CompilationUnit = __ pcs:(PACKAGE QualId semi)* tss:TopStatSeq {return {type: "CompilationUnit", packages:pcs, topStatseq:tss};}
+CompilationUnit = __ pcs:(PACKAGE QualId semi)* tss:TopStatSeq {
+      var result = [];
+      for (var i = 0; i < pcs.length; i++) {
+        result.push(pcs[i][1]);
+      }
+	  return {type: "CompilationUnit", packages:result, topStatseq:tss};
+    }
 
 /* upper ::= ‘A’ | ... | ‘Z’ | ‘$’ | ‘_’ and Unicode category Lu */
 upper = [A-Z] / '$' / '_'
@@ -119,7 +125,7 @@ plainid = start:upper parts:idrest {return start + parts;}
 /* id ::= plainid */
 /* | ‘\‘’ stringLit ‘\‘’ */
 id = nm:plainid {return { type: "Identifier", name: nm }; }
-	/ [`] str:stringLiteral [`] __ { return { type: "Identifier", name: str}; }
+	/ [`] str:stringLiteral [`] __ { return { type: "Identifier2", name: '`' + str + '`'}; }
 
 /* idrest ::= {letter | digit} [‘_’ op] */
 idrest	= chars:(letter / digit)* '_' ops:op __ {return chars.join("") + '_' + ops;}
@@ -178,7 +184,7 @@ characterLiteral = ['] chr:( printableChar / charEscapeSeq ) ['] __ {return chr;
 /* stringLiteral ::= ‘"’ {stringElement} ‘"’ */
 /* | ‘"""’ multiLineChars ‘"""’ */
 stringLiteral	= '"' ele:stringElement* '"' __ {return {type: "stringLiteral", value: ele.join("")};}
-				/ '"""' chrs:multiLineChars __ {return {type: "stringLiteral", value: chrs};}
+				/ '"""' chrs:multiLineChars __ {return {type: "stringLiteralMulti", value: chrs};}
 
 /* stringElement ::= printableCharNoDoubleQuote */
 /* | charEscapeSeq */
@@ -474,13 +480,13 @@ Expr1 = IF OPPAREN condition:Expr CLPAREN nl* ifStatement:Expr elseStatement:(se
       };
     }
 / se1:SimpleExpr1 ae:ArgumentExprs EQUAL exp:Expr {return {type:"AssignmentExpression", left:[se1, ae], right:exp}; }
-/ pe:PostfixExpr as:Ascription {return {type:"Expr1withAscription", postfix:pe, ascription:as}; }
+/ pe:PostfixExpr as:Ascription {return {type:"ExpressionWithAscription", postfix:pe, ascription:as}; }
 / pe:PostfixExpr 'match' __ OPBRACE cases:CaseClauses CLBRACE {return {type:"PatternMatchingExpression", postfix:pe, cases:cc}; }
 / se:(SimpleExpr DOT)? id:id EQUAL exp:Expr {return {type:"AssignmentExpression", left:[ftr(se), id], right:exp}; }
 / PostfixExpr
 
 /* PostfixExpr ::= InfixExpr [id [nl]] */
-PostfixExpr = infix:InfixExpr id:(id nl?)? {return {type:"PostfixExpr", infix:infix, id: ftr(id, 0)};}
+PostfixExpr = infix:InfixExpr id:(id nl?)? {return {type:"PostfixExpression", infix:infix, id: ftr(id, 0)};}
 
 /* InfixExpr ::= PrefixExpr */
 /* | InfixExpr id [nl] InfixExpr */
@@ -509,8 +515,8 @@ NEW arg:(ClassTemplate / TemplateBody) DOT id:id se1:_SimpleExpr1 {return {type:
 / NEW arg:(ClassTemplate / TemplateBody) {
 	return {type:"InstanceCreationExpression", arg:arg};
 }
-/ expr1:SimpleExpr1 ud:UNDER? {
-	return {type:"SimpleExpr", expr1:expr1, under:ftr(ud)};
+/ expr:SimpleExpr1 ud:UNDER? {
+	return {type:"SimpleExpression", expr:expr, under:ftr(ud)};
 }
 / BlockExpr
 
@@ -554,7 +560,7 @@ Exprs = expr:Expr exprs:(COMMA Expr)* {
 /* ArgumentExprs ::= ‘(’ [Exprs] ‘)’ */
 /* | ‘(’ [Exprs ‘,’] PostfixExpr ‘:’ ‘_’ ‘*’ ’)’ */
 /* | [nl] BlockExpr */
-ArgumentExprs = OPPAREN exprs:Exprs? CLPAREN {return {type:"ArgumentExprs", exprs:ftr(exprs)}; }
+ArgumentExprs = OPPAREN exprs:Exprs? CLPAREN {return {type:"ArgumentExpression", exprs:ftr(exprs)}; }
 / OPPAREN exprs:(Exprs COMMA)? pfe:PostfixExpr COLON UNDER STAR CLPAREN {return {type:"ArgumentExprsWithRepeated", exprs:ftr(exprs, 0), postfixExpr:pfe}; }
 / nl? block:BlockExpr {return block; }
 
@@ -569,7 +575,7 @@ Block = blocks:(BlockStat semi)* res:ResultExpr? {
 	  for (var i = 0; i < blocks.length; i++) {
         result.push(blocks[i][0]);
 	  }
-	  return {type:"Block", contents:result,res:ftr(res)};
+	  return {type:"Block", states:result,res:ftr(res)};
     }
 
 /* BlockStat ::= Import */
@@ -587,7 +593,7 @@ BlockStat = Import
 /* | (Bindings | ([‘implicit’] id | ‘_’) ‘:’ CompoundType) ‘=>’ Block */
 ResultExpr =
 left:(Bindings / (IMPLICIT? id / UNDER) COLON CompoundType) ARROW right:Block
-{return {type:"AnonymousFunction", left:left, right:right}; }
+{return {type:"AnonymousFunctionWithCompound", left:left, right:right}; }
 / Expr1
 
 /* Enumerators ::= Generator {semi Enumerator} */
@@ -596,7 +602,7 @@ Enumerators = gen:Generator enums:(semi Enumerator)* {
 	  for (var i = 0; i < enums.length; i++) {
         result.push(enums[i][1]);
 	  }
-	  return {type:"Exprs", gen:gen, enums:result};
+	  return {type:"Enumerators", gen:gen, enums:result};
     }
 
 /* Enumerator ::= Generator */
@@ -701,7 +707,7 @@ TypeParam = id:(id / UNDER) cl:TypeParamClause? tp1:(LEFTANGLE Type)? tp2:(RIGHT
 tp3:('<%' __ Type)* tp4:(COLON Type)* {return {type: "TypeParam", id:id, clause:cl,type1:tp1, type2:tp2, type3:tp3, type4:tp4};}
 
 /* ParamClauses ::= {ParamClause} [[nl] ‘(’ ‘implicit’ Params ‘)’] */
-ParamClauses = pc:ParamClause* pm:(nl? OPPAREN IMPLICIT Params CLPAREN)? {return {type: "ParamClauses", clause:pc, params:pm !== ""? pm[3] : null};}
+ParamClauses = pc:ParamClause* pm:(nl? OPPAREN IMPLICIT Params CLPAREN)? {return {type: "ParamClauses", clauses:pc, params:pm !== ""? pm[3] : null};}
 
 /* ParamClause ::= [nl] ‘(’ [Params] ’)’ */
 ParamClause = nl? OPPAREN pm:Params? CLPAREN {return {type: "ParamClause", params:pm !== ""? pm : null};}
@@ -801,7 +807,7 @@ TemplateBody = nl? OPBRACE tp:SelfType? nl? ts:TemplateStat tss:(semi TemplateSt
 	  for (var i = 0; i < tss.length; i++) {
         result.push(tss[i][1]);
 	  }
-	  return {type:"TemplateBody", selftype:ftr(tp), state:result};
+	  return {type:"TemplateBody", selftype:ftr(tp), states:result};
     }
 
 /* TemplateStat ::= Import */
@@ -916,9 +922,9 @@ TypeDef = id:id pm:TypeParamClause? EQUAL tp:Type {return {type:"TypeDef", id:id
 /* TmplDef ::= [‘case’] ‘class’ ClassDef */
 /* | [‘case’] ‘object’ ObjectDef */
 /* | ‘trait’ TraitDef */
-TmplDef = cs:CASE? 'class' __ def:ClassDef {return {type:"TmplDef", prefix:[ftr(cs), makeKeyword("class")], def:def}; }
-/ cs:CASE? obj:OBJECT def:ObjectDef {return {type:"TmplDef", prefix:[ftr(cs), obj], def:def}; }
-/ 'trait' __ def:TraitDef {return {type:"TmplDef", prefix:[makeKeyword("trait")], def:def}; }
+TmplDef = cs:CASE? 'class' __ def:ClassDef {return {type:"TemplateDefinition", prefix:[ftr(cs), makeKeyword("class")], def:def}; }
+/ cs:CASE? obj:OBJECT def:ObjectDef {return {type:"TemplateDefinition", prefix:[ftr(cs), obj], def:def}; }
+/ 'trait' __ def:TraitDef {return {type:"TemplateDefinition", prefix:[makeKeyword("trait")], def:def}; }
 
 /* ClassDef ::= id [TypeParamClause] {ConstrAnnotation} [AccessModifier] */
 /* ClassParamClauses ClassTemplateOpt */
@@ -928,7 +934,7 @@ ClassDef = id:id tpc:TypeParamClause? ca:ConstrAnnotation* am:AccessModifier? cp
 TraitDef = id:id tpc:TypeParamClause? tto:TraitTemplateOpt {return {type:"TraitDef", id:id, typeParam:tpc, traitTemplate:tto}; }
 
 /* ObjectDef ::= id ClassTemplateOpt */
-ObjectDef = id:id cto:ClassTemplateOpt {return {type:"ObjectDef", id:id, classTemplate:cto}; }
+ObjectDef = id:id cto:ClassTemplateOpt {return {type:"ObjectDefinition", id:id, classTemplate:cto}; }
 
 /* ClassTemplateOpt ::= ‘extends’ ClassTemplate | [[‘extends’] TemplateBody] */
 ClassTemplateOpt = ext:EXTENDS ct:ClassTemplate {return {type:"ClassTemplateOpt", extend:ext, body:ct}; }
@@ -1057,7 +1063,7 @@ printableCharNoDoubleQuote = !'"' chr:printableChar {return chr;}
 charNoDoubleQuote = !'"' chr:. {return chr;}
 
 /* Empty = & {return true;} __ */
-Empty = & {return true;} {return {type:"Empty", value:null};}
+Empty = & {return true;} {return {type:"Empty"};}
 /* Empty = (&. / !.) {return {type:"Empty", value:null};} */
 
 PACKAGE = 'package' __ {return {type:"Keyword", word:"package"}}
