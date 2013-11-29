@@ -14,7 +14,7 @@ object Macro {
           println("import? : ");
           println(a)
           // msg = ": macroSuffix"; //msg is val
-          println(msg.value); //reify(expr.eval) transate to expr
+          // println(msg.value); //reify(expr.eval) transate to expr
           // println(msg.eval); //reify(expr.eval) transate to expr (can't compile)
           msg.value = "after macro!"; //msg is val
       }

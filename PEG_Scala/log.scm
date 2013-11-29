@@ -1,0 +1,1 @@
+(begin (define-syntax Let-Macro (syntax-rules (V-=) (((_ (("JS" "paren" ((((V-id V-= V-e))) ...)) ("JS" "brace" (V-body)))) "[object Object]")))) (begin (define V-a (("Let-Macro" ("JS" "paren" (((((V-x V-= "[object Object]")) ((V-y V-= "[object Object]")))))) ("JS" "brace" (("JS" "binary" * V-x V-y))))))))

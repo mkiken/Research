@@ -1,0 +1,242 @@
+grammar is ./scala.pegjs
+parser built!
+{
+ "type": "CompilationUnit",
+ "packages": [],
+ "topStatseq": {
+  "type": "TopStatSeq",
+  "topstat": [
+   {
+    "type": "ImportStatement",
+    "exprs": [
+     {
+      "type": "ImportExpr",
+      "id": {
+       "type": "StableId",
+       "contents": [
+        {
+         "type": "Identifier",
+         "name": "java"
+        },
+        {
+         "type": "Identifier",
+         "name": "util"
+        },
+        {
+         "type": "Identifier",
+         "name": "Scanner"
+        }
+       ]
+      },
+      "selector": null
+     }
+    ]
+   },
+   {
+    "type": "TopStat",
+    "annotation": [],
+    "modifier": [],
+    "def": {
+     "type": "TmplDef",
+     "prefix": [
+      null,
+      {
+       "type": "Keyword",
+       "word": "object"
+      }
+     ],
+     "def": {
+      "type": "ObjectDef",
+      "id": {
+       "type": "Identifier",
+       "name": "Main"
+      },
+      "classTemplate": {
+       "type": "ClassTemplateOpt",
+       "extend": null,
+       "body": {
+        "type": "TemplateBody",
+        "selftype": null,
+        "state": [
+         "",
+         {
+          "type": "TemplateStat",
+          "annotation": [],
+          "modifier": [],
+          "definition": {
+           "type": "Def",
+           "dcl": {
+            "type": "Keyword",
+            "word": "def"
+           },
+           "body": {
+            "type": "Procedure",
+            "signature": {
+             "type": "FunSig",
+             "id": {
+              "type": "Identifier",
+              "name": "doIt"
+             },
+             "funtype": null,
+             "param": {
+              "type": "ParamClauses",
+              "clause": [
+               {
+                "type": "ParamClause",
+                "params": null
+               }
+              ],
+              "params": null
+             }
+            },
+            "block": {
+             "type": "Block",
+             "contents": [
+              "",
+              {
+               "type": "PostfixExpr",
+               "infix": {
+                "type": "InfixExpr",
+                "prefix": {
+                 "type": "InfixExpr",
+                 "op": "",
+                 "expr": {
+                  "type": "SimpleExpr",
+                  "expr1": {
+                   "type": "SimpleExpression",
+                   "expr": {
+                    "type": "StableId",
+                    "contents": [
+                     {
+                      "type": "Identifier",
+                      "name": "printf"
+                     }
+                    ]
+                   },
+                   "suffix": {
+                    "type": "FunctionApplicationPostfix",
+                    "argument": {
+                     "type": "ArgumentExprs",
+                     "exprs": {
+                      "type": "Exprs",
+                      "contents": [
+                       {
+                        "type": "PostfixExpr",
+                        "infix": {
+                         "type": "InfixExpr",
+                         "prefix": {
+                          "type": "InfixExpr",
+                          "op": "",
+                          "expr": {
+                           "type": "SimpleExpr",
+                           "expr1": {
+                            "type": "SimpleExpression",
+                            "expr": {
+                             "type": "stringLiteral",
+                             "value": "%d\\n"
+                            },
+                            "suffix": ""
+                           },
+                           "under": ""
+                          }
+                         },
+                         "infixs": []
+                        },
+                        "id": null
+                       },
+                       {
+                        "type": "PostfixExpr",
+                        "infix": {
+                         "type": "InfixExpr",
+                         "prefix": {
+                          "type": "InfixExpr",
+                          "op": "",
+                          "expr": {
+                           "type": "SimpleExpr",
+                           "expr1": {
+                            "type": "SimpleExpression",
+                            "expr": {
+                             "type": "StableId",
+                             "contents": [
+                              {
+                               "type": "Identifier",
+                               "name": "x"
+                              }
+                             ]
+                            },
+                            "suffix": ""
+                           },
+                           "under": ""
+                          }
+                         },
+                         "infixs": [
+                          [
+                           {
+                            "type": "Identifier",
+                            "name": "+"
+                           },
+                           "",
+                           {
+                            "type": "InfixExpr",
+                            "prefix": {
+                             "type": "InfixExpr",
+                             "op": "",
+                             "expr": {
+                              "type": "SimpleExpr",
+                              "expr1": {
+                               "type": "SimpleExpression",
+                               "expr": {
+                                "type": "StableId",
+                                "contents": [
+                                 {
+                                  "type": "Identifier",
+                                  "name": "y"
+                                 }
+                                ]
+                               },
+                               "suffix": ""
+                              },
+                              "under": ""
+                             }
+                            },
+                            "infixs": []
+                           }
+                          ]
+                         ]
+                        },
+                        "id": null
+                       }
+                      ]
+                     }
+                    },
+                    "postfix": ""
+                   }
+                  },
+                  "under": ""
+                 }
+                },
+                "infixs": []
+               },
+               "id": null
+              },
+              ""
+             ],
+             "res": ""
+            }
+           }
+          }
+         },
+         ""
+        ]
+       }
+      }
+     }
+    }
+   },
+   {
+    "type": "Empty",
+    "value": null
+   }
+  ]
+ }
+}
