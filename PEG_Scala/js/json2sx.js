@@ -13,7 +13,7 @@ var SX_STYLE_JSX = 'SX Style test';
 var sx_style = SX_STYLE_JSX;
 
 var ast = {};
-fs.readFileSync('ast.spec', 'utf8').split('\n').forEach(function (line) {
+fs.readFileSync(__dirname + '/ast.spec', 'utf8').split('\n').forEach(function (line) {
     var spec = line.split(': ');
     if (spec.length === 1) return;
     var type = spec[0], keys = spec[1].split(', ');
@@ -50,15 +50,23 @@ function JSTag(){
 	return exprs;
 }
 
+function disclose(e){
+	if(Array.isArray(e) && e.length == 1) return disclose(e[0]);
+	return e;
+}
+
 function ax(t) {
 	// console.log(JSON.stringify(t));
-  if (!t) throw (new Error({ message: 'Invalid AST node: ', t: t }));
+	if(t == null) return "#\\nul";
+	else if (!t) throw (new Error('Invalid AST node: ' + JSON.stringify(t) ));
   // if (typeof t === 'string') return literal(t);
   if (typeof t === 'string') return t;
   if (Array.isArray(t)) return t.map(ax);
 
   var spec = ast[t.type];
-  if (literal_re.exec(t.type)) return literal(t);
+  // ArrayLiteralとかが上手く働かない
+  // if (literal_re.exec(t.type)) return literal(t);
+	// console.log("TYPE = " + t.type);
 
   switch (t.type) {
   case 'Variable':
@@ -86,15 +94,17 @@ function ax(t) {
   case 'ArrayLiteral': return JSTag("array", t.elements);
   case 'NumericLiteral':
   case 'BooleanLiteral':
-  case 'RegularExpressionLiteral': return JSTag("const", t.value);
-  case 'BinaryExpression': return JSTag("binary", t.operator, t.left, t.right);
+  case 'RegularExpressionLiteral': return JSTag("const", literal(t.value));
+  case 'BinaryExpression': return JSTag("binary", sx_string(t.operator), t.left, t.right);
+  case 'FunctionCall': return JSTag("funcCall", ax(t.name), ax(t.elements));
+  case 'Function': return JSTag("function", ax(t.name), ax(t.params));
 
   // case 'PrettyPrint': return t.str;
   // case 'JSXLiteral': return t.str;
   default:
 	var res = [];
 	// console.log(typeof(spec));
-	if(typeof(spec) == "undefined") console.log(t);
+	if(typeof(spec) == "undefined") throw new Error("undefined spec. : " + JSON.stringify(t));
 	// console.log(t);
 	spec.forEach(function (f, i) {
         switch (sx_style) {

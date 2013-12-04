@@ -1,0 +1,169 @@
+{
+  "type": "Program",
+  "elements": [
+    {
+      "type": "ExpressionMacroDefinition",
+      "macroName": "Let",
+      "literals": [
+        "="
+      ],
+      "syntaxRules": [
+        {
+          "type": "SyntaxRule",
+          "pattern": [
+            {
+              "type": "Paren",
+              "elements": [
+                {
+                  "type": "Repetition",
+                  "elements": {
+                    "type": "RepBlock",
+                    "elements": [
+                      {
+                        "type": "IdentifierVariable",
+                        "name": "id"
+                      },
+                      {
+                        "type": "LiteralKeyword",
+                        "name": "="
+                      },
+                      {
+                        "type": "ExpressionVariable",
+                        "name": "e"
+                      }
+                    ]
+                  },
+                  "punctuationMark": [
+                    ","
+                  ]
+                },
+                {
+                  "type": "Ellipsis"
+                }
+              ]
+            },
+            {
+              "type": "Brace",
+              "elements": [
+                {
+                  "type": "ExpressionVariable",
+                  "name": "body"
+                }
+              ]
+            }
+          ],
+          "template": {
+            "type": "FunctionCall",
+            "name": {
+              "type": "Function",
+              "name": null,
+              "params": [
+                "id",
+                {
+                  "type": "Ellipsis"
+                }
+              ],
+              "elements": [
+                {
+                  "type": "ReturnStatement",
+                  "value": {
+                    "type": "Variable",
+                    "name": "body"
+                  }
+                }
+              ]
+            },
+            "arguments": [
+              {
+                "type": "Variable",
+                "name": "e"
+              },
+              {
+                "type": "Ellipsis"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "type": "VariableStatement",
+      "declarations": [
+        {
+          "type": "VariableDeclaration",
+          "name": "a",
+          "value": {
+            "type": "MacroForm",
+            "inputForm": [
+              {
+                "type": "MacroName",
+                "name": "Let"
+              },
+              {
+                "type": "Paren",
+                "elements": [
+                  {
+                    "type": "Repeat",
+                    "elements": [
+                      {
+                        "type": "RepBlock",
+                        "elements": [
+                          {
+                            "type": "Variable",
+                            "name": "x"
+                          },
+                          {
+                            "type": "LiteralKeyword",
+                            "name": "="
+                          },
+                          {
+                            "type": "NumericLiteral",
+                            "value": "3"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "RepBlock",
+                        "elements": [
+                          {
+                            "type": "Variable",
+                            "name": "y"
+                          },
+                          {
+                            "type": "LiteralKeyword",
+                            "name": "="
+                          },
+                          {
+                            "type": "NumericLiteral",
+                            "value": "4"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "Brace",
+                "elements": [
+                  {
+                    "type": "BinaryExpression",
+                    "operator": "*",
+                    "left": {
+                      "type": "Variable",
+                      "name": "x"
+                    },
+                    "right": {
+                      "type": "Variable",
+                      "name": "y"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

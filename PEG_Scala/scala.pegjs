@@ -175,7 +175,7 @@ exponentPart = exp:('E' / 'e') sign:('+' / '-')? dt:digit+ {return exp + sign + 
 floatType = 'F' / 'f' / 'D' / 'd'
 
 /* booleanLiteral ::= ‘true’ | ‘false’ */
-booleanLiteral = ret:('true' / 'false') __ {return {type: "booleanLiteral", value: chrs};}
+booleanLiteral = ret:('true' / 'false') __ {return {type: "booleanLiteral", value: ret};}
 
 /* characterLiteral ::= ‘\’’ printableChar ‘\’’ */
 /* | ‘\’’ charEscapeSeq ‘\’’ */
