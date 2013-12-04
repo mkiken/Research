@@ -1,0 +1,3 @@
+[submodule ".emacs.d/elisp/helm"]
+	path = macroTest/js-macro
+	url = git@github.com:homizu/js-macro.git
