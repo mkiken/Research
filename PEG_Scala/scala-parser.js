@@ -1715,7 +1715,7 @@ module.exports = (function(){
           pos = clone(pos1);
         }
         if (result0 !== null) {
-          result0 = (function(offset, line, column, ret) {return {type: "booleanLiteral", value: chrs};})(pos0.offset, pos0.line, pos0.column, result0[0]);
+          result0 = (function(offset, line, column, ret) {return {type: "booleanLiteral", value: ret};})(pos0.offset, pos0.line, pos0.column, result0[0]);
         }
         if (result0 === null) {
           pos = clone(pos0);
@@ -5129,7 +5129,7 @@ module.exports = (function(){
                           pos = clone(pos1);
                         }
                         if (result0 !== null) {
-                          result0 = (function(offset, line, column, pe, as) {return {type:"Expr1withAscription", postfix:pe, ascription:as}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+                          result0 = (function(offset, line, column, pe, as) {return {type:"ExpressionWithAscription", postfix:pe, ascription:as}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
                         }
                         if (result0 === null) {
                           pos = clone(pos0);
@@ -5895,7 +5895,7 @@ module.exports = (function(){
                       pos = clone(pos1);
                     }
                     if (result0 !== null) {
-                      result0 = (function(offset, line, column, path, se1) {return {type:"idSeqSimpleExpression", ids:path, suffix:se1}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[2]);
+                      result0 = (function(offset, line, column, path, se1) {/*console.log("%j", toVariable(path));*/ return {type:"idSeqSimpleExpression", ids:toVariable(path), suffix:se1}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[2]);
                     }
                     if (result0 === null) {
                       pos = clone(pos0);
@@ -6062,7 +6062,7 @@ module.exports = (function(){
               pos = clone(pos1);
             }
             if (result0 !== null) {
-              result0 = (function(offset, line, column, ud, se1) {return {type:"SimpleExpression", expr:ud, suffix:se1}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+              result0 = (function(offset, line, column, ud, se1) {return {type:"suffixSimpleExpression", expr:ud, suffix:se1}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
             }
             if (result0 === null) {
               pos = clone(pos0);
@@ -6661,7 +6661,7 @@ module.exports = (function(){
           pos = clone(pos1);
         }
         if (result0 !== null) {
-          result0 = (function(offset, line, column, left, right) {return {type:"AnonymousFunction", left:left, right:right}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[2]);
+          result0 = (function(offset, line, column, left, right) {return {type:"AnonymousFunctionWithCompound", left:left, right:right}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[2]);
         }
         if (result0 === null) {
           pos = clone(pos0);
@@ -10435,7 +10435,7 @@ module.exports = (function(){
             pos = clone(pos1);
           }
           if (result0 !== null) {
-            result0 = (function(offset, line, column, dcl, body) {return {type:"Definition", dcl:dcl, body:body};})(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+            result0 = (function(offset, line, column, dcl, body) {return {type:"Definition", dcl:dcl, sp:' ', body:body};})(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
           }
           if (result0 === null) {
             pos = clone(pos0);
@@ -10468,7 +10468,7 @@ module.exports = (function(){
               pos = clone(pos1);
             }
             if (result0 !== null) {
-              result0 = (function(offset, line, column, dcl, body) {return {type:"Definition", dcl:dcl, body:body};})(pos0.offset, pos0.line, pos0.column, result0[0], result0[2]);
+              result0 = (function(offset, line, column, dcl, body) {return {type:"Definition", dcl:dcl, sp:' ', body:body};})(pos0.offset, pos0.line, pos0.column, result0[0], result0[2]);
             }
             if (result0 === null) {
               pos = clone(pos0);
@@ -10930,7 +10930,7 @@ module.exports = (function(){
           pos = clone(pos1);
         }
         if (result0 !== null) {
-          result0 = (function(offset, line, column, cs, def) {return {type:"TemplateDefinition", prefix:[ftr(cs), makeKeyword("class")], def:def}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[3]);
+          result0 = (function(offset, line, column, cs, def) {return {type:"ClassTemplateDefinition", prefix:ftr(cs), def:def}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[3]);
         }
         if (result0 === null) {
           pos = clone(pos0);
@@ -10959,7 +10959,7 @@ module.exports = (function(){
             pos = clone(pos1);
           }
           if (result0 !== null) {
-            result0 = (function(offset, line, column, cs, obj, def) {return {type:"TemplateDefinition", prefix:[ftr(cs), obj], def:def}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[1], result0[2]);
+            result0 = (function(offset, line, column, cs, def) {return {type:"ObjectTemplateDefinition", prefix:ftr(cs), def:def}; })(pos0.offset, pos0.line, pos0.column, result0[0], result0[2]);
           }
           if (result0 === null) {
             pos = clone(pos0);
@@ -10995,7 +10995,7 @@ module.exports = (function(){
               pos = clone(pos1);
             }
             if (result0 !== null) {
-              result0 = (function(offset, line, column, def) {return {type:"TemplateDefinition", prefix:[makeKeyword("trait")], def:def}; })(pos0.offset, pos0.line, pos0.column, result0[2]);
+              result0 = (function(offset, line, column, def) {return {type:"TraitTemplateDefinition", def:def}; })(pos0.offset, pos0.line, pos0.column, result0[2]);
             }
             if (result0 === null) {
               pos = clone(pos0);
@@ -19429,6 +19429,12 @@ module.exports = (function(){
       		return {type:"Keyword", word:key};
       	}
       
+      	//typeをvariableに変える
+      	function toVariable(obj){
+      		obj.type = "Variable";
+      		return obj;
+      	}
+      
       
       
       var result = parseFunctions[startRule]();
@@ -19462,14 +19468,6 @@ module.exports = (function(){
         var found = offset < input.length ? input.charAt(offset) : null;
         var errorPosition = pos.offset > rightmostFailuresPos.offset ? pos : rightmostFailuresPos;
         
-if(offset < input.length){
-var range = 10;
-var lines = input.substr(0, offset).split("\n").length-1
-console.log("\n!!Error occurs");
-console.log("------------------------")
-console.log(input.substr(Math.max(0, offset - range), Math.min(input.length - offset, 2*range)));
-console.log("------------------------" + "(around " + lines + " line.)\n");
-}
         throw new this.SyntaxError(
           cleanupExpected(rightmostFailuresExpected),
           found,

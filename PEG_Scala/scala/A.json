@@ -35,14 +35,8 @@
         "annotation": [],
         "modifier": [],
         "def": {
-          "type": "TemplateDefinition",
-          "prefix": [
-            null,
-            {
-              "type": "Keyword",
-              "word": "object"
-            }
-          ],
+          "type": "ObjectTemplateDefinition",
+          "prefix": null,
           "def": {
             "type": "ObjectDefinition",
             "id": {
@@ -66,6 +60,7 @@
                         "type": "Keyword",
                         "word": "def"
                       },
+                      "sp": " ",
                       "body": {
                         "type": "Procedure",
                         "signature": {
@@ -104,7 +99,7 @@
                                     "expr": {
                                       "type": "idSeqSimpleExpression",
                                       "ids": {
-                                        "type": "Identifier",
+                                        "type": "Variable",
                                         "name": "printf"
                                       },
                                       "suffix": {
@@ -153,7 +148,7 @@
                                                       "expr": {
                                                         "type": "idSeqSimpleExpression",
                                                         "ids": {
-                                                          "type": "Identifier",
+                                                          "type": "Variable",
                                                           "name": "x"
                                                         },
                                                         "suffix": {
@@ -180,7 +175,7 @@
                                                           "expr": {
                                                             "type": "idSeqSimpleExpression",
                                                             "ids": {
-                                                              "type": "Identifier",
+                                                              "type": "Variable",
                                                               "name": "y"
                                                             },
                                                             "suffix": {

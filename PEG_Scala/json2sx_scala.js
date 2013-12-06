@@ -1,6 +1,7 @@
 var util = require('util');
 var fs = require('fs');
-
+// const DEBUG = true;
+const DEBUG = false;
 var ast = {};
 fs.readFileSync(__dirname + '/ast.spec', 'utf8').split('\n').forEach(function (line) {
     var spec = line.split(': ');
@@ -21,33 +22,47 @@ function literal(l) {
   return sx_string(l);
 }
 
+function encloses(){
+	var ls = [];
+	for(var i = 1; i < arguments.length; i++){
+		ls.push(arguments[i]);
+	}
+	return enclose(arguments[0], ls);
+}
+
 function enclose(tag, l) {
   // l = ax(l);
+  if(arguments.length != 2) throw new Error("enclose: too many arguments => " + arguments.length);
   l.splice(0, 0, tag);
   // console.log("enc = " + l);
   return l;
 }
 
-function ScalaTag(){
-	var exprs = [sx_string("Scala"), sx_string(arguments[0])];
+function ScalaTag(name, elements){
+	var exprs = [sx_string("Scala"), sx_string(name)];
 	// if(arguments[0] != "")
-	for(var i = 1; i < arguments.length; i++){
-		exprs.push(ax(arguments[i]));
+	for(var i = 0; i < elements.length; i++){
+		exprs.push(elements[i]);
+		// exprs.push(ax(elements[i]));
 	}
 	return exprs;
 }
 
 function disclose(e){
-	if(Array.isArray(e) && e.length == 1) return disclose(e[0]);
-	return e;
+	if(Array.isArray(e)){
+		if(e.length == 1) return disclose(e[0]);
+		else return e.map(disclose);
+	}
+	else return e;
 }
 
 function ax(t) {
 	// console.log(JSON.stringify(t));
+	if(DEBUG) console.log("ax( " + JSON.stringify(t) + " ) invoked.");
 	if(t == null) return "#\\nul";
 	else if (!t) throw (new Error('Invalid AST node: ' + JSON.stringify(t) ));
   // if (typeof t === 'string') return literal(t);
-  if (typeof t === 'string') return t;
+  if (typeof(t) === 'string') return sx_string(t);
   if (Array.isArray(t)) return t.map(ax);
 
   var spec = ast[t.type];
@@ -68,8 +83,13 @@ function ax(t) {
     // return ['define', 'V-' + t.name, ax(t.value)];
   // case 'CatchStatement':
     // throw (new Error({ message: 'Not implemented yet: ', t: t }));
-  case 'CompilationUnit': return enclose('begin', ax(t.packages), ax(t.topStatseq));
-  case 'ImportStatement': return enclose('import', ax(t.exprs));
+  // case 'CompilationUnit':
+	  // return encloses('begin', ax(t.packages), ax(t.topStatseq));
+	  // return enclose('begin', ax(t.packages));
+  case 'Empty': return null; //どうしよう。とりあえず空文字列を返しておく
+  // case 'ImportStatement': return enclose('import', ax(t.exprs));
+  // case 'Identifier': return ScalaTag('identifier', t.name);
+  // case 'ImportStatement': return ScalaTag('import', t.exprs);
   // case 'ExpressionMacroDefinition': return [util.format('define-syntax %s-Macro', t.macroName), ["syntax-rules", t.literals.map(function(x){return util.format("V-%s", x)}), ax(t.syntaxRules)]];
   // case 'Ellipsis': return "...";
   // case 'Brace':
@@ -102,10 +122,13 @@ function ax(t) {
           // res.push( i === 0 ? util.format('"%s"', t[f]) : ax(t[f]));
         // case SX_STYLE_JSX:
 		if(typeof(t[f]) == "undefined") throw new Error("defined member is undefined. type: " + t.type + ", member: " + f);
+          // if(0 < i) res.push(ax(t[f]));
           if(0 < i) res.push(ax(t[f]));
         // }
       });
-	return res;
+	if(DEBUG) console.log("type: " + t.type + ", res = " + JSON.stringify(res));
+	// return res;
+	return ScalaTag(t.type, res);
   }
 }
 
@@ -124,6 +147,7 @@ exports.convert = function (t, output) {
   typeof output === 'string' ? fs.openSync(output, 'w') : false;
 
   var s = sx(ax(t));
+  // var s = sx(disclose(ax(t)));
   if (fd) {
     // fs.writeSync(fd, JSON.stringify(s, null, "  "));
     fs.writeSync(fd, s);

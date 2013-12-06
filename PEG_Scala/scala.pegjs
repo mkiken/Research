@@ -26,6 +26,12 @@ The lexical syntax of Scala is given by the following grammar in EBNF form.
 		return {type:"Keyword", word:key};
 	}
 
+	//typeをvariableに変える
+	function toVariable(obj){
+		obj.type = "Variable";
+		return obj;
+	}
+
 }
 
 /* CompilationUnit ::= {‘package’ QualId semi} TopStatSeq */
@@ -538,11 +544,12 @@ SimpleExpr1 = OPPAREN exp:Exprs? CLPAREN se1:_SimpleExpr1 {return {type:"TupleEx
 / bk:BlockExpr ta:TypeArgs se1:_SimpleExpr1 {return {type:"blockExpressionWithTypes", block:bk, types:ta, suffix:se1}; }
 / xml:XmlExpr se1:_SimpleExpr1 {return {type:"XmlSimpleExpression", xml:xml, suffix:se1}; }
 /* / path:Path se1:_SimpleExpr1 {return {type:"SimpleExpression", expr:path, suffix:se1}; } */
-/ path:id !EQUAL se1:_SimpleExpr1 {return {type:"idSeqSimpleExpression", ids:path, suffix:se1}; }
+/* / path:id !EQUAL se1:_SimpleExpr1 {return {type:"idSeqSimpleExpression", ids:path, suffix:se1}; } */
+/ path:id !EQUAL se1:_SimpleExpr1 {/*console.log("%j", toVariable(path));*/ return {type:"idSeqSimpleExpression", ids:toVariable(path), suffix:se1}; }
 / lt:Literal se1:_SimpleExpr1 {return {type:"literalSimpleExpression", literal:lt, suffix:se1}; }
 _SimpleExpr1 = ud:UNDER? !(DOT id EQUAL) DOT id:id se1:_SimpleExpr1 {return {type:"DesignatorPostfix", under:ftr(ud), id:id, postfix:se1}; }
 / ud:UNDER? ta:TypeArgs se1:_SimpleExpr1 {return {type:"TypeApplicationPostfix", under:ftr(ud), typeArgument:ta, postfix:se1}; }
-/ ud:UNDER se1:_SimpleExpr1 {return {type:"SimpleExpression", expr:ud, suffix:se1}; }
+/ ud:UNDER se1:_SimpleExpr1 {return {type:"suffixSimpleExpression", expr:ud, suffix:se1}; }
 / ae:ArgumentExprs !EQUAL se1:_SimpleExpr1 {return {type:"FunctionApplicationPostfix", argument:ae, postfix:se1}; }
 / Empty
 
@@ -890,8 +897,8 @@ PatVarDef = dcl:VAL body:PatDef {return {type:"PatValDef", body:body};}
 /* | ‘type’ {nl} TypeDef */
 /* | TmplDef */
 Def = PatVarDef
-/ dcl:DEF body:FunDef {return {type:"Definition", dcl:dcl, body:body};}
-/ dcl:TYPE nl* body:TypeDef {return {type:"Definition", dcl:dcl, body:body};}
+/ dcl:DEF body:FunDef {return {type:"Definition", dcl:dcl, sp:' ', body:body};}
+/ dcl:TYPE nl* body:TypeDef {return {type:"Definition", dcl:dcl, sp:' ', body:body};}
 / TmplDef
 
 /* PatDef ::= Pattern2 {‘,’ Pattern2} [‘:’ Type] ‘=’ Expr */
@@ -922,9 +929,9 @@ TypeDef = id:id pm:TypeParamClause? EQUAL tp:Type {return {type:"TypeDef", id:id
 /* TmplDef ::= [‘case’] ‘class’ ClassDef */
 /* | [‘case’] ‘object’ ObjectDef */
 /* | ‘trait’ TraitDef */
-TmplDef = cs:CASE? 'class' __ def:ClassDef {return {type:"TemplateDefinition", prefix:[ftr(cs), makeKeyword("class")], def:def}; }
-/ cs:CASE? obj:OBJECT def:ObjectDef {return {type:"TemplateDefinition", prefix:[ftr(cs), obj], def:def}; }
-/ 'trait' __ def:TraitDef {return {type:"TemplateDefinition", prefix:[makeKeyword("trait")], def:def}; }
+TmplDef = cs:CASE? 'class' __ def:ClassDef {return {type:"ClassTemplateDefinition", prefix:ftr(cs), def:def}; }
+/ cs:CASE? OBJECT def:ObjectDef {return {type:"ObjectTemplateDefinition", prefix:ftr(cs), def:def}; }
+/ 'trait' __ def:TraitDef {return {type:"TraitTemplateDefinition", def:def}; }
 
 /* ClassDef ::= id [TypeParamClause] {ConstrAnnotation} [AccessModifier] */
 /* ClassParamClauses ClassTemplateOpt */
