@@ -26,7 +26,8 @@ var rl = readline.createInterface({
 
 console.log("\n\ninput start.\n\n");
 rl.on('line', function (cmd) {
-	cmd = cmd.slice(0, cmd.length-1);
+	// cmd = cmd.slice(0, cmd.length-1);
+	console.log("cmd = %s", cmd);
 	console.log(JSON.stringify(parser.parse(cmd)));
 	console.log("\n\ninput start.\n\n");
 });

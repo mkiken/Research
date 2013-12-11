@@ -1,0 +1,13 @@
+// 一引数のLetマクロ
+expression Let {
+    identifier: id;
+    expression: e, body;
+    keyword: =;
+
+    { Let (id = e) { body } =>
+
+      statement
+    }
+}
+
+
