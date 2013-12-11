@@ -1,15 +1,15 @@
 var PEG, contents, parser, fs, names;
 
 //PEG = require("pegjs");
-// PEG = require("/usr/local/share/npm/lib/node_modules/pegjs")
-PEG = require("pegjs")
+PEG = require("/usr/local/share/npm/lib/node_modules/pegjs")
 fs = require("fs");
 
 names = [
 	'scala.pegjs',
-	'test.pegjs'
+	'test.pegjs',
+	'ex-scala.pegjs'
 ];
-var grm = names[0];
+var grm = names[2];
 contents = fs.readFileSync(grm, 'utf8');
 
 console.log("grammar = " + grm);
