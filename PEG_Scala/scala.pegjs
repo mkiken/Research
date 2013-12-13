@@ -134,7 +134,7 @@ id = nm:plainid {return { type: "Identifier", name: nm }; }
 	/ [`] str:stringLiteral [`] __ { return { type: "Identifier2", name: '`' + str + '`'}; }
 
 /* idrest ::= {letter | digit} [‘_’ op] */
-idrest	= chars:(letter / digit)* '_' ops:op __ {return chars.join("") + '_' + ops;}
+idrest	= chars:(letter / digit)* '_' ops:op {return chars.join("") + '_' + ops;}
 		/ chars:(letter / digit)* __ {return chars.join("");}
 
 /* integerLiteral ::= (decimalNumeral | hexNumeral | octalNumeral) [‘L’ | ‘l’] */
@@ -209,7 +209,8 @@ symbolLiteral = "'" pi:plainid __ {return "'" + pi;}
 /* | ‘//’ “any sequence of characters up to end of line” */
 comment = singleLineComment / multiLineComment
 
-singleLineComment = '//' (!nl . )* nl+
+singleLineComment = '//' (!nl . )* //nl+
+/* singleLineComment = '//' a:(!nl . )* {console.log("singleLineComment invoked. : " + a); return a;} */
 multiLineComment = [/][*] ((&"/*" multiLineComment) / (!"*/" . ))* [*][/]
 
 __ = (whitespace / comment)*
@@ -221,7 +222,7 @@ nl = ("\r\n" / "\n" / "\r") __
 /* semi ::= ‘;’ | nl {nl} */
 semi = (SEMICOLON nl* / nl+)
 
-//'\n','\t','\r','\n'
+//' ','\t','\r','\n'
 //whitespace = [\u0020\u0009\u000D\u000A]
 whitespace = [\u0020\u0009]
 
@@ -313,8 +314,7 @@ Type	= funcarg:FunctionArgTypes ARROW tp:Type {return {type:"FunctionType", left
 /* FunctionArgTypes ::= InfixType */
 /* | ‘(’ [ ParamType {‘,’ ParamType } ] ‘)’ */
 FunctionArgTypes	= InfixType
-
-					/ OPPAREN tps:( ParamType (COMMA ParamType )* )? CLPAREN {
+/ OPPAREN tps:( ParamType (COMMA ParamType )* )? CLPAREN {
       var result = [];
 if(tps !== ""){
 	result.push(tps[0]);
@@ -323,7 +323,7 @@ if(tps !== ""){
 	  }
 }
 	  return {type:"FunctionArgTypes", contents:result};
-    }
+}
 
 
 /* ExistentialClause ::= ‘forSome’ ‘{’ ExistentialDcl {semi ExistentialDcl} ‘}’ */
@@ -388,7 +388,7 @@ Types = tp:Type tps:(COMMA Type)* {
         result.push(tps[i][1]);
 	  }
 	  return {type:"Types", contents:result};
-    }
+}
 
 /* Refinement ::= [nl] ‘{’ RefineStat {semi RefineStat} ‘}’ */
 Refinement = nl? OPBRACE ref:RefineStat refs:(semi RefineStat)* CLBRACE {
@@ -610,7 +610,7 @@ Enumerators = gen:Generator enums:(semi Enumerator)* {
         result.push(enums[i][1]);
 	  }
 	  return {type:"Enumerators", gen:gen, enums:result};
-    }
+}
 
 /* Enumerator ::= Generator */
 /* | Guard */
@@ -639,7 +639,7 @@ Pattern = pt1:Pattern1 pt1s:( '|' __ Pattern1 )* {
         result.push(pt1s[i][2]);
 	  }
 	  return {type:"PatternAlternatives", pts:result};
-    }
+}
 
 /* Pattern1 ::= varid ‘:’ TypePat */
 /* | ‘_’ ‘:’ TypePat */
@@ -694,7 +694,7 @@ TypeParamClause = OPBRACKET param:VariantTypeParam params:(COMMA VariantTypePara
         result.push(params[i][1]);
 	  }
 	  return {type:"TypeParamClause", params:result};
-    }
+}
 
 /* FunTypeParamClause::= ‘[’ TypeParam {‘,’ TypeParam} ‘]’ */
 FunTypeParamClause = OPBRACKET param:TypeParam params:(COMMA TypeParam)* CLBRACKET {
@@ -703,7 +703,7 @@ FunTypeParamClause = OPBRACKET param:TypeParam params:(COMMA TypeParam)* CLBRACK
         result.push(params[i][1]);
 	  }
 	  return {type:"FunTypeParamClause", params:result};
-    }
+}
 
 /* VariantTypeParam ::= {Annotation} [‘+’ | ‘-’] TypeParam */
 VariantTypeParam = ans:Annotation* sign:(PLUS / HYPHEN)? param:TypeParam {return {type: "VariantTypeParam", annotations:ans, sign:sign, param:param};}
@@ -753,7 +753,7 @@ ClassParams = param:ClassParam params:(' ' ClassParam)*
         result.push(params[i][1]);
 	  }
 	  return {type:"ClassParams", params:result};
-    }
+}
 
 /* ClassParam ::= {Annotation} [{Modifier} (‘val’ | ‘var’)] */
 /* id ‘:’ ParamType [‘=’ Expr] */
@@ -815,7 +815,7 @@ TemplateBody = nl? OPBRACE tp:SelfType? nl? ts:TemplateStat tss:(semi TemplateSt
         result.push(tss[i][1]);
 	  }
 	  return {type:"TemplateBody", selftype:ftr(tp), states:result};
-    }
+}
 
 /* TemplateStat ::= Import */
 /* | {Annotation [nl]} {Modifier} Def */

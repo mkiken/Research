@@ -14,10 +14,9 @@ object Main  {
       val fs = sc.nextLine();
       val et = sc.nextLine();
       val alp = new Array[Int](26);
-      et.foreach(c =>
+      et.foreach(//c =>
           if('a' <= c && c <= 'z') alp(c - 'a') += 1
-          else if('A' <= c && c <= 'Z') alp(c - 'A') += 1
-          );
+          else if('A' <= c && c <= 'Z') alp(c - 'A') += 1);
 
       // println("alp = " + alp.mkString);
       val al = alp.zipWithIndex.sorted;
@@ -28,7 +27,7 @@ object Main  {
         als(al(i)._2) = fs(i);
       }
       // println("als = " + als.mkString);
-      println(et.map(c =>
+      println(et.map(//c =>
       if('a' <= c && c <= 'z') als(c - 'a')
       else if('A' <= c && c <= 'Z') als(c - 'A').toUpper
       else c));

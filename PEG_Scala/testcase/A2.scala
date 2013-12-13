@@ -9,8 +9,9 @@ object Main {
   def doIt(){
     val sc = new Scanner(System . in);
     var x, y = 0;
-    x = readInt;
-    y = readInt;
+    x = readInt //y;
+    y = readInt
+    // y;
 
     printf("%d\n", x+y);
   }

@@ -4,10 +4,14 @@ expression Let {
     expression: e, body;
     keyword: =;
 
-    { Let (id = e) { body } =>
-
-      statement
+    { Let (id = e) { body } ->
+      /* sss */
+			//(function (id) { return body; })(e)
+			((id) => body)(e)
+			//println(((x: Int,y: Int) => x + y)(2, 3))
     }
 }
+
+var a = Let (x = 3) { x * x };
 
 

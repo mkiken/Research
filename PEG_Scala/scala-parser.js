@@ -19468,6 +19468,14 @@ module.exports = (function(){
         var found = offset < input.length ? input.charAt(offset) : null;
         var errorPosition = pos.offset > rightmostFailuresPos.offset ? pos : rightmostFailuresPos;
         
+if(offset < input.length){
+var range = 10;
+var lines = input.substr(0, offset).split("\n").length-1
+console.log("\n!!Error occurs");
+console.log("------------------------")
+console.log(input.substr(Math.max(0, offset - range), Math.min(input.length - offset, 2*range)));
+console.log("------------------------" + "(around " + lines + " line.)\n");
+}
         throw new this.SyntaxError(
           cleanupExpected(rightmostFailuresExpected),
           found,

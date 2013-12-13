@@ -3,10 +3,11 @@ PEG = require("/usr/local/share/npm/lib/node_modules/pegjs");
 var names = [
 	'./scala.pegjs',
 	'./_scala.pegjs',
-	'./test.pegjs'
+	'./test.pegjs',
+	'./ex-scala.pegjs'
 ];
 var fs = require("fs");
-var name = names[0];
+var name = names[3];
 var dt = new Date();
 console.log(dt);
 console.log("grammar is " + name);
@@ -20,19 +21,21 @@ console.log("parser built!");
 //console.log(ns);
 
 var scalas = [
+	'./testcase/A2.scala',
 	'./testcase/totr.scala',
 	'./testcase/utopian-tree.scala',
 	'./testcase/counter.scala',
 	'./testcase/power-of-large-numbers.scala',
-	'./testcase/leballs.scala',
-	'./testcase/anagram.scala', //5
+	'./testcase/leballs.scala', //5
+	'./testcase/anagram.scala',
 	'./testcase/bday-gift.scala',
 	'./testcase/A.scala',
 	'./testcase/Test.scala',
-	'./testcase/util.scala',
-	'./input.txt'
+	'./testcase/util.scala', //10
+	'./input.txt',
+	'./input.tmp'
 ];
-var sname = scalas[7];
+var sname = scalas[12];
 var scala = fs.readFileSync( sname, 'utf8');
 console.log("scala file is " + sname);
 	console.log(JSON.stringify(parser.parse(scala), null,  2 ));
