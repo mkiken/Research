@@ -8,7 +8,7 @@ module.exports = (function () {
     var characterStatement = 'CharacterStatement\n = &{}\n\n';
     var macroExpression = 'MacroExpression\n = '
     var macroStatement = 'MacroStatement\n = '
-
+    
     var pegObj = {
         // enclosing types
         Brace: { left: '"{"', right: '"}"' },
@@ -109,7 +109,7 @@ module.exports = (function () {
 { return v; })';
                 }
             };
-        },
+        }, 
 
         // PunctuationMark
         punct: function(value) {
@@ -155,7 +155,6 @@ module.exports = (function () {
             };
         },
 
-				//name : マクロ名、body: パターン
         macroForm: function (name, body) {
             var form = [name];
             var obj;
@@ -215,9 +214,9 @@ module.exports = (function () {
                 }
             };
         }
-*/
+*/     
     };
-
+    
     var jsMacroTypes = [
 
         // Repetition
@@ -226,7 +225,7 @@ module.exports = (function () {
           toPegObj: function(obj) {
               var elements = convertToPegObj(obj.elements);
               return pegObj.repetition(elements, obj.punctuationMark);
-          }
+          }          
         },
 
         // RepBlock [# ~ #] は 取り除く
@@ -344,7 +343,7 @@ module.exports = (function () {
               return pegObj.literal(this.type, null);
           }
         },
-
+        
         // RegularExpressionLiteral
         { type: 'RegularExpressionLiteral',
           isType: function(t) { return t === this.type; },
@@ -358,7 +357,6 @@ module.exports = (function () {
         var result = [];
         var obj, type;
 
-				//配列だったら再帰
         if (pattern instanceof Array) {
             if (pattern.length === 0)
                 return null;
@@ -368,12 +366,9 @@ module.exports = (function () {
                     result.push(obj);
             }
             return result.length > 0 ? pegObj.sequence(result) : null;
-        }
-        //nullでなかったら
-        else if (pattern) {
+        } else if (pattern) {
             for (var i=0; i<jsMacroTypes.length; i++) {
                 type = jsMacroTypes[i];
-                //jsmacroTypesで型が合うやつがあったらそれにあった変換をする
                 if (type.isType(pattern.type)) {
                     return type.toPegObj(pattern);
                 }
@@ -423,7 +418,7 @@ module.exports = (function () {
                 if (i === elements.length - 1)
                     return 'all';
                 return true;
-            } else if (elements[i]) { // elements[i] は RepBlock, Brace, Paren, Bracket, Repetition のいずれか
+            } else if (elements[i]) { // elements[i] は RepBlock, Brace, Paren, Bracket, Repetition のいずれか   
                 if (elements[i].type === 'Repetition') {
                     return delete1Node([elements[i].elements], 0);
                 }
@@ -446,24 +441,21 @@ module.exports = (function () {
             var expressionMacros = [];
             var statementMacros = [];
             var macros, pmacros, tmacros, macro, code;
-            //MacroDefinitionがあったらMacrodefsに保存
             for (var i=0; i<elements.length; i++) {
                 var element = elements[i];
                 if (element.type.indexOf('MacroDefinition') >= 0)
                     macroDefs.push(element);
             }
-            //各Macrodefinitionを解析
+
             for (var i=0; i<macroDefs.length; i++) {
                 var macroDef = macroDefs[i];
-                //pegObj.macroName : macroNameに対応するコードを吐くJSONを返す
                 var macroName = pegObj.macroName(macroDef.macroName);
                 var syntaxRules = macroDef.syntaxRules;
                 var patterns = [];
                 var p;
-
+                
                 macros = [];
 
-								//syntaxrulesを解析
                 for (var j=0; j<syntaxRules.length; j++) {
                     macro = pegObj.macroForm(macroName, syntaxRules[j].pattern)
                     patterns.push(macro);
@@ -482,11 +474,11 @@ module.exports = (function () {
                             macros.push(code);
                     }
                 }
-
+                
                 pmacros = macros.slice(0, patterns.length);
                 tmacros = macros.slice(patterns.length);
                 tmacros.sort(function (a, b) { return b.length - a.length; }); // PEGコードが長い順に並び替え
-
+                
                 if (macroDef.type.indexOf('Expression') >= 0)
                     expressionMacros = expressionMacros.concat(pmacros, tmacros);
                 else
@@ -498,7 +490,7 @@ module.exports = (function () {
                 + errors + characterStatement
                 + (expressionMacros.length > 0 ?  macroExpression + expressionMacros.join(' \n / ') + '\n\n' : '')
                 + (statementMacros.length > 0 ? macroStatement + statementMacros.join(' \n / ') + '\n\n' : '');
-
+            
         } else {
             return 'error';
         }

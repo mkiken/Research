@@ -1,19 +1,27 @@
+//引数は解析対象ファイル、元の文法、マクロ文法
+
+
 // var PEG = require("pegjs");
-PEG = require("/usr/local/share/npm/lib/node_modules/pegjs");
-var names = [
-	'./scala.pegjs',
-	'./_scala.pegjs',
-	'./test.pegjs',
-	__dirname + '/ex-scala.pegjs'
-];
+
+var PEG = require("/usr/local/share/npm/lib/node_modules/pegjs");
+// var names = [
+	// './scala.pegjs',
+	// './_scala.pegjs',
+	// './test.pegjs',
+	// __dirname + '/ex-scala.pegjs'
+// ];
 var fs = require("fs");
-var name = names[3];
-var dt = new Date();
+// var name = names[3];
+// var dt = new Date();
 // console.log(dt);
 // console.log("grammar is " + name);
 var args = process.argv;
-console.error("compileAndTest.js: args = [%s]", args);
-var gram = fs.readFileSync( name, 'utf8');
+var name1 = args[3];
+var name2 = args[4];
+// console.error("compileAndTest.js: args = [%s]", args);
+var gram = fs.readFileSync( name1, 'utf8');
+var macroGram = fs.readFileSync( name2, 'utf8');
+gram += macroGram;
 var parser = PEG.buildParser(gram);
 //var contents = fs.readFileSync(  './testcase/test015_arith.grm' ).toString();
 

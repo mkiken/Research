@@ -76,6 +76,17 @@ LineTerminatorSequence "end of line"
 SourceCharacter
   = .
 
+
+StatementInTemplate
+  = &{ return macroType === "expression"; }
+    e:(ae:AssignmentExpression (";" {
+        throw new JSMacroSyntaxError(line, column, "Unexpected semicolon. The expression macro's template must be an expression.");
+       })? { return ae; }
+       / Statement { throw new JSMacroSyntaxError(line, column, "Unexpected statement. The expression macro's template must be an expression."); }) {
+      return e;
+    }
+  / &{ return macroType === "statement"; } s:Statement { return s; }
+
 DeclarationStatement // added
   = MacroDefinition
   /* / VariableStatement */
@@ -108,7 +119,7 @@ MacroDefinition
 MetaVariableDeclaration
   = type:("identifier" / "expression" / "statement" / "symbol") ___ ":" ___ list:VariableList ___ ";" {
         metaVariables[type] = metaVariables[type].concat(list);
-        console.log("meta = " + JSON.stringify(metaVariables[type]));
+        /* console.log("meta = " + JSON.stringify(metaVariables[type])); */
     }
   / "keyword" ___ ":" ___ list:LiteralKeywordList ___ ";" {
         metaVariables.literal = metaVariables.literal.concat(list);
@@ -134,8 +145,7 @@ LiteralKeywordList
 
 // リテラルキーワード "=>" は禁止
 LiteralKeyword
-  = !MacroArrow (IdentifierName
-  / Punctuator)
+  = !MacroArrow key:(IdentifierName / Punctuator) {return key;}
 
 SyntaxRuleList
 	= head:SyntaxRule tail:(___ SyntaxRule)* {
