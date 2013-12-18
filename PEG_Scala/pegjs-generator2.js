@@ -79,7 +79,9 @@ module.exports = (function () {
         expression: function () {
             return {
                 type: 'Expression',
-                toCode: function (context) { return 'AssignmentExpression'; }
+                // toCode: function (context) { return 'AssignmentExpression'; }
+                // todo: とりあえずExprでやる
+                toCode: function (context) { return 'Expr'; }
             };
         },
 
@@ -475,12 +477,13 @@ module.exports = (function () {
                     if (macros.indexOf(code) < 0)
                         macros.push('(&{ return macroType; } ' + code + ')');
 
-                    while (patterns[j].makeSuffix()) {
-                        code = patterns[j].toCode('template');
-                        if (macros.indexOf(code) < 0
-                            && macros.indexOf(code = '(&{ return macroType; } ' + code + ')') < 0 )
-                            macros.push(code);
-                    }
+														//todo: suffixは何なのか？とりあえず消してみる
+                    // while (patterns[j].makeSuffix()) {
+                        // code = patterns[j].toCode('template');
+                        // if (macros.indexOf(code) < 0
+                            // && macros.indexOf(code = '(&{ return macroType; } ' + code + ')') < 0 )
+                            // macros.push(code);
+                    // }
                 }
 
                 pmacros = macros.slice(0, patterns.length);
@@ -494,7 +497,7 @@ module.exports = (function () {
 
             }
 
-            return template + checkOuterMacro
+            return /*template +*/ checkOuterMacro
                 + errors + characterStatement
                 + (expressionMacros.length > 0 ?  macroExpression + expressionMacros.join(' \n / ') + '\n\n' : '')
                 + (statementMacros.length > 0 ? macroStatement + statementMacros.join(' \n / ') + '\n\n' : '');

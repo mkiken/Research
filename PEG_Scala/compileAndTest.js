@@ -4,7 +4,8 @@ var names = [
 	'./scala.pegjs',
 	'./_scala.pegjs',
 	'./test.pegjs',
-	__dirname + '/ex-scala.pegjs'
+	__dirname + '/ex-scala.pegjs',
+	__dirname + '/test.pegjs'
 ];
 var fs = require("fs");
 var name = names[3];
@@ -12,9 +13,9 @@ var dt = new Date();
 // console.log(dt);
 // console.log("grammar is " + name);
 var args = process.argv;
-console.error("compileAndTest.js: args = [%s]", args);
+// console.error("compileAndTest.js: args = [%s]", args);
 var gram = fs.readFileSync( name, 'utf8');
-var parser = PEG.buildParser(gram);
+var parser = PEG.buildParser(gram, {cache: true, trackLineAndColumn: true });
 //var contents = fs.readFileSync(  './testcase/test015_arith.grm' ).toString();
 
 // console.log("parser built!");

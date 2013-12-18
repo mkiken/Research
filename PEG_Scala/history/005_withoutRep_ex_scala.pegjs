@@ -12,7 +12,6 @@
                         statement: [],
                         symbol: [],
                         literal: [] };  // メタ変数のリストを保持するオブジェクト
-  var bTemplate = false;
   //引数をフィルターして適切な形に変形する
 	//もしidxが入っていればarg[idx]を戻り値とする
 	function ftr(arg, idx){
@@ -327,7 +326,7 @@ PunctuatorSymbol
 
 // テンプレート(パーザー拡張前)
 Template
-  = &{bTemplate = true;return true;} head:Statement tail:(___ Statement)* &{bTemplate = false;return true;}{
+  = head:Statement tail:(___ Statement)* {
       var result = [head];
       for (var i=0; i<tail.length; i++) {
           result.push(tail[i][1]);
@@ -475,11 +474,7 @@ Ascription = COLON infix:InfixType {return {type:"Ascription", contents:[infix]}
 MacroExpression
   = &{}
 
-//Expression用Ellipsis
-ExprEllipsis = &{return bTemplate;} "..." __ {return {type: "Ellipsis"};}
-
-Expr = ExprEllipsis
-/ MacroExpression
+Expr = MacroExpression
 / left:(Bindings / IMPLICIT? id / UNDER) ARROW right:Expr {return {type:"AnonymousFunction", left:left, right:right}; }
 / Expr1
 Expr1 = IF OPPAREN condition:Expr CLPAREN nl* ifStatement:Expr elseStatement:(semi? 'else' __ Expr)? {

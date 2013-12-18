@@ -1,0 +1,364 @@
+{
+  "type": "Program",
+  "elements": [
+    {
+      "type": "ExpressionMacroDefinition",
+      "macroName": "Let",
+      "literals": [
+        "="
+      ],
+      "syntaxRules": [
+        {
+          "type": "SyntaxRule",
+          "pattern": [
+            {
+              "type": "Paren",
+              "elements": [
+                {
+                  "type": "IdentifierVariable",
+                  "name": "id"
+                },
+                {
+                  "type": "LiteralKeyword",
+                  "name": "="
+                },
+                {
+                  "type": "ExpressionVariable",
+                  "name": "e"
+                },
+                {
+                  "type": "PunctuationMark",
+                  "value": ","
+                },
+                {
+                  "type": "IdentifierVariable",
+                  "name": "id2"
+                },
+                {
+                  "type": "LiteralKeyword",
+                  "name": "="
+                },
+                {
+                  "type": "ExpressionVariable",
+                  "name": "e2"
+                }
+              ]
+            },
+            {
+              "type": "Brace",
+              "elements": [
+                {
+                  "type": "ExpressionVariable",
+                  "name": "body"
+                }
+              ]
+            }
+          ],
+          "template": [
+            {
+              "type": "PostfixExpression",
+              "infix": {
+                "type": "InfixExpression",
+                "left": {
+                  "type": "PrefixExpression",
+                  "op": null,
+                  "expr": {
+                    "type": "SimpleExpression",
+                    "expr": {
+                      "type": "TupleExpression",
+                      "expr": {
+                        "type": "Exprs",
+                        "contents": [
+                          {
+                            "type": "AnonymousFunction",
+                            "left": {
+                              "type": "Bindings",
+                              "bindings": [
+                                {
+                                  "type": "Binding",
+                                  "id": {
+                                    "type": "Variable",
+                                    "name": "id"
+                                  },
+                                  "tp": null
+                                },
+                                {
+                                  "type": "Binding",
+                                  "id": {
+                                    "type": "Variable",
+                                    "name": "id2"
+                                  },
+                                  "tp": null
+                                }
+                              ]
+                            },
+                            "right": {
+                              "type": "PostfixExpression",
+                              "infix": {
+                                "type": "InfixExpression",
+                                "left": {
+                                  "type": "PrefixExpression",
+                                  "op": null,
+                                  "expr": {
+                                    "type": "SimpleExpression",
+                                    "expr": {
+                                      "type": "idSeqSimpleExpression",
+                                      "ids": {
+                                        "type": "Variable",
+                                        "name": "body"
+                                      },
+                                      "suffix": {
+                                        "type": "Empty"
+                                      }
+                                    },
+                                    "under": null
+                                  }
+                                },
+                                "ops": [],
+                                "rights": []
+                              },
+                              "id": null
+                            }
+                          }
+                        ]
+                      },
+                      "suffix": {
+                        "type": "FunctionApplicationPostfix",
+                        "argument": {
+                          "type": "ArgumentExpression",
+                          "exprs": {
+                            "type": "Exprs",
+                            "contents": [
+                              {
+                                "type": "PostfixExpression",
+                                "infix": {
+                                  "type": "InfixExpression",
+                                  "left": {
+                                    "type": "PrefixExpression",
+                                    "op": null,
+                                    "expr": {
+                                      "type": "SimpleExpression",
+                                      "expr": {
+                                        "type": "idSeqSimpleExpression",
+                                        "ids": {
+                                          "type": "Variable",
+                                          "name": "e"
+                                        },
+                                        "suffix": {
+                                          "type": "Empty"
+                                        }
+                                      },
+                                      "under": null
+                                    }
+                                  },
+                                  "ops": [],
+                                  "rights": []
+                                },
+                                "id": null
+                              },
+                              {
+                                "type": "PostfixExpression",
+                                "infix": {
+                                  "type": "InfixExpression",
+                                  "left": {
+                                    "type": "PrefixExpression",
+                                    "op": null,
+                                    "expr": {
+                                      "type": "SimpleExpression",
+                                      "expr": {
+                                        "type": "idSeqSimpleExpression",
+                                        "ids": {
+                                          "type": "Variable",
+                                          "name": "e2"
+                                        },
+                                        "suffix": {
+                                          "type": "Empty"
+                                        }
+                                      },
+                                      "under": null
+                                    }
+                                  },
+                                  "ops": [],
+                                  "rights": []
+                                },
+                                "id": null
+                              }
+                            ]
+                          }
+                        },
+                        "postfix": {
+                          "type": "Empty"
+                        }
+                      }
+                    },
+                    "under": null
+                  }
+                },
+                "ops": [],
+                "rights": []
+              },
+              "id": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "AssignmentExpression",
+      "prefix": null,
+      "id": {
+        "type": "Variable",
+        "name": "a"
+      },
+      "right": {
+        "type": "MacroForm",
+        "inputForm": [
+          {
+            "type": "MacroName",
+            "name": "Let"
+          },
+          {
+            "type": "Paren",
+            "elements": [
+              {
+                "type": "Variable",
+                "name": "x"
+              },
+              {
+                "type": "LiteralKeyword",
+                "name": "="
+              },
+              {
+                "type": "PostfixExpression",
+                "infix": {
+                  "type": "InfixExpression",
+                  "left": {
+                    "type": "PrefixExpression",
+                    "op": null,
+                    "expr": {
+                      "type": "SimpleExpression",
+                      "expr": {
+                        "type": "literalSimpleExpression",
+                        "literal": {
+                          "type": "integerLiteral",
+                          "value": "3"
+                        },
+                        "suffix": {
+                          "type": "Empty"
+                        }
+                      },
+                      "under": null
+                    }
+                  },
+                  "ops": [],
+                  "rights": []
+                },
+                "id": null
+              },
+              {
+                "type": "PunctuationMark",
+                "value": ","
+              },
+              {
+                "type": "Variable",
+                "name": "y"
+              },
+              {
+                "type": "LiteralKeyword",
+                "name": "="
+              },
+              {
+                "type": "PostfixExpression",
+                "infix": {
+                  "type": "InfixExpression",
+                  "left": {
+                    "type": "PrefixExpression",
+                    "op": null,
+                    "expr": {
+                      "type": "SimpleExpression",
+                      "expr": {
+                        "type": "literalSimpleExpression",
+                        "literal": {
+                          "type": "integerLiteral",
+                          "value": "10"
+                        },
+                        "suffix": {
+                          "type": "Empty"
+                        }
+                      },
+                      "under": null
+                    }
+                  },
+                  "ops": [],
+                  "rights": []
+                },
+                "id": null
+              }
+            ]
+          },
+          {
+            "type": "Brace",
+            "elements": [
+              {
+                "type": "PostfixExpression",
+                "infix": {
+                  "type": "InfixExpression",
+                  "left": {
+                    "type": "PrefixExpression",
+                    "op": null,
+                    "expr": {
+                      "type": "SimpleExpression",
+                      "expr": {
+                        "type": "idSeqSimpleExpression",
+                        "ids": {
+                          "type": "Variable",
+                          "name": "x"
+                        },
+                        "suffix": {
+                          "type": "Empty"
+                        }
+                      },
+                      "under": null
+                    }
+                  },
+                  "ops": [
+                    {
+                      "type": "Identifier",
+                      "name": "*"
+                    }
+                  ],
+                  "rights": [
+                    {
+                      "type": "InfixExpression",
+                      "left": {
+                        "type": "PrefixExpression",
+                        "op": null,
+                        "expr": {
+                          "type": "SimpleExpression",
+                          "expr": {
+                            "type": "idSeqSimpleExpression",
+                            "ids": {
+                              "type": "Variable",
+                              "name": "y"
+                            },
+                            "suffix": {
+                              "type": "Empty"
+                            }
+                          },
+                          "under": null
+                        }
+                      },
+                      "ops": [],
+                      "rights": []
+                    }
+                  ]
+                },
+                "id": null
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

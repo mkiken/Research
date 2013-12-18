@@ -1,3 +1,4 @@
+//引数は解析対象ファイル、パーザーを作るpegjs
 //引数は解析対象ファイル、元の文法、マクロ文法
 
 
@@ -17,11 +18,11 @@ var fs = require("fs");
 // console.log("grammar is " + name);
 var args = process.argv;
 var name1 = args[3];
-var name2 = args[4];
+// var name2 = args[4];
 // console.error("compileAndTest.js: args = [%s]", args);
 var gram = fs.readFileSync( name1, 'utf8');
-var macroGram = fs.readFileSync( name2, 'utf8');
-gram += macroGram;
+// var macroGram = fs.readFileSync( name2, 'utf8');
+// gram += macroGram;
 var parser = PEG.buildParser(gram);
 //var contents = fs.readFileSync(  './testcase/test015_arith.grm' ).toString();
 

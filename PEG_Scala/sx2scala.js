@@ -3,6 +3,14 @@ var fs = require('fs');
 // var bDebug = true;
 var bDebug = false;
 
+function DP(fname, pos, e, level){
+	console.error("\n[%s] : pos = %d", fname, pos);
+	if(level == 1) console.error(e);
+	else if(level == 2) console.error("%s", e);
+	else if(level == 3) console.error("%j", e);
+	else if(level == 4) console.error(JSON.stringify(e, null, 1));
+	console.error("");
+}
 var ast = {};
 fs.readFileSync(__dirname + '/ast.spec', 'utf8').split('\n').forEach(function (line) {
     var spec = line.split(': ');
@@ -31,7 +39,7 @@ function newline() {
 var B = { // Buffer
 	push: function (/* args */) {
 		for (var i = 0; i < arguments.length; i++) {
-			if(bDebug) console.log("push(" + i + "): " + arguments[i]);
+			// if(bDebug) console.log("push(" + i + "): " + arguments[i]);
 			this.indent();
 			buf.push(arguments[i]);
 		}
@@ -45,10 +53,10 @@ var B = { // Buffer
 		if(typeof separator === 'undefined') separator = ' ';
 		if(typeof s === 'undefined') s = 0;
 		if(typeof t === 'undefined') t = arr.length;
-		if(bDebug) console.log("separating: s = %d, t = %d, JSON = %j", s ,t, arr);
+		// if(bDebug) console.log("separating: s = %d, t = %d, JSON = %j", s ,t, arr);
 		if (t <= s) return;
-		psr.s2j(arr[s]);
-		for (var i = s + 1; i < t; i++) { this.push(separator); psr.s2j(arr[i]); }
+		trans.s2j(arr[s], 0);
+		for (var i = s + 1; i < t; i++) { this.push(separator); trans.s2j(arr[i], 0); }
 	},
 	terminating: function (arr) {
 		arr.forEach(function (a) { B.format(a, ';', newline); });
@@ -105,6 +113,7 @@ function ord(c){
 	return c.charCodeAt(0);
 }
 
+
 function delete_chars(buf){
 	var bSQ = false, bDQ = false;
 	for(var i = 0; i < buf.length; i++){
@@ -127,7 +136,8 @@ function delete_chars(buf){
 	}
 }
 
-var psr = {
+var trans = {
+
 	isSymbol : function(e){
 		return typeof(e) == "object" && typeof(e.name) != "undefined";
 	},
@@ -137,11 +147,16 @@ var psr = {
 	isAt : function(e){
 		return typeof(e) == "object" && e.name == "__@";
 	},
+	isVariable : function(e){
+		if(typeof(e) == "object" && e.name.length >= 3){
+			if(e.name[0] == 'V' && e.name[1] == '-') return true;
+		}
+		return false;
+	},
 
 	CompilationUnit : function(e, pos){
-		if(bDebug) console.log("do_CompilationUnit: e = " + JSON.stringify(e) + ", pos = " + pos);
 		//todo : ひとまずpackagesは後で考える
-		psr.s2j(e[pos+1]);
+		this.s2j(e[pos+1], 0);
 	},
 	ImportStatement : function(e, pos){
 		B.push("import ");
@@ -153,29 +168,63 @@ var psr = {
 	TopStatSeq : function(e, pos){
 		var tps = e[pos];
 		tps.forEach(function(a){
-			psr.s2j(a);
+			this.s2j(a, 0);
 			B.format(";", newline);
 		});
 	},
-
+	do_begin : function(e, pos){
+		if(bDebug) DP("begin", pos, e, 1);
+		for(var i = pos; i < e.length; i++){
+			this.s2j(e[i], 0);
+			B.format(';', newline);
+		}
+	},
 
 	do_scala : function(e, pos){
 		var type = e[pos];
-		var f = psr[type];
-		if(bDebug) console.log("\ndo_scala: type = " + type + ", pos = " + pos + ", e = " + e);
+		var f = trans[type];
+		if(bDebug){
+			DP("do_scala", pos, e, 1);
+			console.log("\ndo_scala: type = %s\n",type);
+		}
 
-		if(type == "ArgumentExpression"){
+		if(type == "AnonymousFunction"){
+			B.push("( ");
+			this.s2j(e[pos+1], 0);
+			B.push(" => ");
+			this.s2j(e[pos+2], 0);
+			B.push(" )");
+		}
+		else if(type == "AssignmentExpression"){
+			this.s2j(e[pos+1], 0);
+			this.s2j(e[pos+2], 0);
+			B.push(" = ");
+			this.s2j(e[pos+3], 0);
+		}
+		else if(type == "ArgumentExpression"){
 			B.push('(');
-			psr.s2j(e[pos+1]);
+			this.s2j(e[pos+1], 0);
+			B.push(')');
+		}
+		else if(type == "Binding"){
+			this.s2j(e[pos+1], 0);
+			if(!this.isNull(e[pos+2])){
+				B.push(':');
+				this.s2j(e[pos+2], 0);
+			}
+		}
+		else if(type == "Bindings"){
+			B.push('(');
+			B.separating(e[pos+1], ", ");
 			B.push(')');
 		}
 		else if(type == "Block"){
 			e[pos + 1].forEach(function(stat){
-				psr.s2j(stat);
+				this.s2j(stat, 0);
 				B.format(';', newline);
 			});
-			if(!psr.isNull(e[pos+2])){
-				psr.s2j(e[pos+2]);
+			if(!this.isNull(e[pos+2])){
+				this.s2j(e[pos+2], 0);
 				B.format(';', newline);
 			}
 		}
@@ -184,14 +233,14 @@ var psr = {
 			B.separating(e[pos+1], ", ");
 		}
 		else if(type == "ObjectTemplateDefinition"){
-			if(!psr.isNull(e[pos+1])) B.push("case");
+			if(!this.isNull(e[pos+1])) B.push("case");
 			B.push("object ");
-			psr.s2j(e[pos + 2]);
+			this.s2j(e[pos + 2], 0);
 		}
 		else if(type == "Procedure"){
-			psr.s2j(e[pos + 1]); //signature
+			this.s2j(e[pos + 1], 0); //signature
 			B.format('{', newline, 2);
-			psr.s2j(e[pos + 2]); //block
+			this.s2j(e[pos + 2], 0); //block
 			B.format(-2, '}');
 		}
 		else if(type == "stringLiteral"){
@@ -199,52 +248,63 @@ var psr = {
 		}
 		else if(type == "TemplateBody"){
 			B.push('{');
-			if(!psr.isNull(e[pos+1])){ //selftype
-				psr.s2j(e[pos + 1]);
+			if(!this.isNull(e[pos+1])){ //selftype
+				this.s2j(e[pos + 1], 0);
 			}
 			B.format(newline, 2);
 			e[pos + 2].forEach(function (stat) {
-				psr.s2j(stat);
+				this.s2j(stat, 0);
 				B.format(';', newline);
 			});
 			B.format(-2, '}');
 		}
 		else if(typeof(f) != "undefined") f(e, pos+1);
 		else if(typeof(ast[type]) == "number"){
-			if(bDebug) console.log("do_scala :: " + type + ", num = " + ast[type]);
+			if(bDebug) console.log("do_scala2 :: %s, num = %d\n",type, ast[type]);
 			var p = pos + 1;
 			// B.separating(e, ' ', p, p+ast[type]);
 			for(var i = p; i < p + ast[type]; i++){
-				psr.s2j(e[i]);
+				this.s2j(e[i], 0);
 			}
 		}
 		else throw new Error("do_scala: unknown type => " + type + ", pos = " + pos + ", e => " + e );
 	},
 
-	do_list : function(es){
-		if(bDebug) console.log("do_list : " + es);
+	do_list : function(es, pos){
+		if(bDebug) DP("do_list", pos, es, 1);
 		if(es.length == 0){
 			//とりあえずエラーにしておく？
 			throw new Error("do_list: lengthZero error.");
 		}
-		var e = es[0];
+		else if(es.length == pos) return;
+		var e = es[pos];
 		if(typeof(e) == "string"){
 			if(e == "Scala"){
-				psr.do_scala(es, 1);
+				this.do_scala(es, pos + 1);
 			}
 			else{
 				throw new Error("do_list: invalid element. => " + e);
 			}
 		}
-		else if(psr.isSymbol(e)){
-			if(e.name == "begin") psr.do_begin(es, 1);
-			else if(e.name == "define") psr.do_define(es[1], es[2]);
-			else if(e.name == "letrec") psr.do_retlec(es[1]);
-			else throw new Error("do_list: Invalid symbol. => " + e.name);
+		else if(this.isSymbol(e)){
+			if(e.name == "begin") this.do_begin(es, pos + 1);
+			else if(e.name == "define") this.do_define(es[1], es[2]);
+			else if(e.name == "letrec") this.do_retlec(es[1]);
+			// else if(this.isNull(e)){
+				// console.error(es);
+				// console.error("aaaaa");
+			else{
+				this.do_symbol(e);
+				this.do_list(es, pos+1);
+			}
+			// else throw new Error("do_list: Invalid symbol. => " + e.name);
 		}
 		else if(Array.isArray(e)){
-			// psr.do_list(e);
-			es.map(psr.s2j);
+			// this.do_list(e);
+			// これおかしい！！！！
+			// es.map(this.s2j);
+			this.do_list(e, 0);
+			this.do_list(es, pos + 1);
 		}
 		else{
 			throw new Error("do_list : unknown object." + JSON.stringify(e));
@@ -255,29 +315,31 @@ var psr = {
 	do_return : function(e, pos){
 		var v = e[pos];
 		B.push("return");
-		if(!psr.isNull(v)) psr.s2j(v);
+		if(!this.isNull(v)) this.s2j(v, 0);
 	},
 
 
-	s2j : function(e){
-		if(Array.isArray(e)) psr.do_list(e);
+	s2j : function(e, pos){
+		// console.log("this = " + this);
+		// なぜかs2jではtransをthisにするとthisがグローバルオブジェクトを参照することがある・・・。
+		if(Array.isArray(e)) trans.do_list(e, pos);
 		else if(e == null) ;
-		else if(psr.isSymbol(e)) psr.do_symbol(e);
-		else if(typeof(e) == "string"){
-			if(psr.isNull(e)) throw new Error("s2j: misplaced null character.");
-			else if(psr.isAt(e)) ;
-			else B.push(e);
-			// else throw new Error("s2j: this string cannot happen. => " + e);
+		else if(trans.isSymbol(e)) trans.do_symbol(e);
+		else if(typeof(e) == "string" || typeof(e) == 'number'){
+			B.push(e);
+			// else throw new Error("s2j: trans string cannot happen. => " + e);
 		}
 		else throw new Error("s2j: Invalid elements in the Scheme program => " + typeof(e));
 	},
 	do_symbol : function(e){
-		if(bDebug) console.log("do_symbol: e = " + e);
-		if(!psr.isNull(e) && !psr.isAt(e)) B.push(e.name);
-		// B.push(e.name);
-
+		if(!trans.isNull(e) && !trans.isAt(e)){
+			console.error("do_symbol: %j, %s, %s", e, typeof(e), trans.isVariable(e));
+			if(trans.isVariable(e)) B.push(e.name.slice(2));
+			else B.push(e.name);
+		}
 	}
 };
+
 exports.convert = function (t, output) {
 	var fd = false;
 	if (typeof output === 'number') fd = output;
@@ -286,10 +348,16 @@ exports.convert = function (t, output) {
 	}
 	// B.format(B.reset, t);
 	B.reset();
-	console.log("parse start!!!");
-	psr.s2j(t);
+	console.error("parse start!!!");
+	var buff = new Buffer(t);
+	delete_chars(buff);
+	// console.log(buff.toString());
+	var tt = sexp.parse(buff.toString());
+	console.error("%j", tt);
+	trans.s2j(tt, 0);
 	// B.format(t);
 	var result = B.flush(fd);
+	console.error("parse end!!!");
 	if (fd) fs.closeSync(fd);
 	return result;
 };
@@ -306,10 +374,10 @@ function doIt(){
 	var tt = sexp.parse(buff.toString());
 	console.log(JSON.stringify(tt, null, 2));
 
-	// psr.s2j(tt);
+	// this.s2j(tt);
 
 	exports.convert(tt, 1);
 
 }
 
-doIt();
+// doIt();

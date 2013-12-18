@@ -771,7 +771,7 @@ Bindings = OPPAREN bd:Binding bds:(COMMA Binding)* CLPAREN {
     }
 
 /* Binding ::= (id | ‘_’) [‘:’ Type] */
-Binding = id:(id / UNDER) tp:(COLON Type)? {return {type:"Bindings", id:id, tp:ftr(tp, 1)}; }
+Binding = id:(id / UNDER) tp:(COLON Type)? {return {type:"Binding", id:id, tp:ftr(tp, 1)}; }
 
 /* Modifier ::= LocalModifier */
 /* | AccessModifier */

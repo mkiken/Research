@@ -45,6 +45,7 @@ function ScalaTag(name, elements){
 		exprs.push(elements[i]);
 		// exprs.push(ax(elements[i]));
 	}
+	// console.error("ScalaTag: " + exprs);
 	return exprs;
 }
 
@@ -71,60 +72,47 @@ function ax(t) {
 	// console.log("TYPE = " + t.type);
 
   switch (t.type) {
-  // case 'Variable':
-  // case 'IdentifierVariable':
-  // case 'ExpressionVariable':
-  // case 'StatementVariable':
-  // case 'SymbolVariable':
-  // case 'LiteralKeyword':
-	  // return util.format('V-%s', t.name);
-  // case 'VariableStatement': return enclose('begin', ax(t.declarations));
-  // case 'VariableDeclaration':
-    // return ['define', 'V-' + t.name, ax(t.value)];
-  // case 'CatchStatement':
-    // throw (new Error({ message: 'Not implemented yet: ', t: t }));
-  // case 'CompilationUnit':
-	  // return encloses('begin', ax(t.packages), ax(t.topStatseq));
-	  // return enclose('begin', ax(t.packages));
-  case 'Empty': return null; //どうしよう。とりあえず空文字列を返しておく
-  // case 'ImportStatement': return enclose('import', ax(t.exprs));
-  // case 'Identifier': return ScalaTag('identifier', t.name);
-  // case 'ImportStatement': return ScalaTag('import', t.exprs);
-  // case 'ExpressionMacroDefinition': return [util.format('define-syntax %s-Macro', t.macroName), ["syntax-rules", t.literals.map(function(x){return util.format("V-%s", x)}), ax(t.syntaxRules)]];
-  // case 'Ellipsis': return "...";
-  // case 'Brace':
-  // case 'Paren':
-  // case 'Bracket':
-				   // return JSTag(t.type.toLowerCase(), t.elements);
-  // case 'MacroName': return sx_string(util.format("%s-Macro", t.name));
-  // case 'SyntaxRule': return [["_", ax(t.pattern)], ax(t.template)];
-  // // case 'PunctuationMark': return [];
-  // case 'ArrayLiteral': return JSTag("array", t.elements);
-  // case 'NumericLiteral':
-  // case 'BooleanLiteral':
-  // case 'RegularExpressionLiteral': return JSTag("const", literal(t.value));
-  // case 'BinaryExpression': return JSTag("binary", sx_string(t.operator), t.left, t.right);
-  // case 'FunctionCall': return JSTag("funcCall", ax(t.name), ax(t.elements));
-  // case 'Function': return JSTag("function", ax(t.name), ax(t.params));
 
-  // case 'PrettyPrint': return t.str;
-  // case 'JSXLiteral': return t.str;
+  case 'Empty': return null; //どうしよう。とりあえず空文字列を返しておく
+  case 'Ellipsis': return '...';
+  case 'ExpressionMacroDefinition':
+                // console.error("ExpressionMacroDefinition: %s", t);
+  							return enclose('define-syntax', [t.macroName + "-Macro", ["syntax-rules", ["V-" + t.literals], ax(t.syntaxRules)[0]]] );
+  case 'ExpressionVariable':
+  case 'IdentifierVariable':
+  case 'LiteralKeyword':
+  case 'Variable':
+                // console.error("t.name = " + "V-" + t.name);
+																		// return ScalaTag('Variable', ["V-" + t.name]);
+																		return "V-" + t.name;
+  case 'integerLiteral': return t.value;
+  case 'MacroForm': return ax(t.inputForm);
+  case 'MacroName': return t.name + "-Macro";
+  case 'OneLine': return null; //とりあえずnull
+	// case 'Paren':
+									// console.error("Paren: eles = %j\n", t.elements);
+									// console.error("Paren-2: eles = %j\n", ax(t.elements));
+									// return ScalaTag('Paren2', ax(t.elements)); //fo debug
+  case 'Program': return enclose('begin', ax(t.elements));
+  case 'RepBlock':
+  case 'Repetition': return ax(t.elements);
+  case 'Repeat': //List->Vector
+
+  									 return t.elements.map(ax).map(sx).join(' ');
+  case 'SyntaxRule':
+                    // console.error("syntaxRule : %j", t);
+                    // console.error("syntaxRule2 : %j", encloses(["_", ax(t.pattern)], ax(t.template)));
+  									return [enclose("_", ax(t.pattern)), ax(t.template)];
+
   default:
 	var res = [];
 	// console.log(typeof(spec));
 	if(typeof(spec) == "undefined") throw new Error("undefined spec. : " + t.type);
 	// console.log(t);
 	spec.forEach(function (f, i) {
-        // switch (sx_style) {
-        // case SX_STYLE_ALIST:
-          // res.push( i === 0 ? util.format('"%s"', t[f]) : [ sx_string(f), ax(t[f]) ]);
-        // case SX_STYLE_SIMPLE:
-          // res.push( i === 0 ? util.format('"%s"', t[f]) : ax(t[f]));
-        // case SX_STYLE_JSX:
 		if(typeof(t[f]) == "undefined") throw new Error("defined member is undefined. type: " + t.type + ", member: " + f);
           // if(0 < i) res.push(ax(t[f]));
           if(0 < i) res.push(ax(t[f]));
-        // }
       });
 	if(DEBUG) console.log("type: " + t.type + ", res = " + JSON.stringify(res));
 	// return res;
@@ -133,7 +121,10 @@ function ax(t) {
 }
 
 function sx(t) {
-  if (Array.isArray(t)) return '(' + t.map(sx).join(' ') + ')';
+  if (Array.isArray(t)) {
+  	if(t.length == 0) return null;
+  	else return '(' + t.map(sx).join(' ') + ')';
+  }
   return t;
 }
 
@@ -147,6 +138,7 @@ exports.convert = function (t, output) {
   typeof output === 'string' ? fs.openSync(output, 'w') : false;
 
   var s = sx(ax(t));
+  // console.log(ax(t));
   // var s = sx(disclose(ax(t)));
   if (fd) {
     // fs.writeSync(fd, JSON.stringify(s, null, "  "));

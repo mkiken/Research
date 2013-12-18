@@ -9,7 +9,8 @@ names = [
 	'test.pegjs',
 	'ex-scala.pegjs'
 ];
-var grm = names[2];
+// var grm = names[1];
+var grm = process.argv[2];
 contents = fs.readFileSync(grm, 'utf8');
 
 console.log("grammar = " + grm);

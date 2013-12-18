@@ -12,6 +12,7 @@ expression Let {
     }
 }
 
-var a = Let (x = 3) { x * x };
+// var a = Let (x = 3) { x * x };
+a = Let (x = 3) { x * x }
 
 
