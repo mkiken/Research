@@ -1,0 +1,8 @@
+(begin
+  (display 2)
+  (let ((x\x60;28* #f) (y\x60;28* 7) (temp\x60;28* #t))
+    (let ((temp\x60;30\x60;31* x\x60;28*))
+      (if temp\x60;30\x60;31*
+          temp\x60;30\x60;31*
+          (let ((temp\x60;33\x60;34* (display temp\x60;28*)))
+            (if temp\x60;33\x60;34* temp\x60;33\x60;34* (display y\x60;28*)))))))

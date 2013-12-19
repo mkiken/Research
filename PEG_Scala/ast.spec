@@ -6,6 +6,7 @@ AssignmentExpression: prefix, id, right
 Binding: id, tp
 Bindings: bindings
 Block: states, res
+BlockExpression: block
 BlockStat: annotations, modifier, def
 Brace: elements
 ClassTemplateOpt: extend, body
@@ -16,6 +17,7 @@ FunctionApplicationPostfix: argument, postfix
 FunctionSignature: id, funtype, param
 Identifier: name
 idSeqSimpleExpression: ids, suffix
+IfStatement: condition, ifStatement, elseStatement
 ImportExpr: id, selector
 ImportStatement: exprs
 InfixExpression: left, ops, rights

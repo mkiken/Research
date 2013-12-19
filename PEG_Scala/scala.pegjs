@@ -214,6 +214,7 @@ singleLineComment = '//' (!nl . )* //nl+
 multiLineComment = [/][*] ((&"/*" multiLineComment) / (!"*/" . ))* [*][/]
 
 __ = (whitespace / comment)*
+___ = (whitespace / comment / nl)*
 
 /* nl ::= “new line character” */
 //とりあえずJavaScriptと同じ改行にしておく
@@ -485,10 +486,10 @@ Expr1 = IF OPPAREN condition:Expr CLPAREN nl* ifStatement:Expr elseStatement:(se
         value: value !== "" ? value : null
       };
     }
-/ se1:SimpleExpr1 ae:ArgumentExprs EQUAL exp:Expr {return {type:"AssignmentExpression", left:[se1, ae], right:exp}; }
+/ se1:SimpleExpr1 ae:ArgumentExprs EQUAL exp:Expr {return {type:"AssignmentFunction", left:[se1, ae], right:exp}; }
 / pe:PostfixExpr as:Ascription {return {type:"ExpressionWithAscription", postfix:pe, ascription:as}; }
 / pe:PostfixExpr 'match' __ OPBRACE cases:CaseClauses CLBRACE {return {type:"PatternMatchingExpression", postfix:pe, cases:cc}; }
-/ se:(SimpleExpr DOT)? id:id EQUAL exp:Expr {return {type:"AssignmentExpression", left:[ftr(se), id], right:exp}; }
+/ se:(SimpleExpr DOT)? id:id EQUAL exp:Expr {return{type:"AssignmentExpression", prefix:ftr(se), id:toVariable(id), right:exp}; }
 / PostfixExpr
 
 /* PostfixExpr ::= InfixExpr [id [nl]] */
@@ -710,8 +711,25 @@ VariantTypeParam = ans:Annotation* sign:(PLUS / HYPHEN)? param:TypeParam {return
 
 /* TypeParam ::= (id | ‘_’) [TypeParamClause] [‘>:’ Type] [‘<:’ Type]*/
 /* {‘<%’ Type} {‘:’ Type} */
-TypeParam = id:(id / UNDER) cl:TypeParamClause? tp1:(LEFTANGLE Type)? tp2:(RIGHTANGLE Type)?
-tp3:('<%' __ Type)* tp4:(COLON Type)* {return {type: "TypeParam", id:id, clause:cl,type1:tp1, type2:tp2, type3:tp3, type4:tp4};}
+TypeParam = id:(id / UNDER) cl:TypeParamClause? lower:(LEFTANGLE Type)? upper:(RIGHTANGLE Type)? view:('<%' __ Type)* context:(COLON Type)*
+{
+	var views = [];
+	for (var i = 0; i < view.length; i++) {
+    views.push(view[i][2]);
+	}
+	var contexts = [];
+	for (var i = 0; i < context.length; i++) {
+    contexts.push(context[i][1]);
+	}
+
+
+	return {type: "TypeParam",
+	id:id,
+	 clause: ftr(cl),
+	 lower: ftr(lower, 1),
+	 upper: ftr(upper, 1),
+	 view: views,
+	 context: contexts};}
 
 /* ParamClauses ::= {ParamClause} [[nl] ‘(’ ‘implicit’ Params ‘)’] */
 ParamClauses = pc:ParamClause* pm:(nl? OPPAREN IMPLICIT Params CLPAREN)? {return {type: "ParamClauses", clauses:pc, params:pm !== ""? pm[3] : null};}
@@ -771,7 +789,8 @@ Bindings = OPPAREN bd:Binding bds:(COMMA Binding)* CLPAREN {
     }
 
 /* Binding ::= (id | ‘_’) [‘:’ Type] */
-Binding = id:(id / UNDER) tp:(COLON Type)? {return {type:"Binding", id:id, tp:ftr(tp, 1)}; }
+Binding = UNDER tp:(COLON Type)? {return {type:"BindingAny", tp:ftr(tp, 1)}; }
+/ id:id tp:(COLON Type)? {return {type:"Binding", id:toVariable(id), tp:ftr(tp, 1)}; }
 
 /* Modifier ::= LocalModifier */
 /* | AccessModifier */
@@ -897,8 +916,8 @@ PatVarDef = dcl:VAL body:PatDef {return {type:"PatValDef", body:body};}
 /* | ‘type’ {nl} TypeDef */
 /* | TmplDef */
 Def = PatVarDef
-/ dcl:DEF body:FunDef {return {type:"Definition", dcl:dcl, sp:' ', body:body};}
-/ dcl:TYPE nl* body:TypeDef {return {type:"Definition", dcl:dcl, sp:' ', body:body};}
+/ DEF body:FunDef {return {type:"Definition", body:body};}
+/ TYPE nl* body:TypeDef {return {type:"TypeDefinition", body:body};}
 / TmplDef
 
 /* PatDef ::= Pattern2 {‘,’ Pattern2} [‘:’ Type] ‘=’ Expr */
@@ -949,7 +968,7 @@ ClassTemplateOpt = ext:EXTENDS ct:ClassTemplate {return {type:"ClassTemplateOpt"
 
 /* TraitTemplateOpt ::= ‘extends’ TraitTemplate | [[‘extends’] TemplateBody] */
 TraitTemplateOpt = ext:EXTENDS tt:TraitTemplate {return {type:"TraitTemplateOpt", extend:ext, body:tt}; }
-/ (EXTENDS? TemplateBody)? {return {type:"TraitTemplateOpt", extend:ftr(ftr(tmpl, 0)), body:ftr(tmpl, 1)}; }
+/ tmpl:(EXTENDS? TemplateBody)? {return {type:"TraitTemplateOpt", extend:ftr(ftr(tmpl, 0)), body:ftr(tmpl, 1)}; }
 
 /* ClassTemplate ::= [EarlyDefs] ClassParents [TemplateBody] */
 ClassTemplate = ed:EarlyDefs? cp:ClassParents tb:TemplateBody? {return {type:"ClassTemplate", def:ftr(ed), classParent:cp, body:ftr(tb)}; }
@@ -1079,12 +1098,12 @@ HYPHEN = '-' __ {return {type:"Keyword", word:"-"}}
 DOT = '.' __ {return {type:"Keyword", word:"."}}
 COMMA = ',' __ {return {type:"Keyword", word:","}}
 THIS = 'this' __ {return {type:"Keyword", word:"this"}}
-OPBRACKET = '[' __ {return {type:"Keyword", word:"["}}
+OPBRACKET = '[' ___ {return {type:"Keyword", word:"["}}
 CLBRACKET = ']' __ {return {type:"Keyword", word:"]"}}
 ARROW = '=>' __ {return {type:"Keyword", word:"=>"}}
-OPPAREN = '(' __ {return {type:"Keyword", word:"("}}
+OPPAREN = '(' ___ {return {type:"Keyword", word:"("}}
 CLPAREN = ')' __ {return {type:"Keyword", word:")"}}
-OPBRACE = '{' __ {return {type:"Keyword", word:String.fromCharCode(123)}} //'{'だとバグるので文字コードで回避
+OPBRACE = '{' ___ {return {type:"Keyword", word:String.fromCharCode(123)}} //'{'だとバグるので文字コードで回避
 CLBRACE = '}' __ {return {type:"Keyword", word:String.fromCharCode(125)}}
 TYPE = 'type' __ {return {type:"Keyword", word:"type"}}
 VAL = 'val' __ {return {type:"Keyword", word:"val"}}

@@ -49,13 +49,13 @@ function ScalaTag(name, elements){
 	return exprs;
 }
 
-function disclose(e){
-	if(Array.isArray(e)){
-		if(e.length == 1) return disclose(e[0]);
-		else return e.map(disclose);
-	}
-	else return e;
-}
+// function disclose(e){
+	// if(Array.isArray(e)){
+		// if(e.length == 1) return disclose(e[0]);
+		// else return e.map(disclose);
+	// }
+	// else return e;
+// }
 
 function ax(t) {
 	// console.log(JSON.stringify(t));
@@ -72,7 +72,13 @@ function ax(t) {
 	// console.log("TYPE = " + t.type);
 
   switch (t.type) {
-
+  	//いまのところAnonymousFunction, Bindingなどを隠すと非Hygienic展開になる
+  	//Anonymousは左辺が_でもやばいし、おそらくidのときもやばい。応急処置
+  case 'AnonymousFunction':
+								console.error("AnonymousFunction: %j", ScalaTag(t.type, encloses('lambda', ax(t.left), ax(t.right))));
+  							return ScalaTag(t.type, [encloses('lambda', ax(t.left), ax(t.right))]);
+  case 'Binding': return ax(t.id);
+  case 'Bindings': return t.bindings.map(ax);
   case 'Empty': return null; //どうしよう。とりあえず空文字列を返しておく
   case 'Ellipsis': return '...';
   case 'ExpressionMacroDefinition':

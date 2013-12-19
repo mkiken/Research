@@ -29,8 +29,17 @@
 
 	//typeをvariableに変える
 	function toVariable(obj){
-		obj.type = "Variable";
-		return obj;
+		switch(obj.type){
+			case 'Identifier':
+			case 'Identifier2':
+		/* obj.type = "Variable"; */
+		/* return obj; */
+				return {type: 'Variable', name: obj.name};
+			case 'Ellipsis':
+				return obj;
+			default:
+				throw new Error("toVariable: unexpected type: %s", obj.type);
+		}
 	}
 
 	//[]をnullに変換
@@ -385,7 +394,8 @@ varid = start:lower parts:idrest {return start + parts;}
 plainid = start:upper parts:idrest {return start + parts;}
 		/ varid
 		/ op
-id = nm:plainid {return { type: "Identifier", name: nm }; }
+id = ExprEllipsis
+/ nm:plainid {return { type: "Identifier", name: nm }; }
 	/ [`] str:stringLiteral [`] __ { return { type: "Identifier2", name: '`' + str + '`'}; }
 idrest	= chars:(letter / digit)* '_' ops:op __ {return chars.join("") + '_' + ops;}
 		/ chars:(letter / digit)* __ {return chars.join("");}
@@ -478,8 +488,9 @@ MacroExpression
 //Expression用Ellipsis
 ExprEllipsis = &{return bTemplate;} "..." __ {return {type: "Ellipsis"};}
 
-Expr = ExprEllipsis
-/ MacroExpression
+Expr
+/* = ExprEllipsis */
+= MacroExpression
 / left:(Bindings / IMPLICIT? id / UNDER) ARROW right:Expr {return {type:"AnonymousFunction", left:left, right:right}; }
 / Expr1
 Expr1 = IF OPPAREN condition:Expr CLPAREN nl* ifStatement:Expr elseStatement:(semi? 'else' __ Expr)? {

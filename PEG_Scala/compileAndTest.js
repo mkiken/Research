@@ -8,7 +8,7 @@ var names = [
 	__dirname + '/test.pegjs'
 ];
 var fs = require("fs");
-var name = names[3];
+var name = names[0];
 var dt = new Date();
 // console.log(dt);
 // console.log("grammar is " + name);

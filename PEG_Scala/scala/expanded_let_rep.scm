@@ -17,65 +17,37 @@
          ("Scala"
           "Exprs"
           (("Scala"
-            "PostfixExpression"
+            "AnonymousFunction"
+            ("Scala" "Bindings" (("Scala" "Binding" V-x #\nul) ("Scala" "Binding" V-y #\nul)))
             ("Scala"
-             "InfixExpression"
+             "PostfixExpression"
              ("Scala"
-              "PrefixExpression"
-              #\nul
+              "InfixExpression"
               ("Scala"
-               "SimpleExpression"
+               "PrefixExpression"
+               #\nul
                ("Scala"
-                "TupleExpression"
+                "SimpleExpression"
                 ("Scala"
-                 "Exprs"
-                 (("Scala"
-                   "PostfixExpression"
-                   ("Scala"
-                    "InfixExpression"
-                    ("Scala"
-                     "PrefixExpression"
-                     #\nul
-                     ("Scala" "SimpleExpression" ("Scala" "idSeqSimpleExpression" V-x) #\nul)))
-                   #\nul)
-                  ("Scala"
-                   "PostfixExpression"
-                   ("Scala"
-                    "InfixExpression"
-                    ("Scala"
-                     "PrefixExpression"
-                     #\nul
-                     ("Scala" "SimpleExpression" ("Scala" "idSeqSimpleExpression" V-y) #\nul)))
-                   #\nul))))
-               #\nul))
-             (("Scala" "Identifier" "=>"))
-             (("Scala"
-               "InfixExpression"
-               ("Scala"
-                "PrefixExpression"
-                #\nul
-                ("Scala"
-                 "SimpleExpression"
+                 "idSeqSimpleExpression"
                  ("Scala"
-                  "idSeqSimpleExpression"
+                  "PostfixExpression"
                   ("Scala"
-                   "PostfixExpression"
+                   "InfixExpression"
                    ("Scala"
-                    "InfixExpression"
-                    ("Scala"
-                     "PrefixExpression"
-                     #\nul
-                     ("Scala" "SimpleExpression" ("Scala" "idSeqSimpleExpression" V-x) #\nul))
-                    (("Scala" "Identifier" "*"))
-                    (("Scala"
-                      "InfixExpression"
-                      ("Scala"
-                       "PrefixExpression"
-                       #\nul
-                       ("Scala" "SimpleExpression" ("Scala" "idSeqSimpleExpression" V-y) #\nul)))))
-                   #\nul))
-                 #\nul)))))
-            #\nul)))
+                    "PrefixExpression"
+                    #\nul
+                    ("Scala" "SimpleExpression" ("Scala" "idSeqSimpleExpression" V-x) #\nul))
+                   (("Scala" "Identifier" "*"))
+                   (("Scala"
+                     "InfixExpression"
+                     ("Scala"
+                      "PrefixExpression"
+                      #\nul
+                      ("Scala" "SimpleExpression" ("Scala" "idSeqSimpleExpression" V-y) #\nul)))))
+                  #\nul))
+                #\nul)))
+             #\nul))))
          ("Scala"
           "FunctionApplicationPostfix"
           ("Scala"

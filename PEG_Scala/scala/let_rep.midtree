@@ -68,91 +68,54 @@
                         "type": "Exprs",
                         "contents": [
                           {
-                            "type": "PostfixExpression",
-                            "infix": {
-                              "type": "InfixExpression",
-                              "left": {
-                                "type": "PrefixExpression",
-                                "op": null,
-                                "expr": {
-                                  "type": "SimpleExpression",
-                                  "expr": {
-                                    "type": "TupleExpression",
-                                    "expr": {
-                                      "type": "Exprs",
-                                      "contents": [
-                                        {
-                                          "type": "PostfixExpression",
-                                          "infix": {
-                                            "type": "InfixExpression",
-                                            "left": {
-                                              "type": "PrefixExpression",
-                                              "op": null,
-                                              "expr": {
-                                                "type": "SimpleExpression",
-                                                "expr": {
-                                                  "type": "idSeqSimpleExpression",
-                                                  "ids": {
-                                                    "type": "Variable",
-                                                    "name": "id"
-                                                  },
-                                                  "suffix": {
-                                                    "type": "Empty"
-                                                  }
-                                                },
-                                                "under": null
-                                              }
-                                            },
-                                            "ops": [],
-                                            "rights": []
-                                          },
-                                          "id": null
-                                        },
-                                        {
-                                          "type": "Ellipsis"
-                                        }
-                                      ]
-                                    },
-                                    "suffix": {
-                                      "type": "Empty"
-                                    }
-                                  },
-                                  "under": null
-                                }
-                              },
-                              "ops": [
+                            "type": "AnonymousFunction",
+                            "left": {
+                              "type": "Bindings",
+                              "bindings": [
                                 {
-                                  "type": "Identifier",
-                                  "name": "=>"
-                                }
-                              ],
-                              "rights": [
-                                {
-                                  "type": "InfixExpression",
-                                  "left": {
-                                    "type": "PrefixExpression",
-                                    "op": null,
-                                    "expr": {
-                                      "type": "SimpleExpression",
-                                      "expr": {
-                                        "type": "idSeqSimpleExpression",
-                                        "ids": {
-                                          "type": "Variable",
-                                          "name": "body"
-                                        },
-                                        "suffix": {
-                                          "type": "Empty"
-                                        }
-                                      },
-                                      "under": null
-                                    }
+                                  "type": "Binding",
+                                  "id": {
+                                    "type": "Variable",
+                                    "name": "id"
                                   },
-                                  "ops": [],
-                                  "rights": []
+                                  "tp": null
+                                },
+                                {
+                                  "type": "Binding",
+                                  "id": {
+                                    "type": "Ellipsis"
+                                  },
+                                  "tp": null
                                 }
                               ]
                             },
-                            "id": null
+                            "right": {
+                              "type": "PostfixExpression",
+                              "infix": {
+                                "type": "InfixExpression",
+                                "left": {
+                                  "type": "PrefixExpression",
+                                  "op": null,
+                                  "expr": {
+                                    "type": "SimpleExpression",
+                                    "expr": {
+                                      "type": "idSeqSimpleExpression",
+                                      "ids": {
+                                        "type": "Variable",
+                                        "name": "body"
+                                      },
+                                      "suffix": {
+                                        "type": "Empty"
+                                      }
+                                    },
+                                    "under": null
+                                  }
+                                },
+                                "ops": [],
+                                "rights": []
+                              },
+                              "id": null
+                            }
                           }
                         ]
                       },
@@ -191,7 +154,30 @@
                                 "id": null
                               },
                               {
-                                "type": "Ellipsis"
+                                "type": "PostfixExpression",
+                                "infix": {
+                                  "type": "InfixExpression",
+                                  "left": {
+                                    "type": "PrefixExpression",
+                                    "op": null,
+                                    "expr": {
+                                      "type": "SimpleExpression",
+                                      "expr": {
+                                        "type": "idSeqSimpleExpression",
+                                        "ids": {
+                                          "type": "Ellipsis"
+                                        },
+                                        "suffix": {
+                                          "type": "Empty"
+                                        }
+                                      },
+                                      "under": null
+                                    }
+                                  },
+                                  "ops": [],
+                                  "rights": []
+                                },
+                                "id": null
                               }
                             ]
                           }

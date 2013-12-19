@@ -18,36 +18,42 @@
           "Exprs"
           (("Scala"
             "AnonymousFunction"
-            ("Scala" "Bindings" (("Scala" "Binding" V-x #\nul) ("Scala" "Binding" V-y #\nul)))
-            ("Scala"
-             "PostfixExpression"
-             ("Scala"
-              "InfixExpression"
+            (lambda (V-x\x60;29* V-y\x60;29*)
               ("Scala"
-               "PrefixExpression"
-               #\nul
+               "PostfixExpression"
                ("Scala"
-                "SimpleExpression"
+                "InfixExpression"
                 ("Scala"
-                 "idSeqSimpleExpression"
+                 "PrefixExpression"
+                 #\nul
                  ("Scala"
-                  "PostfixExpression"
+                  "SimpleExpression"
                   ("Scala"
-                   "InfixExpression"
+                   "idSeqSimpleExpression"
                    ("Scala"
-                    "PrefixExpression"
-                    #\nul
-                    ("Scala" "SimpleExpression" ("Scala" "idSeqSimpleExpression" V-x) #\nul))
-                   (("Scala" "Identifier" "*"))
-                   (("Scala"
+                    "PostfixExpression"
+                    ("Scala"
                      "InfixExpression"
                      ("Scala"
                       "PrefixExpression"
                       #\nul
-                      ("Scala" "SimpleExpression" ("Scala" "idSeqSimpleExpression" V-y) #\nul)))))
-                  #\nul))
-                #\nul)))
-             #\nul))))
+                      ("Scala"
+                       "SimpleExpression"
+                       ("Scala" "idSeqSimpleExpression" V-x\x60;29*)
+                       #\nul))
+                     (("Scala" "Identifier" "*"))
+                     (("Scala"
+                       "InfixExpression"
+                       ("Scala"
+                        "PrefixExpression"
+                        #\nul
+                        ("Scala"
+                         "SimpleExpression"
+                         ("Scala" "idSeqSimpleExpression" V-y\x60;29*)
+                         #\nul)))))
+                    #\nul))
+                  #\nul)))
+               #\nul)))))
          ("Scala"
           "FunctionApplicationPostfix"
           ("Scala"

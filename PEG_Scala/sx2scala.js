@@ -1,3 +1,4 @@
+
 var sexp = require('sexpression');
 var fs = require('fs');
 // var bDebug = true;
@@ -180,6 +181,18 @@ var trans = {
 		}
 	},
 
+	do_lambda : function(e, pos){
+		// if(bDebug) DP("lambda", pos, e, 1);
+		// DP("lambda", pos, e, 3);
+		B.push("( ");
+		B.push("( ");
+		B.separating(e[pos], ", ") //args
+		B.push(" ) => ");
+			// console.error("aaaaaaaaaa");
+		this.s2j(e[pos + 1], 0); //body
+		B.push(" )");
+	},
+
 	do_scala : function(e, pos){
 		var type = e[pos];
 		var f = trans[type];
@@ -189,11 +202,13 @@ var trans = {
 		}
 
 		if(type == "AnonymousFunction"){
-			B.push("( ");
+			DP("do_scala_anonyomus", pos, e, 1);
 			this.s2j(e[pos+1], 0);
-			B.push(" => ");
-			this.s2j(e[pos+2], 0);
-			B.push(" )");
+			// B.push("( ");
+			// this.s2j(e[pos+1], 0);
+			// B.push(" => ");
+			// this.s2j(e[pos+2], 0);
+			// B.push(" )");
 		}
 		else if(type == "AssignmentExpression"){
 			this.s2j(e[pos+1], 0);
@@ -220,7 +235,7 @@ var trans = {
 		}
 		else if(type == "Block"){
 			e[pos + 1].forEach(function(stat){
-				this.s2j(stat, 0);
+				trans.s2j(stat, 0);
 				B.format(';', newline);
 			});
 			if(!this.isNull(e[pos+2])){
@@ -228,9 +243,24 @@ var trans = {
 				B.format(';', newline);
 			}
 		}
+		else if(type == "BlockExpression"){
+			B.format('{', newline, 2);
+			this.s2j(e[pos + 1], 0); //block
+			B.format(-2, '}');
+		}
 		else if(type == "Exprs"){
 			if(bDebug) console.log("Exprs: " + JSON.stringify(e));
 			B.separating(e[pos+1], ", ");
+		}
+		else if(type == "IfStatement"){
+			B.push("if( ");
+			this.s2j(e[pos + 1], 0); //condition
+			B.push(" ) ");
+			this.s2j(e[pos + 2], 0); //if
+			if(!this.isNull(e[pos+3])){
+				B.format(";", newline, "else ");
+				this.s2j(e[pos + 3], 0); //else
+			}
 		}
 		else if(type == "ObjectTemplateDefinition"){
 			if(!this.isNull(e[pos+1])) B.push("case");
@@ -271,7 +301,8 @@ var trans = {
 	},
 
 	do_list : function(es, pos){
-		if(bDebug) DP("do_list", pos, es, 1);
+		// if(bDebug) DP("do_list", pos, es, 1);
+		DP("do_list", pos, es, 1);
 		if(es.length == 0){
 			//とりあえずエラーにしておく？
 			throw new Error("do_list: lengthZero error.");
@@ -289,13 +320,11 @@ var trans = {
 		else if(this.isSymbol(e)){
 			if(e.name == "begin") this.do_begin(es, pos + 1);
 			else if(e.name == "define") this.do_define(es[1], es[2]);
+			else if(e.name == "lambda") this.do_lambda(es, pos + 1);
 			else if(e.name == "letrec") this.do_retlec(es[1]);
-			// else if(this.isNull(e)){
-				// console.error(es);
-				// console.error("aaaaa");
 			else{
 				this.do_symbol(e);
-				this.do_list(es, pos+1);
+				// this.do_list(es, pos+1);
 			}
 			// else throw new Error("do_list: Invalid symbol. => " + e.name);
 		}
@@ -322,19 +351,19 @@ var trans = {
 	s2j : function(e, pos){
 		// console.log("this = " + this);
 		// なぜかs2jではtransをthisにするとthisがグローバルオブジェクトを参照することがある・・・。
-		if(Array.isArray(e)) trans.do_list(e, pos);
+		if(Array.isArray(e)) this.do_list(e, pos);
 		else if(e == null) ;
-		else if(trans.isSymbol(e)) trans.do_symbol(e);
+		else if(this.isSymbol(e)) this.do_symbol(e);
 		else if(typeof(e) == "string" || typeof(e) == 'number'){
 			B.push(e);
-			// else throw new Error("s2j: trans string cannot happen. => " + e);
+			// else throw new Error("s2j: this string cannot happen. => " + e);
 		}
 		else throw new Error("s2j: Invalid elements in the Scheme program => " + typeof(e));
 	},
 	do_symbol : function(e){
-		if(!trans.isNull(e) && !trans.isAt(e)){
-			console.error("do_symbol: %j, %s, %s", e, typeof(e), trans.isVariable(e));
-			if(trans.isVariable(e)) B.push(e.name.slice(2));
+		if(!this.isNull(e) && !this.isAt(e)){
+			console.error("do_symbol: %j, %s, %s", e, typeof(e), this.isVariable(e));
+			if(this.isVariable(e)) B.push(e.name.slice(2));
 			else B.push(e.name);
 		}
 	}
