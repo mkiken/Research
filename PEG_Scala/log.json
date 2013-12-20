@@ -41,56 +41,7 @@
                             "type": "Identifier",
                             "name": "sum"
                           },
-                          "funtype": {
-                            "type": "FunTypeParamClause",
-                            "params": [
-                              {
-                                "type": "TypeParam",
-                                "id": {
-                                  "type": "Identifier",
-                                  "name": "M"
-                                },
-                                "clause": {
-                                  "type": "TypeParamClause",
-                                  "params": [
-                                    {
-                                      "type": "VariantTypeParam",
-                                      "annotations": [],
-                                      "sign": "",
-                                      "param": {
-                                        "type": "TypeParam",
-                                        "id": {
-                                          "type": "Identifier",
-                                          "name": "_"
-                                        },
-                                        "clause": null,
-                                        "lower": null,
-                                        "upper": null,
-                                        "view": [],
-                                        "context": []
-                                      }
-                                    }
-                                  ]
-                                },
-                                "lower": null,
-                                "upper": null,
-                                "view": [],
-                                "context": []
-                              },
-                              {
-                                "type": "TypeParam",
-                                "id": {
-                                  "type": "Identifier",
-                                  "name": "T"
-                                },
-                                "clause": null,
-                                "lower": null,
-                                "upper": null,
-                                "view": [],
-                                "context": []
-                              }
-                            ]
-                          },
+                          "funtype": null,
                           "param": {
                             "type": "ParamClauses",
                             "clauses": [
@@ -111,7 +62,7 @@
                                         "allow": null,
                                         "tp": {
                                           "type": "Type",
-                                          "ext": "",
+                                          "ext": null,
                                           "tp": {
                                             "type": "InfixType",
                                             "compoundType": {
@@ -127,56 +78,12 @@
                                                         "contents": [
                                                           {
                                                             "type": "Identifier",
-                                                            "name": "M"
+                                                            "name": "Int"
                                                           }
                                                         ]
                                                       }
                                                     ],
-                                                    "postfix": [
-                                                      {
-                                                        "type": "TypeArgs",
-                                                        "types": {
-                                                          "type": "Types",
-                                                          "contents": [
-                                                            {
-                                                              "type": "Type",
-                                                              "ext": "",
-                                                              "tp": {
-                                                                "type": "InfixType",
-                                                                "compoundType": {
-                                                                  "type": "CompoundType",
-                                                                  "annotType": [
-                                                                    {
-                                                                      "type": "AnnotType",
-                                                                      "st": {
-                                                                        "type": "SimpleType",
-                                                                        "id": [
-                                                                          {
-                                                                            "type": "StableId",
-                                                                            "contents": [
-                                                                              {
-                                                                                "type": "Identifier",
-                                                                                "name": "T"
-                                                                              }
-                                                                            ]
-                                                                          }
-                                                                        ],
-                                                                        "postfix": []
-                                                                      },
-                                                                      "annotation": []
-                                                                    },
-                                                                    null
-                                                                  ],
-                                                                  "ref": null
-                                                                },
-                                                                "ids": [],
-                                                                "compoundTypes": []
-                                                              }
-                                                            }
-                                                          ]
-                                                        }
-                                                      }
-                                                    ]
+                                                    "postfix": []
                                                   },
                                                   "annotation": []
                                                 },
@@ -196,240 +103,44 @@
                                 }
                               }
                             ],
-                            "params": {
-                              "type": "Params",
-                              "params": [
-                                {
-                                  "type": "Param",
-                                  "annotations": [],
-                                  "id": {
-                                    "type": "Identifier",
-                                    "name": "m"
-                                  },
-                                  "paramType": {
-                                    "type": "ParamType",
-                                    "allow": null,
-                                    "tp": {
-                                      "type": "Type",
-                                      "ext": "",
-                                      "tp": {
-                                        "type": "InfixType",
-                                        "compoundType": {
-                                          "type": "CompoundType",
-                                          "annotType": [
-                                            {
-                                              "type": "AnnotType",
-                                              "st": {
-                                                "type": "SimpleType",
-                                                "id": [
-                                                  {
-                                                    "type": "StableId",
-                                                    "contents": [
-                                                      {
-                                                        "type": "Identifier",
-                                                        "name": "Monoid"
-                                                      }
-                                                    ]
-                                                  }
-                                                ],
-                                                "postfix": [
-                                                  {
-                                                    "type": "TypeArgs",
-                                                    "types": {
-                                                      "type": "Types",
-                                                      "contents": [
-                                                        {
-                                                          "type": "Type",
-                                                          "ext": "",
-                                                          "tp": {
-                                                            "type": "InfixType",
-                                                            "compoundType": {
-                                                              "type": "CompoundType",
-                                                              "annotType": [
-                                                                {
-                                                                  "type": "AnnotType",
-                                                                  "st": {
-                                                                    "type": "SimpleType",
-                                                                    "id": [
-                                                                      {
-                                                                        "type": "StableId",
-                                                                        "contents": [
-                                                                          {
-                                                                            "type": "Identifier",
-                                                                            "name": "T"
-                                                                          }
-                                                                        ]
-                                                                      }
-                                                                    ],
-                                                                    "postfix": []
-                                                                  },
-                                                                  "annotation": []
-                                                                },
-                                                                null
-                                                              ],
-                                                              "ref": null
-                                                            },
-                                                            "ids": [],
-                                                            "compoundTypes": []
-                                                          }
-                                                        }
-                                                      ]
-                                                    }
-                                                  }
-                                                ]
-                                              },
-                                              "annotation": []
-                                            },
-                                            null
-                                          ],
-                                          "ref": null
-                                        },
-                                        "ids": [],
-                                        "compoundTypes": []
-                                      }
-                                    },
-                                    "star": null
-                                  },
-                                  "expr": ""
-                                },
-                                {
-                                  "type": "Param",
-                                  "annotations": [],
-                                  "id": {
-                                    "type": "Identifier",
-                                    "name": "fl"
-                                  },
-                                  "paramType": {
-                                    "type": "ParamType",
-                                    "allow": null,
-                                    "tp": {
-                                      "type": "Type",
-                                      "ext": "",
-                                      "tp": {
-                                        "type": "InfixType",
-                                        "compoundType": {
-                                          "type": "CompoundType",
-                                          "annotType": [
-                                            {
-                                              "type": "AnnotType",
-                                              "st": {
-                                                "type": "SimpleType",
-                                                "id": [
-                                                  {
-                                                    "type": "StableId",
-                                                    "contents": [
-                                                      {
-                                                        "type": "Identifier",
-                                                        "name": "FoldLeft"
-                                                      }
-                                                    ]
-                                                  }
-                                                ],
-                                                "postfix": [
-                                                  {
-                                                    "type": "TypeArgs",
-                                                    "types": {
-                                                      "type": "Types",
-                                                      "contents": [
-                                                        {
-                                                          "type": "Type",
-                                                          "ext": "",
-                                                          "tp": {
-                                                            "type": "InfixType",
-                                                            "compoundType": {
-                                                              "type": "CompoundType",
-                                                              "annotType": [
-                                                                {
-                                                                  "type": "AnnotType",
-                                                                  "st": {
-                                                                    "type": "SimpleType",
-                                                                    "id": [
-                                                                      {
-                                                                        "type": "StableId",
-                                                                        "contents": [
-                                                                          {
-                                                                            "type": "Identifier",
-                                                                            "name": "M"
-                                                                          }
-                                                                        ]
-                                                                      }
-                                                                    ],
-                                                                    "postfix": []
-                                                                  },
-                                                                  "annotation": []
-                                                                },
-                                                                null
-                                                              ],
-                                                              "ref": null
-                                                            },
-                                                            "ids": [],
-                                                            "compoundTypes": []
-                                                          }
-                                                        }
-                                                      ]
-                                                    }
-                                                  }
-                                                ]
-                                              },
-                                              "annotation": []
-                                            },
-                                            null
-                                          ],
-                                          "ref": null
-                                        },
-                                        "ids": [],
-                                        "compoundTypes": []
-                                      }
-                                    },
-                                    "star": null
-                                  },
-                                  "expr": ""
-                                }
-                              ]
-                            }
+                            "params": null
                           }
                         },
-                        "tp": [
-                          {
-                            "type": "Keyword",
-                            "word": ":"
-                          },
-                          {
-                            "type": "Type",
-                            "ext": "",
-                            "tp": {
-                              "type": "InfixType",
-                              "compoundType": {
-                                "type": "CompoundType",
-                                "annotType": [
-                                  {
-                                    "type": "AnnotType",
-                                    "st": {
-                                      "type": "SimpleType",
-                                      "id": [
-                                        {
-                                          "type": "StableId",
-                                          "contents": [
-                                            {
-                                              "type": "Identifier",
-                                              "name": "T"
-                                            }
-                                          ]
-                                        }
-                                      ],
-                                      "postfix": []
-                                    },
-                                    "annotation": []
+                        "tp": {
+                          "type": "Type",
+                          "ext": null,
+                          "tp": {
+                            "type": "InfixType",
+                            "compoundType": {
+                              "type": "CompoundType",
+                              "annotType": [
+                                {
+                                  "type": "AnnotType",
+                                  "st": {
+                                    "type": "SimpleType",
+                                    "id": [
+                                      {
+                                        "type": "StableId",
+                                        "contents": [
+                                          {
+                                            "type": "Identifier",
+                                            "name": "T"
+                                          }
+                                        ]
+                                      }
+                                    ],
+                                    "postfix": []
                                   },
-                                  null
-                                ],
-                                "ref": null
-                              },
-                              "ids": [],
-                              "compoundTypes": []
-                            }
+                                  "annotation": []
+                                },
+                                null
+                              ],
+                              "ref": null
+                            },
+                            "ids": [],
+                            "compoundTypes": []
                           }
-                        ],
+                        },
                         "expr": {
                           "type": "PostfixExpression",
                           "infix": {
@@ -438,156 +149,134 @@
                               "type": "PrefixExpression",
                               "op": null,
                               "expr": {
-                                "type": "BlockExpression",
-                                "block": {
-                                  "type": "Block",
-                                  "states": [
-                                    {
-                                      "type": "PostfixExpression",
-                                      "infix": {
-                                        "type": "InfixExpression",
-                                        "left": {
-                                          "type": "PrefixExpression",
-                                          "op": null,
-                                          "expr": {
-                                            "type": "SimpleExpression",
-                                            "expr": {
-                                              "type": "idSeqSimpleExpression",
-                                              "ids": {
-                                                "type": "Variable",
-                                                "name": "fl"
-                                              },
-                                              "suffix": {
-                                                "type": "DesignatorPostfix",
-                                                "under": null,
-                                                "id": {
-                                                  "type": "Identifier",
-                                                  "name": "foldLeft"
-                                                },
-                                                "postfix": {
-                                                  "type": "FunctionApplicationPostfix",
-                                                  "argument": {
-                                                    "type": "ArgumentExpression",
-                                                    "exprs": {
-                                                      "type": "Exprs",
-                                                      "contents": [
-                                                        {
-                                                          "type": "PostfixExpression",
-                                                          "infix": {
-                                                            "type": "InfixExpression",
-                                                            "left": {
-                                                              "type": "PrefixExpression",
-                                                              "op": null,
-                                                              "expr": {
-                                                                "type": "SimpleExpression",
-                                                                "expr": {
-                                                                  "type": "idSeqSimpleExpression",
-                                                                  "ids": {
-                                                                    "type": "Variable",
-                                                                    "name": "xs"
-                                                                  },
-                                                                  "suffix": {
-                                                                    "type": "Empty"
-                                                                  }
-                                                                },
-                                                                "under": null
-                                                              }
-                                                            },
-                                                            "ops": [],
-                                                            "rights": []
-                                                          },
-                                                          "id": null
-                                                        },
-                                                        {
-                                                          "type": "PostfixExpression",
-                                                          "infix": {
-                                                            "type": "InfixExpression",
-                                                            "left": {
-                                                              "type": "PrefixExpression",
-                                                              "op": null,
-                                                              "expr": {
-                                                                "type": "SimpleExpression",
-                                                                "expr": {
-                                                                  "type": "idSeqSimpleExpression",
-                                                                  "ids": {
-                                                                    "type": "Variable",
-                                                                    "name": "m"
-                                                                  },
-                                                                  "suffix": {
-                                                                    "type": "DesignatorPostfix",
-                                                                    "under": null,
-                                                                    "id": {
-                                                                      "type": "Identifier",
-                                                                      "name": "mzero"
-                                                                    },
-                                                                    "postfix": {
-                                                                      "type": "Empty"
-                                                                    }
-                                                                  }
-                                                                },
-                                                                "under": null
-                                                              }
-                                                            },
-                                                            "ops": [],
-                                                            "rights": []
-                                                          },
-                                                          "id": null
-                                                        },
-                                                        {
-                                                          "type": "PostfixExpression",
-                                                          "infix": {
-                                                            "type": "InfixExpression",
-                                                            "left": {
-                                                              "type": "PrefixExpression",
-                                                              "op": null,
-                                                              "expr": {
-                                                                "type": "SimpleExpression",
-                                                                "expr": {
-                                                                  "type": "idSeqSimpleExpression",
-                                                                  "ids": {
-                                                                    "type": "Variable",
-                                                                    "name": "m"
-                                                                  },
-                                                                  "suffix": {
-                                                                    "type": "DesignatorPostfix",
-                                                                    "under": null,
-                                                                    "id": {
-                                                                      "type": "Identifier",
-                                                                      "name": "mappend"
-                                                                    },
-                                                                    "postfix": {
-                                                                      "type": "Empty"
-                                                                    }
-                                                                  }
-                                                                },
-                                                                "under": null
-                                                              }
-                                                            },
-                                                            "ops": [],
-                                                            "rights": []
-                                                          },
-                                                          "id": null
-                                                        }
-                                                      ]
-                                                    }
-                                                  },
-                                                  "postfix": {
-                                                    "type": "Empty"
+                                "type": "SimpleExpression",
+                                "expr": {
+                                  "type": "idSeqSimpleExpression",
+                                  "ids": {
+                                    "type": "Variable",
+                                    "name": "fl"
+                                  },
+                                  "suffix": {
+                                    "type": "DesignatorPostfix",
+                                    "under": null,
+                                    "id": {
+                                      "type": "Identifier",
+                                      "name": "foldLeft"
+                                    },
+                                    "postfix": {
+                                      "type": "FunctionApplicationPostfix",
+                                      "argument": {
+                                        "type": "ArgumentExpression",
+                                        "exprs": {
+                                          "type": "Exprs",
+                                          "contents": [
+                                            {
+                                              "type": "PostfixExpression",
+                                              "infix": {
+                                                "type": "InfixExpression",
+                                                "left": {
+                                                  "type": "PrefixExpression",
+                                                  "op": null,
+                                                  "expr": {
+                                                    "type": "SimpleExpression",
+                                                    "expr": {
+                                                      "type": "idSeqSimpleExpression",
+                                                      "ids": {
+                                                        "type": "Variable",
+                                                        "name": "xs"
+                                                      },
+                                                      "suffix": {
+                                                        "type": "Empty"
+                                                      }
+                                                    },
+                                                    "under": null
                                                   }
-                                                }
-                                              }
+                                                },
+                                                "ops": [],
+                                                "rights": []
+                                              },
+                                              "id": null
                                             },
-                                            "under": null
-                                          }
-                                        },
-                                        "ops": [],
-                                        "rights": []
+                                            {
+                                              "type": "PostfixExpression",
+                                              "infix": {
+                                                "type": "InfixExpression",
+                                                "left": {
+                                                  "type": "PrefixExpression",
+                                                  "op": null,
+                                                  "expr": {
+                                                    "type": "SimpleExpression",
+                                                    "expr": {
+                                                      "type": "idSeqSimpleExpression",
+                                                      "ids": {
+                                                        "type": "Variable",
+                                                        "name": "m"
+                                                      },
+                                                      "suffix": {
+                                                        "type": "DesignatorPostfix",
+                                                        "under": null,
+                                                        "id": {
+                                                          "type": "Identifier",
+                                                          "name": "mzero"
+                                                        },
+                                                        "postfix": {
+                                                          "type": "Empty"
+                                                        }
+                                                      }
+                                                    },
+                                                    "under": null
+                                                  }
+                                                },
+                                                "ops": [],
+                                                "rights": []
+                                              },
+                                              "id": null
+                                            },
+                                            {
+                                              "type": "PostfixExpression",
+                                              "infix": {
+                                                "type": "InfixExpression",
+                                                "left": {
+                                                  "type": "PrefixExpression",
+                                                  "op": null,
+                                                  "expr": {
+                                                    "type": "SimpleExpression",
+                                                    "expr": {
+                                                      "type": "idSeqSimpleExpression",
+                                                      "ids": {
+                                                        "type": "Variable",
+                                                        "name": "m"
+                                                      },
+                                                      "suffix": {
+                                                        "type": "DesignatorPostfix",
+                                                        "under": null,
+                                                        "id": {
+                                                          "type": "Identifier",
+                                                          "name": "mappend"
+                                                        },
+                                                        "postfix": {
+                                                          "type": "Empty"
+                                                        }
+                                                      }
+                                                    },
+                                                    "under": null
+                                                  }
+                                                },
+                                                "ops": [],
+                                                "rights": []
+                                              },
+                                              "id": null
+                                            }
+                                          ]
+                                        }
                                       },
-                                      "id": null
+                                      "postfix": {
+                                        "type": "Empty"
+                                      }
                                     }
-                                  ],
-                                  "res": null
-                                }
+                                  }
+                                },
+                                "under": null
                               }
                             },
                             "ops": [],

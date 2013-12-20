@@ -309,7 +309,7 @@ ClassQualifier = OPBRACKET qual:id CLBRACKET {return {type: "ClassQualifier", id
 /* Type ::= FunctionArgTypes ‘=>’ Type */
 /* | InfixType [ExistentialClause] */
 Type	= funcarg:FunctionArgTypes ARROW tp:Type {return {type:"FunctionType", left:funcarg, right:tp};}
-		/ tp:InfixType ext:ExistentialClause? {return {type:"Type", ext:ext, tp:tp};}
+		/ tp:InfixType ext:ExistentialClause? {return {type:"Type", ext:ftr(ext), tp:tp};}
 
 
 /* FunctionArgTypes ::= InfixType */
@@ -707,7 +707,7 @@ FunTypeParamClause = OPBRACKET param:TypeParam params:(COMMA TypeParam)* CLBRACK
 }
 
 /* VariantTypeParam ::= {Annotation} [‘+’ | ‘-’] TypeParam */
-VariantTypeParam = ans:Annotation* sign:(PLUS / HYPHEN)? param:TypeParam {return {type: "VariantTypeParam", annotations:ans, sign:sign, param:param};}
+VariantTypeParam = ans:Annotation* sign:(PLUS / HYPHEN)? param:TypeParam {return {type: "VariantTypeParam", annotations:ans, sign:ftr(sign), param:param};}
 
 /* TypeParam ::= (id | ‘_’) [TypeParamClause] [‘>:’ Type] [‘<:’ Type]*/
 /* {‘<%’ Type} {‘:’ Type} */
@@ -938,7 +938,7 @@ VarDef = PatDef
 /* | FunSig [nl] ‘{’ Block ‘}’ */
 /* | ‘this’ ParamClause ParamClauses */
 /* (‘=’ ConstrExpr | [nl] ConstrBlock) */
-FunDef = fs:FunSig tp:(COLON Type)? EQUAL exp:Expr {return {type:"FunctionDefinition", signature:fs, tp:ftr(tp), expr:exp}; }
+FunDef = fs:FunSig tp:(COLON Type)? EQUAL exp:Expr {return {type:"FunctionDefinition", signature:fs, tp:ftr(tp, 1), expr:exp}; }
 / fs:FunSig nl? OPBRACE bk:Block CLBRACE {return {type:"Procedure", signature:fs, block:bk}; }
 / THIS pc:ParamClause pcs:ParamClauses body:(EQUAL ConstrExpr / nl? ConstrBlock) {return {type:"ConstructorDefinition", param:pc, params:pcs, body:body}; }
 
@@ -1115,7 +1115,7 @@ STAR = '*' __ {return {type:"Keyword", word:"*"}}
 IMPLICIT = 'implicit' __ {return {type:"Keyword", word:"implicit"}}
 IF = 'if' __ {return {type:"Keyword", word:"if"}}
 WHILE = 'while' __ {return {type:"Keyword", word:"while"}}
-EQUAL = '=' !opchar __ {return {type:"Keyword", word:"="}} //==などはEQUALではないとして弾く
+EQUAL = '=' !opchar ___ {return {type:"Keyword", word:"="}} //==などはEQUALではないとして弾く
 PLUS = '+' !opchar __ {return {type:"Keyword", word:"+"}}
 NEW = 'new' __ {return {type:"Keyword", word:"new"}}
 LAZY = 'lazy' __ {return {type:"Keyword", word:"lazy"}}
