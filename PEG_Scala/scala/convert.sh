@@ -13,16 +13,18 @@ fi
 inputScala=$1
 name=${inputScala%.*}
 jsonScala="${name}.json"
-midTree="${name}.midtree"
-Tree="${name}.tree"
-scala_sexp="${name}.scm"
-expanded_sexp="expanded_${name}.scm"
-expanded_scala="expanded_${name}.scala"
+midTree="${name}/1_midtree.json"
+Tree="${name}/4_tree.json"
+scala_sexp="${name}/5_sform.scm"
+expanded_sexp="${name}/6_expanded.scm"
+expanded_scala="${name}/7_expanded.scala"
 outputScala="${name}_out.scala"
-macroParser="${name}_macroParser.pegjs"
-syncedParser="${name}_syncedMacroParser.pegjs"
+macroParser="${name}/2_macroParser.pegjs"
+syncedParser="${name}/3_syncedMacroParser.pegjs"
 echo "input file is [${inputScala}]\n\n"
 
+echo "working directory is ${name}."
+mkdir ${name}
 
 #ひとまずこれでmidtreeをつくる
 echo "${midTree} making..."
@@ -73,7 +75,8 @@ fi
 echo "tree -> sform(scm) : [${scala_sexp}] output.\n\n"
 
 echo "${expanded_sexp} making..."
-echo "ypsilon ../expand.scm ${scala_sexp} > ${expanded_sexp}"
+# echo "ypsilon ../expand.scm ${scala_sexp} > ${expanded_sexp}"
+echo "ypsilon ../expand.scm ${scala_sexp} ${expanded_sexp}"
 ypsilon ../expand.scm ${scala_sexp} ${expanded_sexp}
 ret=$?
 if test ${ret} -ne 0

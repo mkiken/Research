@@ -52,6 +52,15 @@
   ; (time (begin (expand-scm (cadr args)) (display "MacroExpand...")))
   (begin
 	 ; (time (expand-scm (cadr args)))
+	 ; (display args)
+	 ; (newline)
+	 ; (display (car args))
+	 ; (newline)
+	 ; (display (cadr args))
+	 ; (newline)
+	 ; (display (caddr args))
+	 ; (newline)
+
 	 (expand-scm (cadr args) (caddr args))
 	 ; (display (macro-expand (read (cadr args))))
 	 ; (time (parameterize ((coreform-optimize #f)) (expand-scm (cadr args)))))

@@ -2,12 +2,16 @@ module.exports = (function () {
 
     var generator = { debug: false };
 
-    var template = 'Template\n = StatementInTemplate\n\n';
+    // var template = 'Template\n = StatementInTemplate\n\n';
     var checkOuterMacro = 'CheckOuterMacro\n = { return outerMacro; }\n\n';
-    var errors = 'Errors\n = ForbiddenInStatement\n\n';
-    var characterStatement = 'CharacterStatement\n = &{}\n\n';
-    var macroExpression = 'MacroExpression\n = '
-    var macroStatement = 'MacroStatement\n = '
+    var start = 'start\n = CompilationUnit\n\n';
+    // var errors = 'Errors\n = ForbiddenInStatement\n\n';
+		var characterStatement = 'CharacterStatement\n = &{}\n\n';
+		var oneLine = 'OneLine\n = &{}\n\n';
+    var macroExpression = 'ExpressionMacro\n = '
+    var macroType = 'TypeMacro\n = '
+    var rejectWords = 'RejectWords\n = '
+    // var macroStatement = 'MacroStatement\n = '
 
     var pegObj = {
         // enclosing types
@@ -27,14 +31,16 @@ module.exports = (function () {
                     var m = len>0 ? '__ "' + mark.join('" __ "') + '" ' : '';
                     return '(head:' + this.elements.toCode(context)
                         + '\n tail:(' + m + '__ ' + this.elements.toCode(context) + ')*\n'
-                        + (template? 'ellipsis:(' + m + '__ "...")?\n' : '')
+                        // + (template? 'ellipsis:(' + m + '__ "...")?\n' : '')
+                        + (template? 'ellipsis:(' + m + '__ "...")\n' : '')
                         + '{ var elements = [head];\n'
                         + '  for (var i=0; i<tail.length; i++) {\n'
                         + '    elements.push(tail[i][' + (len*2+1) +']);\n'
                         + '  }\n'
                         + (template? '  if (ellipsis) elements.push({ type: "Ellipsis" });\n' : '')
                         + '  return { type: "Repeat", elements: elements };\n'
-                        + '})?\n';
+                        + '})\n';
+                        // + '})?\n';
                 }
             };
         },
@@ -85,13 +91,22 @@ module.exports = (function () {
             };
         },
 
-        // Statement
-        statement: function () {
+       // Type
+        type: function () {
             return {
-                type: 'Statement',
-                toCode: function (context) { return 'Statement'; }
+                type: 'Type',
+                // todo: とりあえずExprでやる
+                toCode: function (context) { return 'Type'; }
             };
         },
+
+        // Statement
+        // statement: function () {
+            // return {
+                // type: 'Statement',
+                // toCode: function (context) { return 'Statement'; }
+            // };
+        // },
 
         // symbol
         symbol: function () {
@@ -283,13 +298,21 @@ module.exports = (function () {
           }
         },
 
-        // StatementVariable
-        { type: 'StatementVariable',
+				// TypeVariable
+        { type: 'TypeVariable',
           isType: function(t) { return t === this.type; },
           toPegObj: function(obj) {
-              return pegObj.statement();
+              return pegObj.type();
           }
         },
+
+        // StatementVariable
+        // { type: 'StatementVariable',
+          // isType: function(t) { return t === this.type; },
+          // toPegObj: function(obj) {
+              // return pegObj.statement();
+          // }
+        // },
 
         // SymbolVariable
         { type: 'SymbolVariable',
@@ -385,6 +408,7 @@ module.exports = (function () {
         return null;
     };
 
+//todo: これは何をやっているのか？？
     // 引数として与えられたノードが削除できるノードかどうかを返す関数
     var canDeleteNode = function (element) {
         var type = element.type;
@@ -407,7 +431,7 @@ module.exports = (function () {
                     return false;
             }
             return true;
-        } else if (['Identifier', 'Expression', 'Statement', 'Symbol', 'LiteralKeyword', 'Punctuator', 'PunctuationMark', 'NumericLiteral', 'StringLiteral', 'BooleanLiteral', 'RegularExpressionLiteral', 'NullLiteral'].indexOf(type) >= 0) {
+        } else if (['Identifier', 'Expression', 'Type', /*'Statement',*/ 'Symbol', 'LiteralKeyword', 'Punctuator', 'PunctuationMark', 'NumericLiteral', 'StringLiteral', 'BooleanLiteral', 'RegularExpressionLiteral', 'NullLiteral'].indexOf(type) >= 0) {
             return true;
         } else {
             return false;
@@ -425,11 +449,13 @@ module.exports = (function () {
                 if (i === elements.length - 1)
                     return 'all';
                 return true;
-            } else if (elements[i]) { // elements[i] は RepBlock, Brace, Paren, Bracket, Repetition のいずれか
+            }
+            else if (elements[i]) { // elements[i] は RepBlock, Brace, Paren, Bracket, Repetition のいずれか
                 if (elements[i].type === 'Repetition') {
                     return delete1Node([elements[i].elements], 0);
                 }
                 else {
+                	console.error("gen: %j", elements[i]);
                     result = delete1Node(elements[i].elements.elements, 0);
                     if (result === 'all')
                         elements[i].elements = null;
@@ -446,7 +472,8 @@ module.exports = (function () {
             var elements = jsObj.elements;
             var macroDefs = [];
             var expressionMacros = [];
-            var statementMacros = [];
+            var typeMacros = [];
+            // var statementMacros = [];
             var macros, pmacros, tmacros, macro, code;
             //MacroDefinitionがあったらMacrodefsに保存
             for (var i=0; i<elements.length; i++) {
@@ -478,31 +505,119 @@ module.exports = (function () {
                         macros.push('(&{ return macroType; } ' + code + ')');
 
 														//todo: suffixは何なのか？とりあえず消してみる
-                    // while (patterns[j].makeSuffix()) {
-                        // code = patterns[j].toCode('template');
-                        // if (macros.indexOf(code) < 0
-                            // && macros.indexOf(code = '(&{ return macroType; } ' + code + ')') < 0 )
-                            // macros.push(code);
-                    // }
+										while (patterns[j].makeSuffix()) {
+												code = patterns[j].toCode('template');
+												if (macros.indexOf(code) < 0
+														&& macros.indexOf(code = '(&{ return macroType; } ' + code + ')') < 0 )
+														macros.push(code);
+										}
                 }
 
                 pmacros = macros.slice(0, patterns.length);
                 tmacros = macros.slice(patterns.length);
                 tmacros.sort(function (a, b) { return b.length - a.length; }); // PEGコードが長い順に並び替え
 
+								//todo: TypeMacroを定義？？
                 if (macroDef.type.indexOf('Expression') >= 0)
                     expressionMacros = expressionMacros.concat(pmacros, tmacros);
-                else
-                    statementMacros = statementMacros.concat(pmacros, tmacros);
+								else if (macroDef.type.indexOf('Type') >= 0)
+                  typeMacros = typeMacros.concat(pmacros, tmacros);
+                // else
+                    // statementMacros = statementMacros.concat(pmacros, tmacros);
+                    // statementMacros = statementMacros.concat(pmacros, tmacros);
 
             }
 
             return /*template +*/ checkOuterMacro
-                + errors + characterStatement
-                + (expressionMacros.length > 0 ?  macroExpression + expressionMacros.join(' \n / ') + '\n\n' : '')
-                + (statementMacros.length > 0 ? macroStatement + statementMacros.join(' \n / ') + '\n\n' : '');
+								// + errors
+								+ characterStatement
+								+ oneLine
+								+ (expressionMacros.length > 0 ?  macroExpression + expressionMacros.join(' \n / ') + '\n\n' : '')
+                + (typeMacros.length > 0 ?  macroType + typeMacros.join(' \n / ') + '\n\n' : '')
+                // + (statementMacros.length > 0 ? macroStatement + statementMacros.join(' \n / ') + '\n\n' : '');
 
-        } else {
+        }
+				else if (jsObj.type === 'MacroDefinitions') {
+          var elements = jsObj.defs;
+					// console.error("generato: defs = " + JSON.stringify(elements));
+            var macroDefs = [];
+            var expressionMacros = [];
+            var typeMacros = [];
+            var keywords = []; //キーワードを覚えておいて、Identifierと区別出来るようにする
+            // var statementMacros = [];
+            var macros, pmacros, tmacros, macro, code;
+            //MacroDefinitionがあったらMacrodefsに保存
+            for (var i=0; i<elements.length; i++) {
+                var element = elements[i];
+								// if (element.type.indexOf('MacroDefinition') >= 0)
+                    macroDefs.push(element);
+                    keywords = keywords.concat(element.marks, element.literals);
+            }
+            //各Macrodefinitionを解析
+            for (var i=0; i<macroDefs.length; i++) {
+                var macroDef = macroDefs[i];
+                //pegObj.macroName : macroNameに対応するコードを吐くJSONを返す
+                var macroName = pegObj.macroName(macroDef.macroName);
+                var syntaxRules = macroDef.syntaxRules;
+                var patterns = [];
+                var p;
+
+                macros = [];
+
+								//syntaxrulesを解析
+                for (var j=0; j<syntaxRules.length; j++) {
+                    macro = pegObj.macroForm(macroName, syntaxRules[j].pattern)
+                    patterns.push(macro);
+                    macros.push(macro.toCode('program'));
+                }
+
+                for (var j=0; j<patterns.length; j++) {
+                    code = patterns[j].toCode('template');
+                    if (macros.indexOf(code) < 0)
+                        macros.push('(&{ return macroType; } ' + code + ')');
+
+														//todo: suffixは何なのか？とりあえず消してみる
+										while (patterns[j].makeSuffix()) {
+												code = patterns[j].toCode('template');
+												if (macros.indexOf(code) < 0
+														&& macros.indexOf(code = '(&{ return macroType; } ' + code + ')') < 0 )
+														macros.push(code);
+										}
+                }
+
+                pmacros = macros.slice(0, patterns.length);
+                tmacros = macros.slice(patterns.length);
+                pmacros.sort(function (a, b) { return b.length - a.length; }); // PEGコードが長い順に並び替え
+                tmacros.sort(function (a, b) { return b.length - a.length; }); // PEGコードが長い順に並び替え
+                // console.error("generate: pmacros = %j", pmacros);
+                // console.error("generate: tmacros = %j", tmacros);
+
+								//todo: TypeMacroを定義？？
+                if (macroDef.type.indexOf('Expression') >= 0)
+                    expressionMacros = expressionMacros.concat(tmacros, pmacros);
+                    // expressionMacros = expressionMacros.concat(pmacros, tmacros);
+								else if (macroDef.type.indexOf('Type') >= 0)
+									typeMacros = typeMacros.concat(pmacros, tmacros);
+                  // ellipsisが入ってる方を優先して選択する
+                  // typeMacros = typeMacros.concat(tmacros, pmacros);
+                // else
+                    // statementMacros = statementMacros.concat(pmacros, tmacros);
+                    // statementMacros = statementMacros.concat(pmacros, tmacros);
+
+            }
+
+            return /*template +*/ checkOuterMacro
+							// + errors
+							+ characterStatement
+							+ oneLine
+							+ start
+							+ (expressionMacros.length > 0 ?  macroExpression + expressionMacros.join(' \n / ') + '\n\n' : '')
+              + (typeMacros.length > 0 ?  macroType + typeMacros.join(' \n / ') + '\n\n' : '')
+              + (keywords.length > 0 ?  rejectWords + keywords.map(function(e){return '"' + e + '"'}).join(' \n / ') + '\n\n' : '')
+              // + (statementMacros.length > 0 ? macroStatement + statementMacros.join(' \n / ') + '\n\n' : '');
+
+        }
+        else {
             return 'error';
         }
     }

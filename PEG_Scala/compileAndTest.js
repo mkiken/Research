@@ -8,7 +8,7 @@ var names = [
 	__dirname + '/test.pegjs'
 ];
 var fs = require("fs");
-var name = names[0];
+var name = names[3];
 var dt = new Date();
 // console.log(dt);
 // console.log("grammar is " + name);
@@ -18,7 +18,6 @@ var gram = fs.readFileSync( name, 'utf8');
 var parser = PEG.buildParser(gram, {cache: true, trackLineAndColumn: true });
 //var contents = fs.readFileSync(  './testcase/test015_arith.grm' ).toString();
 
-// console.log("parser built!");
 
 //console.log(ns);
 
@@ -41,6 +40,8 @@ var scalas = [
 var sname = args[2];
 var scala = fs.readFileSync( sname, 'utf8');
 // console.log("scala file is " + sname);
+
+console.error("parser built!");
 	console.log(JSON.stringify(parser.parse(scala), null,  2 ));
 
 // var readline = require('readline');

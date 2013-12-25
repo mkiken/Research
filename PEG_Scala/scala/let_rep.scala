@@ -1,8 +1,8 @@
 // 複数引数のLetマクロ
-expression Let {
-    identifier: id;
-    expression: e, body;
-    keyword: =;
+Expression Let {
+    Identifier: id;
+    Expression: e, body;
+    Keyword: =;
 
     { Let ([# id = e #], ...) { body } ->
       // 1000
@@ -11,5 +11,14 @@ expression Let {
     }
 }
 
-// a = Let (x = 3, y = 4) { x * y };
-a = Let (x = 3, y = 4) { x * y };
+object Append1{
+
+  def main(args: Array[String]): Unit = {
+    // var $body = Append 2 to 3;
+    // var $body = Append 2 to 3;
+    // var $body = Append {2, 3, 4};
+    // println($body);
+    // println(args(2));
+    var a = Let (x = 3, y = 4) { x * y };
+  }
+}

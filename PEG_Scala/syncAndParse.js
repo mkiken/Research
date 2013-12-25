@@ -23,10 +23,11 @@ var name1 = args[3];
 var gram = fs.readFileSync( name1, 'utf8');
 // var macroGram = fs.readFileSync( name2, 'utf8');
 // gram += macroGram;
+// console.time('parser build');
 var parser = PEG.buildParser(gram);
 //var contents = fs.readFileSync(  './testcase/test015_arith.grm' ).toString();
 
-// console.log("parser built!");
+// console.timeEnd("parser build");
 
 //console.log(ns);
 
@@ -49,8 +50,9 @@ var scalas = [
 var sname = args[2];
 var scala = fs.readFileSync( sname, 'utf8');
 // console.log("scala file is " + sname);
+// console.time('parse!');
 	console.log(JSON.stringify(parser.parse(scala), null,  2 ));
-
+// console.timeEnd('parse!');
 // var readline = require('readline');
 // var rl = readline.createInterface({
   // input: process.stdin,

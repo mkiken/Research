@@ -7,14 +7,17 @@ fs = require("fs");
 names = [
 	'scala.pegjs',
 	'test.pegjs',
+	'3_syncedMacroParser.pegjs',
 	'ex-scala.pegjs'
 ];
-// var grm = names[1];
+// var grm = names[2];
 var grm = process.argv[2];
 contents = fs.readFileSync(grm, 'utf8');
 
 console.log("grammar = " + grm);
-		parser = PEG.buildParser(contents);
+console.time('parser build');
+		parser = PEG.buildParser(contents, { cache: true, trackLineAndColumn: true });
+console.timeEnd('parser build');
 //console.log(parser);
 
 
