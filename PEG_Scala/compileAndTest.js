@@ -1,5 +1,8 @@
 // var PEG = require("pegjs");
-PEG = require("/usr/local/share/npm/lib/node_modules/pegjs");
+// PEG = require("/usr/local/share/npm/lib/node_modules/pegjs");
+var PEG = require("/usr/local/lib/node_modules/pegjs");
+// var PEG = require("~/Desktop/repository/pegjs");
+// var PEG = require("/Users/kensuke/Desktop/repository/pegjs");
 var names = [
 	'./scala.pegjs',
 	'./_scala.pegjs',

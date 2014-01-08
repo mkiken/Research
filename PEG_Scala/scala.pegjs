@@ -17,7 +17,7 @@ The lexical syntax of Scala is given by the following grammar in EBNF form.
 	function ftr(arg, idx){
 		//空文字列はnull
 		if(typeof idx === 'undefined') idx = -1;
-		if(arg === "") return null;
+		if(arg === "" | arg == null) return null;
 		return idx == -1? arg : arg[idx];
 	}
 

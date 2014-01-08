@@ -19,13 +19,32 @@
   /* var bTemplate = false; */
   var cTemplate = 0;
   var cExpression = 0;
+
   //引数をフィルターして適切な形に変形する
 	//もしidxが入っていればarg[idx]を戻り値とする
 	function ftr(arg, idx){
 		//空文字列はnull
 		if(typeof idx === 'undefined') idx = -1;
-		if(arg === "") return null;
+		if(isNull(arg)) return null;
 		return idx == -1? arg : arg[idx];
+	}
+
+	//eがnullでなければeを返し，eがnullならば""を返す
+	function ftr2(e){
+		//空文字列はnull
+		if(isNull(e)) return "";
+		return e;
+	}
+
+	//e?でマッチ成功したかどうかを判定
+	//PEG.js0.7では""
+	//0.8ではnull
+	function isNull(e){
+		//for version 0.8
+		if(e == null) return true;
+		//for version 0.7
+		else if(e == "") return true;
+		else return false;
 	}
 
 	//keyをキーワードとする
@@ -139,7 +158,7 @@ Program
   = elements:SourceElements? {
       return {
         type:     "Program",
-        elements: elements !== "" ? elements : []
+        elements: isNull(elements) ? [] : elements
       };
     }
 
@@ -348,7 +367,7 @@ SubPattern
     &{ return group[g_open].close === g_close; } {
        return {
          type: group[g_open].type,
-         elements: patterns !== "" ? patterns : []
+         elements: isNull(patterns) ? [] : patterns
        };
     }
   / Literal
@@ -529,15 +548,15 @@ idrest	= chars:(letter / digit)* '_' ops:op __ {return chars.join("") + '_' + op
 		/ chars:(letter / digit)* __ {return chars.join("");}
 
 Literal =
-minus:HYPHEN? val:floatingPointLiteral {return {type: "floatingPointLiteral", value: minus + val}; }
-/ minus:HYPHEN? val:integerLiteral {return {type: "integerLiteral", value: minus + val}; }
+minus:HYPHEN? val:floatingPointLiteral {return {type: "floatingPointLiteral", value: ftr2(minus) + val}; }
+/ minus:HYPHEN? val:integerLiteral {return {type: "integerLiteral", value: ftr2(minus) + val}; }
 / booleanLiteral
 / val:characterLiteral {return {type: "characterLiteral", value: val}; }
 / stringLiteral
 / val:symbolLiteral {return {type: "symbolLiteral", value: val}; }
 / 'null' __ {return {type: "nullLiteral", value: "null"}; }
 integerLiteral = ilit:(decimalNumeral / hexNumeral / octalNumeral) ll:('L' / 'l')? __ {
-	return ilit + ll;
+	return ilit + ftr2(ll);
 }
 decimalNumeral	= '0'
 				/ start:nonZeroDigit parts:digit* __ {return start + parts.join("");}
@@ -560,13 +579,13 @@ octalDigit = [0-7]
 
 
 floatingPointLiteral
-	= dp:digit+ '.' ds:digit* exp:exponentPart? type:floatType? __ {return dp.join("") + '.' + ds.join("") + exp + type;}
-	/ '.' dp:digit+  exp:exponentPart? type:floatType? __ {return '.' + dp.join("") + exp + type;}
-	/ dp:digit+ exp:exponentPart type:floatType? __ {return dp.join("") + exp + type;}
-	/ dp:digit+ exp:exponentPart? type:floatType __ {return dp.join("") + exp + type;}
+	= dp:digit+ '.' ds:digit* exp:exponentPart? type:floatType? __ {return dp.join("") + '.' + ds.join("") + ftr2(exp) + ftr2(type);}
+	/ '.' dp:digit+  exp:exponentPart? type:floatType? __ {return '.' + dp.join("") + ftr2(exp) + ftr2(type);}
+	/ dp:digit+ exp:exponentPart type:floatType? __ {return dp.join("") + exp + ftr2(type);}
+	/ dp:digit+ exp:exponentPart? type:floatType __ {return dp.join("") + ftr2(exp) + type;}
 
 /* exponentPart ::= (‘E’ | ‘e’) [‘+’ | ‘-’] digit {digit} */
-exponentPart = exp:('E' / 'e') sign:('+' / '-')? dt:digit+ {return exp + sign + dt.join("");}
+exponentPart = exp:('E' / 'e') sign:('+' / '-')? dt:digit+ {return exp + ftr2(sign) + dt.join("");}
 
 /* floatType ::= ‘F’ | ‘f’ | ‘D’ | ‘d’*/
 floatType = 'F' / 'f' / 'D' / 'd'
@@ -630,7 +649,7 @@ Expr1 = IF OPPAREN condition:Expr CLPAREN nl* ifStatement:Expr elseStatement:(se
         type:          "IfStatement",
         condition:     condition,
         ifStatement:   ifStatement,
-        elseStatement: elseStatement !== "" ? elseStatement[3] : null
+        elseStatement: ftr(elseStatement, 3)
       };
     }
 / WHILE OPPAREN condition:Expr CLPAREN nl* statement:Expr {
@@ -659,7 +678,7 @@ Expr1 = IF OPPAREN condition:Expr CLPAREN nl* ifStatement:Expr elseStatement:(se
       return {
         type:        "ForStatement",
         enumrator: enums[1],
-        yield:     yield !== "" ? yield[0] : null,
+        yield:     ftr(yield, 0),
         statement:   statement
       };
     }
@@ -672,7 +691,7 @@ Expr1 = IF OPPAREN condition:Expr CLPAREN nl* ifStatement:Expr elseStatement:(se
 / 'return' __ value:Expr? {
       return {
         type:  "ReturnStatement",
-        value: value !== "" ? value : null
+        value: ftr(value)
       };
     }
 / se1:SimpleExpr1 ae:ArgumentExprs EQUAL exp:Expr {return {type:"AssignmentFunction", func:se1, arg:ae, right:exp}; }
@@ -732,7 +751,7 @@ Exprs = expr:Expr exprs:(COMMA Expr)* el:(COMMA ExprEllipsis)? {
 	  for (var i = 0; i < exprs.length; i++) {
         result.push(exprs[i][1]);
 	  }
-	  if(el != ""){
+	  if(!isNull(el)){
 	  	result.push(el[1]);
 	  }
 	  return {type:"Exprs", contents:result};
@@ -769,7 +788,7 @@ Bindings = OPPAREN bd:Binding bds:(COMMA Binding)* el:(COMMA ExprEllipsis)? CLPA
 	for (var i = 0; i < bds.length; i++) {
     result.push(bds[i][1]);
 	}
-	if(el != ""){
+	if(!isNull(el)){
 		result.push(el[1]);
 	}
 	return {type:"Bindings", bindings:result};
@@ -802,7 +821,7 @@ Type	= TypeMacro
 FunctionArgTypes	= InfixType
 / OPPAREN tps:( ParamType (COMMA ParamType )* )? CLPAREN {
   var result = [];
-	if(tps !== ""){
+	if(!isNull(tps)){
 		result.push(tps[0]);
 		for (var i = 0; i < tps[1].length; i++) {
       result.push(tps[1][i][1]);
@@ -964,7 +983,7 @@ SimplePattern = UNDER
 / OPPAREN pts:Patterns? CLPAREN {return {type: "TuplePattern", id:null, pattern:ftr(pts)};}
 //todo:Xml...
 /* / XmlPattern */
-ParamClauses = pc:ParamClause* pm:(nl? OPPAREN IMPLICIT Params CLPAREN)? {return {type: "ParamClauses", clauses:pc, params:pm !== ""? pm[3] : null};}
+ParamClauses = pc:ParamClause* pm:(nl? OPPAREN IMPLICIT Params CLPAREN)? {return {type: "ParamClauses", clauses:pc, params:ftr(pm, 3)};}
 
 /* ParamClause ::= [nl] ‘(’ [Params] ’)’ */
 ParamClause = nl? OPPAREN pm:Params? CLPAREN {return {type: "ParamClause", params:ftr(pm)};}
@@ -1085,7 +1104,7 @@ StableId	= base:id accessors:(DOT id)* {
     }
 			/* / (id DOT)? THIS DOT id _StableId */
 / pre:(id DOT)? th:THIS accessors:(DOT id)+ {
-      var result = pre !==""? [pre[0], th] : [th];
+      var result = !isNull(pre) ? [pre[0], th] : [th];
       for (var i = 0; i < accessors.length; i++) {
         result.push(accessors[i][1]);
 	  }
@@ -1094,8 +1113,8 @@ StableId	= base:id accessors:(DOT id)* {
 
 			/* / (id DOT)? 'super' __ ClassQualifier? DOT id _StableId */
 / pre:(id DOT)? 'super' __ cl:ClassQualifier? accessors:(DOT id)+ {
-      var result = pre !== ""? [pre[0], makeKeyword("super")] : [makeKeyword("super")];
-if(cl !== ""){
+      var result = !isNull(pre) ? [pre[0], makeKeyword("super")] : [makeKeyword("super")];
+if(!isNull(cl)){
 	result.push(cl);
 }
 	  for (var i = 0; i < accessors.length; i++) {
@@ -1166,7 +1185,7 @@ TraitTemplate = ed:EarlyDefs? tp:TraitParents tb:TemplateBody? {return {type:"Tr
 TraitParents = at:AnnotType ats:(WITH AnnotType)* {return {type:"TraitParents", annotType:at, annotType:ats}; }
 /* SelfInvocation ::= ‘this’ ArgumentExprs {ArgumentExprs} */
 SelfInvocation = THIS ae:ArgumentExprs+ {return {type:"SelfInvocation", exprs:ae}; }
-ClassParamClauses = cls:ClassParamClause* params:(nl? OPPAREN IMPLICIT ClassParams CLPAREN)? {return {type:"ClassParamClauses", cls:cls, params:params !== ""? params[3] : null}; }
+ClassParamClauses = cls:ClassParamClause* params:(nl? OPPAREN IMPLICIT ClassParams CLPAREN)? {return {type:"ClassParamClauses", cls:cls, params:ftr(params, 3)}; }
 
 /* ClassParamClause ::= [nl] ‘(’ [ClassParams] ’)’ */
 ClassParamClause = nl? OPPAREN cp:ClassParams? CLPAREN {return {type:"ClassParamClause", params:ftr(cp)}; }

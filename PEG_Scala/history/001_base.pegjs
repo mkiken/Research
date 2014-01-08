@@ -73,7 +73,7 @@ octalDigit = [0-7]
 /* | ‘.’ digit {digit} [exponentPart] [floatType] */
 /* | digit {digit} exponentPart [floatType] */
 /* | digit {digit} [exponentPart] floatType */
-floatingPointLiteral 
+floatingPointLiteral
 	= digit+ '.' digit* exponentPart? floatType?
 	/ '.' digit+  exponentPart? floatType?
 	/ digit+ exponentPart floatType?
@@ -516,7 +516,7 @@ ImportSelector = id ('=>' id / '=>' '_')?
 /* | ‘type’ {nl} TypeDcl */
 Dcl = 'val' ValDcl
 / 'var' VarDcl
-/ 'def' FunDcl 
+/ 'def' FunDcl
 / 'type' nl* TypeDcl
 
 /* ValDcl ::= ids ‘:’ Type */
@@ -660,7 +660,7 @@ The following escape sequences are recognized in character and string literals.
 \\ \u005c: backslash \
  */
 
-charEscapeSeq	= '\\b' / '\\u0008' 
+charEscapeSeq	= '\\b' / '\\u0008'
 				/ '\\t' / '\\u0009'
 				/ '\\n' / '\\u000a'
 				/ '\\f' / '\\u000c'
@@ -672,7 +672,7 @@ charEscapeSeq	= '\\b' / '\\u0008'
 hexDigit = [0-9A-Fa-f]
 
 //とりあえずエスケープシーケンスじゃなければなんでもOK
-printableChar = !charEscapeSeq . 
+printableChar = !charEscapeSeq .
 
 printableCharNoDoubleQuote = !'"' printableChar
 
@@ -831,7 +831,7 @@ CDEnd = ']]>'
 
 //http://www.w3.org/TR/xml/#dt-pi
 PI = '<?' PITarget (S (!(Char* '?>' Char*) Char*))? '?>'
-PITarget = !(('X' / 'x') ('M' / 'm') ('L' / 'l')) Name 
+PITarget = !(('X' / 'x') ('M' / 'm') ('L' / 'l')) Name
 
 // CharNoRef is used in the production for CharData in section 10.1, and not defined anywhere. It should be replaced by Char1.
 // https://issues.scala-lang.org/browse/SI-5141

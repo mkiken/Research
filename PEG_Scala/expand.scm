@@ -5,8 +5,8 @@
 ;; XXX-expanded.scm: JSタグ付きS式をマクロ展開したS式
 ;; XXX-expanded.js : マクロ展開後のS式をJavaScriptに変換したもの
 
-(import (pregexp))
-(import (time))
+; (import (pregexp))
+; (import (time))
 ; (load "common.scm")
 ; (load "scheme-to-js-simple.scm")
 
