@@ -164,10 +164,16 @@ function ax(t) {
   	default:
 											 var res = [];
 											 // console.log(typeof(spec));
-											 if(typeof(spec) == "undefined") throw new Error("undefined spec. : " + t.type);
+											 if(typeof(spec) == "undefined"){
+											 	 console.error("%j", t);
+											 	 throw new Error("undefined spec. : " + t.type);
+											 }
 											 // console.log(t);
 											 spec.forEach(function (f, i) {
-												 if(typeof(t[f]) == "undefined") throw new Error("defined member is undefined. type: " + t.type + ", member: " + f);
+												 if(typeof(t[f]) == "undefined"){
+											 	 console.error("%j", t);
+												 	 throw new Error("defined member is undefined. type: " + t.type + ", member: " + f);
+												 }
           							 // if(0 < i) res.push(ax(t[f]));
           							 if(0 < i) res.push(ax(t[f]));
       								 });

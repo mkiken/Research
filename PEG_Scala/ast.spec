@@ -10,6 +10,7 @@ Bindings: bindings
 Block: states, res
 BlockExpression: block
 BlockStat: annotations, modifier, def
+booleanLiteral: value
 Brace: elements
 Bracket: elements
 ByNameParamType: tp

@@ -19,6 +19,7 @@
   /* var bTemplate = false; */
   var cTemplate = 0;
   var cExpression = 0;
+  const arrow = "->";
 
   //引数をフィルターして適切な形に変形する
 	//もしidxが入っていればarg[idx]を戻り値とする
@@ -430,7 +431,7 @@ SymbolVariable
     }
 
 Punctuator
-  =  puncs:PunctuatorSymbol+ !{ return puncs.join("") === "->"; } { return puncs.join(""); }
+  =  puncs:PunctuatorSymbol+ !{ return puncs.join("") === arrow; } { return puncs.join(""); }
 
 	//todo:ここはこれでいいのか？
 PunctuatorSymbol
@@ -496,8 +497,11 @@ IdentifierName
   = !MacroArrow id:id2 {return id.name;}
 
 id2
-= nm:plainid {return { type: "Variable", name: nm }; }
+= !KEYWORDS
+name:(
+		nm:plainid {return { type: "Variable", name: nm }; }
 	/ [`] str:stringLiteral [`] __ { return { type: "Identifier2", name: '`' + str + '`'}; }
+	) {return name;}
 
 //todo?
 CheckOuterMacro
@@ -541,8 +545,12 @@ id
 /* = ExprEllipsis */
 = &(&{/*console.error("id invoked.");*/return cExpression == 0} / !RejectWords)
 /* e:(nm:plainid {return { type: "Identifier", name: nm }; } */
-e:(nm:plainid {return { type: "Variable", name: nm }; }
-	/ [`] str:stringLiteral [`] __ { return { type: "Identifier2", name: '`' + str + '`'}; }){/*console.error("id is %j %d", e, cExpression);*/return e;}
+	!KEYWORDS
+name:(
+ e:(nm:plainid {return { type: "Variable", name: nm }; }
+	/ [`] str:stringLiteral [`] __ { return { type: "Variable2", name: '`' + str + '`'}; })
+ /* {[>console.error("id is %j %d", e, cExpression);<]return e;} */
+ ){return name;}
 
 idrest	= chars:(letter / digit)* '_' ops:op __ {return chars.join("") + '_' + ops;}
 		/ chars:(letter / digit)* __ {return chars.join("");}
@@ -644,12 +652,12 @@ Expr
 / impl:IMPLICIT? id:id ARROW right:Expr {return {type:"AnonymousFunctionId", impl:ftr(impl), id:id, right:right}; }
 / UNDER ARROW right:Expr {return {type:"AnonymousFunctionWild", right:right}; }
 / Expr1
-Expr1 = IF OPPAREN condition:Expr CLPAREN nl* ifStatement:Expr elseStatement:(semi? 'else' __ Expr)? {
+Expr1 = IF OPPAREN condition:Expr CLPAREN nl* ifStatement:Expr elseStatement:(semi? ELSE Expr)? {
       return {
         type:          "IfStatement",
         condition:     condition,
         ifStatement:   ifStatement,
-        elseStatement: ftr(elseStatement, 3)
+        elseStatement: ftr(elseStatement, 2)
       };
     }
 / WHILE OPPAREN condition:Expr CLPAREN nl* statement:Expr {
@@ -659,7 +667,7 @@ Expr1 = IF OPPAREN condition:Expr CLPAREN nl* ifStatement:Expr elseStatement:(se
         statement: statement
       };
     }
-/ 'try' __ OPBRACE block:Block CLBRACE catch_:('catch' __ OPBRACE CaseClauses CLBRACE)? finally_:('finally' __ Expr)?{
+/ TRY OPBRACE block:Block CLBRACE catch_:(CATCH OPBRACE CaseClauses CLBRACE)? finally_:(FINALLY Expr)?{
       return {
         type:      "TryStatement",
         block:     block,
@@ -667,14 +675,14 @@ Expr1 = IF OPPAREN condition:Expr CLPAREN nl* ifStatement:Expr elseStatement:(se
         "finally": ftr(finally_, 2)
       };
     }
-/ 'do' __ statement:Expr semi? WHILE OPPAREN condition:Expr CLPAREN {
+/ DO statement:Expr semi? WHILE OPPAREN condition:Expr CLPAREN {
       return {
         type: "DoWhileStatement",
         condition: condition,
         statement: statement
       };
     }
-/ 'for' __ enums:(OPPAREN Enumerators CLPAREN / OPBRACE Enumerators CLBRACE) nl* yield:('yield' __)? statement:Expr {
+/ FOR enums:(OPPAREN Enumerators CLPAREN / OPBRACE Enumerators CLBRACE) nl* yield:('yield' __)? statement:Expr {
       return {
         type:        "ForStatement",
         enumrator: enums[1],
@@ -682,13 +690,13 @@ Expr1 = IF OPPAREN condition:Expr CLPAREN nl* ifStatement:Expr elseStatement:(se
         statement:   statement
       };
     }
-/ 'throw' __ exception:Expr {
+/ THROW exception:Expr {
       return {
         type:      "ThrowStatement",
         exception: exception
       };
     }
-/ 'return' __ value:Expr? {
+/ RETURN value:Expr? {
       return {
         type:  "ReturnStatement",
         value: ftr(value)
@@ -696,7 +704,7 @@ Expr1 = IF OPPAREN condition:Expr CLPAREN nl* ifStatement:Expr elseStatement:(se
     }
 / se1:SimpleExpr1 ae:ArgumentExprs EQUAL exp:Expr {return {type:"AssignmentFunction", func:se1, arg:ae, right:exp}; }
 / pe:PostfixExpr as:Ascription {return {type:"ExpressionWithAscription", postfix:pe, ascription:as}; }
-/ pe:PostfixExpr 'match' __ OPBRACE cases:CaseClauses CLBRACE {return {type:"PatternMatchingExpression", postfix:pe, cases:cc}; }
+/ pe:PostfixExpr MATCH OPBRACE cases:CaseClauses CLBRACE {return {type:"PatternMatchingExpression", postfix:pe, cases:cc}; }
 /* / se:(SimpleExpr DOT)? id:id EQUAL exp:Expr {return {type:"AssignmentExpression", prefix:ftr(se), id:toVariable(id), right:exp}; } */
 / se:(SimpleExpr DOT)? id:id EQUAL exp:Expr {return {type:"AssignmentExpression", prefix:ftr(se), id:id, right:exp}; }
 / PostfixExpr
@@ -712,7 +720,7 @@ InfixExpr = head:PrefixExpr tails:(id nl? InfixExpr)* {
 	return {type:"InfixExpression", left:head, ops:ids, rights:exps};
     }
 
-PrefixExpr = op:(HYPHEN / PLUS / '~' __ / '!' __)? expr:SimpleExpr {
+PrefixExpr = op:(HYPHEN / PLUS / TILDE / BANG)? expr:SimpleExpr {
 	return {type:"PrefixExpression", op:ftr(op), expr:expr};
 }
 
@@ -735,10 +743,10 @@ SimpleExpr1 = OPPAREN exp:Exprs? CLPAREN se1:_SimpleExpr1 {return {type:"TupleEx
 //todo: xmlどうしよう
 /* / xml:XmlExpr se1:_SimpleExpr1 {return {type:"XmlSimpleExpression", xml:xml, suffix:se1}; } */
 
+/ lt:Literal se1:_SimpleExpr1 {return {type:"literalSimpleExpression", literal:lt, suffix:se1}; }
 /* / path:id !EQUAL se1:_SimpleExpr1 { return {type:"idSeqSimpleExpression", ids:toVariable(path), suffix:se1}; } */
 / path:id !EQUAL se1:_SimpleExpr1 { return {type:"idSeqSimpleExpression", ids:path, suffix:se1}; }
 /* / path:id !EQUAL se1:_SimpleExpr1 { return {type:"idSeqSimpleExpression", ids:path, suffix:se1}; } */
-/ lt:Literal se1:_SimpleExpr1 {return {type:"literalSimpleExpression", literal:lt, suffix:se1}; }
 /* _SimpleExpr1 = ud:UNDER? !(DOT id EQUAL) DOT id:id se1:_SimpleExpr1 {return {type:"DesignatorPostfix", under:ftr(ud), id:id, postfix:se1}; } */
 _SimpleExpr1 = ud:UNDER? DOT id:id !EQUAL se1:_SimpleExpr1 {return {type:"DesignatorPostfix", under:ftr(ud), id:id, postfix:se1}; }
 / ud:UNDER? ta:TypeArgs se1:_SimpleExpr1 {return {type:"TypeApplicationPostfix", under:ftr(ud), typeArgument:ta, postfix:se1}; }
@@ -809,7 +817,7 @@ Enumerator = Generator
 / Guard
 / VAL pt1:Pattern1 EQUAL exp:Expr {return {type:"Enumerator", left:pt1, right:exp}; }
 
-Generator = pt1:Pattern1 '<-' __ expr:Expr guard:Guard? {return {type: "Generator", pt1:pt1, expr:expr, guard:guard}; }
+Generator = pt1:Pattern1 LEFTARROW expr:Expr guard:Guard? {return {type: "Generator", pt1:pt1, expr:expr, guard:guard}; }
 
 CaseClauses = cls:CaseClause+ {return {type: "CaseClauses", cls:cls};}
 CaseClause = CASE pt:Pattern guard:Guard? ARROW block:Block {return {type: "Generator", pt:pt, guard:ftr(guard), block:block}; }
@@ -829,13 +837,13 @@ FunctionArgTypes	= InfixType
 	}
 	return {type:"FunctionArgTypes", contents:result};
 }
-ExistentialClause = 'forSome' __ OPBRACE ex:ExistentialDcl exs:(semi ExistentialDcl)* CLBRACE {
-      var result = [makeKeyword("forSome")];
-	  result.push(ex);
+ExistentialClause = FORSOME OPBRACE ex:ExistentialDcl exs:(semi ExistentialDcl)* CLBRACE {
+  var result = [];
+	result.push(ex);
 	for (var i = 0; i < exs.length; i++) {
-        result.push(exs[i][1]);
-	  }	  return {type:"ExistentialClause", contents:result};
-    }
+    result.push(exs[i][1]);
+	}	  return {type:"ExistentialClause", contents:result};
+}
 ExistentialDcl	= tp:TYPE dcl:TypeDcl {return {type:"ExistentialDcl", pre:tp, dcl:dcl}}
 				/ vl:VAL dcl:ValDcl {return {type:"ExistentialDcl", pre:vl, dcl:dcl}}
 
@@ -857,7 +865,7 @@ SimpleType =
 path:Path dot:DOT tp:TYPE  tails:(TypeArgs / withId)* {return {type:"SimplePathType", path:path, postfix:tails}; }
 / si:StableId tails:(TypeArgs / withId)* {return {type:"SimpleType", id:si, postfix:tails}; }
 / op:OPPAREN tps:Types cl:CLPAREN  tails:(TypeArgs / withId)* {return {type:"SimpleTypes", id:tps, postfix:tails}; }
-withId = '#' __ id:id {return {type:"withId", id:id};}
+withId = SHARP id:id {return {type:"withId", id:id};}
 Annotation = AT stype:SimpleType exprs:ArgumentExprs* {return {type:"Annotation", stype:tp, exprs:exprs};}
 ClassTemplate = ed:EarlyDefs? cp:ClassParents tb:TemplateBody? {return {type:"ClassTemplate", def:ftr(ed), classParent:cp, body:ftr(tb)}; }
 TemplateBody = nl? OPBRACE tp:SelfType? nl? ts:TemplateStat tss:(semi TemplateStat)* nl? CLBRACE {
@@ -881,7 +889,7 @@ TemplateStat = Import
 SelfType = id:id tp:(COLON Type)? ARROW {return {type:"SelfType", id:id, tp:ftr(tp,1)};}
 / id:THIS COLON tp:Type ARROW {return {type:"SelfType", id:id, tp:tp};}
 
-Import = 'import' __ head:ImportExpr tail:(COMMA ImportExpr)* {
+Import = IMPORT head:ImportExpr tail:(COMMA ImportExpr)* {
 	var result = [head];
 	for (var i = 0; i < tail.length; i++) {
 		result.push(tail[i][1]);
@@ -930,15 +938,11 @@ VarDef = PatDef
 FunDef = fs:FunSig tp:(COLON Type)? EQUAL exp:Expr {return {type:"FunctionDefinition", signature:fs, tp:ftr(tp, 1), expr:exp}; }
 / fs:FunSig nl? OPBRACE bk:Block CLBRACE {return {type:"Procedure", signature:fs, block:bk}; }
 / THIS pc:ParamClause pcs:ParamClauses body:(EQUAL ConstrExpr / nl? ConstrBlock) {return {type:"ConstructorDefinition", param:pc, params:pcs, body:body}; }
-LocalModifier = 'abstract' __ {return makeKeyword("abstract");}
-/ 'final' __ {return makeKeyword("final");}
-/ 'sealed' __ {return makeKeyword("sealed");}
-/ IMPLICIT
-/ LAZY
-TmplDef = cs:CASE? 'class' __ def:ClassDef {return {type:"ClassTemplateDefinition", prefix:ftr(cs), def:def}; }
+
+TmplDef = cs:CASE? CLASS def:ClassDef {return {type:"ClassTemplateDefinition", prefix:ftr(cs), def:def}; }
 / cs:CASE? OBJECT def:ObjectDef {return {type:"ObjectTemplateDefinition", prefix:ftr(cs), def:def}; }
-/ 'trait' __ def:TraitDef {return {type:"TraitTemplateDefinition", def:def}; }
-Pattern = pt1:Pattern1 pt1s:( '|' __ Pattern1 )* {
+/ TRAIT def:TraitDef {return {type:"TraitTemplateDefinition", def:def}; }
+Pattern = pt1:Pattern1 pt1s:( BAR Pattern1 )* {
       var result = [pt1];
 	  for (var i = 0; i < pt1s.length; i++) {
         result.push(pt1s[i][2]);
@@ -975,8 +979,8 @@ head:SimplePattern tails:( !EQUAL id nl? SimplePattern )* {
 /* | ‘(’ [Patterns] ‘)’ */
 /* | XmlPattern */
 SimplePattern = UNDER
-/ varid
 / Literal
+/ varid
 / si:StableId OPPAREN pts:Patterns? CLPAREN {return {type: "ConstructorPattern", id:si, pattern:pts};}
 / id:StableId OPPAREN pts:(Patterns COMMA)? vi:(varid AT)? UNDER STAR CLPAREN {return {type: "PatternSequences", id:si, pattern:ftr(pts, 0), varid:ftr(vi, 0)};}
 / StableId
@@ -1030,7 +1034,7 @@ FunTypeParamClause = OPBRACKET param:TypeParam params:(COMMA TypeParam)* CLBRACK
 	  return {type:"FunTypeParamClause", params:result};
 }
 
-TypeParam = id:(id / UNDER) cl:TypeParamClause? lower:(LEFTANGLE Type)? upper:(RIGHTANGLE Type)? view:('<%' __ Type)* context:(COLON Type)*
+TypeParam = id:(id / UNDER) cl:TypeParamClause? lower:(LEFTANGLE Type)? upper:(RIGHTANGLE Type)? view:(VIEW Type)* context:(COLON Type)*
 {
 	var views = [];
 	for (var i = 0; i < view.length; i++) {
@@ -1112,16 +1116,16 @@ StableId	= base:id accessors:(DOT id)* {
     }
 
 			/* / (id DOT)? 'super' __ ClassQualifier? DOT id _StableId */
-/ pre:(id DOT)? 'super' __ cl:ClassQualifier? accessors:(DOT id)+ {
-      var result = !isNull(pre) ? [pre[0], makeKeyword("super")] : [makeKeyword("super")];
-if(!isNull(cl)){
-	result.push(cl);
+/ pre:(id DOT)? sp:SUPER cl:ClassQualifier? accessors:(DOT id)+ {
+  var result = !isNull(pre) ? [pre[0], sp] : [sp];
+	if(!isNull(cl)){
+		result.push(cl);
+	}
+	for (var i = 0; i < accessors.length; i++) {
+    result.push(accessors[i][1]);
+	}
+	return {type:"StableId", contents:result};
 }
-	  for (var i = 0; i < accessors.length; i++) {
-        result.push(accessors[i][1]);
-	  }
-	  return {type:"StableId", contents:result};
-    }
 EarlyDefs = OPBRACE eds:(EarlyDef (semi EarlyDef)*)? CLBRACE WITH {
       var result = ftr(eds);
 	  if(eds !== null){
@@ -1144,21 +1148,21 @@ EarlyDef = an:(Annotation nl?)* md:Modifier* pvd:PatVarDef {
 ClassParents = cst:Constr ats:(WITH AnnotType)* {return {type:"ClassParents", constr:cst, annotType:ats}; }
 Modifier = LocalModifier
 / AccessModifier
-/ 'override' __ {return makeKeyword("override");}
+/ OVERRIDE
 
 /* LocalModifier ::= ‘abstract’ */
 /* | ‘final’ */
 /* | ‘sealed’ */
 /* | ‘implicit’ */
 /* | ‘lazy’ */
-LocalModifier = 'abstract' __ {return makeKeyword("abstract");}
-/ 'final' __ {return makeKeyword("final");}
-/ 'sealed' __ {return makeKeyword("sealed");}
+LocalModifier = ABSTRACT
+/ FINAL
+/ SEALED
 / IMPLICIT
 / LAZY
 
 /* AccessModifier ::= (‘private’ | ‘protected’) [AccessQualifier] */
-AccessModifier = md:('private' / 'protected') __ qual:AccessQualifier? {return {type:"AccessModifier", modifier:makeKeyword(md), qualifier:ftr(qual)};}
+AccessModifier = md:(PRIVATE / PROTECTED)  qual:AccessQualifier? {return {type:"AccessModifier", modifier:md};}
 
 /* AccessQualifier ::= ‘[’ (id | ‘this’) ‘]’ */
 AccessQualifier = OPBRACKET id:(id / THIS) CLBRACKET {return {type:"AccessQualifier", id:id};}
@@ -1226,40 +1230,68 @@ whitespace = [\u0020\u0009]
 Empty = & {return true;} {return {type:"Empty"};}
 /* Empty = (&. / !.) {return {type:"Empty", value:null};} */
 
-PACKAGE = 'package' __ {return {type:"Keyword", word:"package"}}
+KEYWORDS = PACKAGE / SEMICOLON / DOT / COMMA / THIS / OPBRACKET / CLBRACKET / ARROW / LEFTARROW / OPPAREN / CLPAREN / OPBRACE / CLBRACE / TYPE / VAL / WITH / COLON / UNDER / IMPLICIT / IF / ELSE / WHILE / TRY / CATCH / FINALLY / DO / FOR / THROW / RETURN / MATCH / EQUAL / TILDE / BANG / BAR / NEW / LAZY / CASE / SUPER / AT / SHARP / LEFTANGLE / RIGHTANGLE / VIEW / VAR / DEF / OBJECT / EXTENDS / IMPORT / FORSOME / ABSTRACT / FINAL / CLASS / TRAIT / OVERRIDE / SEALED / PRIVATE / PROTECTED
+
+PACKAGE = 'package' !IdentifierPart __ {return {type:"Keyword", word:"package"}}
 SEMICOLON = ';' __ {return {type:"Keyword", word:";"}}
 HYPHEN = '-' __ {return {type:"Keyword", word:"-"}}
 DOT = '.' __ {return {type:"Keyword", word:"."}}
 COMMA = ',' __ {return {type:"Keyword", word:","}}
-THIS = 'this' __ {return {type:"Keyword", word:"this"}}
+THIS = 'this' !IdentifierPart __ {return {type:"Keyword", word:"this"}}
 OPBRACKET = '[' ___ {return {type:"Keyword", word:"["}}
 CLBRACKET = ']' __ {return {type:"Keyword", word:"]"}}
 ARROW = '=>' __ {return {type:"Keyword", word:"=>"}}
+LEFTARROW = '<-' __ {return {type:"Keyword", word:"<-"}}
 OPPAREN = '(' ___ {return {type:"Keyword", word:"("}}
 CLPAREN = ')' __ {return {type:"Keyword", word:")"}}
 OPBRACE = '{' ___ {return {type:"Keyword", word:String.fromCharCode(123)}} //'{'だとバグるので文字コードで回避
 CLBRACE = '}' __ {return {type:"Keyword", word:String.fromCharCode(125)}}
-TYPE = 'type' __ {return {type:"Keyword", word:"type"}}
-VAL = 'val' __ {return {type:"Keyword", word:"val"}}
+TYPE = 'type' !IdentifierPart __ {return {type:"Keyword", word:"type"}}
+VAL = 'val' !IdentifierPart __ {return {type:"Keyword", word:"val"}}
 
-WITH = 'with' __ {return {type:"Keyword", word:"with"}}
+WITH = 'with' !IdentifierPart __ {return {type:"Keyword", word:"with"}}
 COLON = ':' __ {return {type:"Keyword", word:":"}}
 UNDER = '_' __ {return {type:"Keyword", word:"_"}}
 STAR = '*' __ {return {type:"Keyword", word:"*"}}
-IMPLICIT = 'implicit' __ {return {type:"Keyword", word:"implicit"}}
-IF = 'if' __ {return {type:"Keyword", word:"if"}}
-WHILE = 'while' __ {return {type:"Keyword", word:"while"}}
+IMPLICIT = 'implicit' !IdentifierPart __ {return {type:"Keyword", word:"implicit"}}
+IF = 'if' !IdentifierPart __ {return {type:"Keyword", word:"if"}}
+ELSE = 'else' !IdentifierPart __ {return {type:"Keyword", word:"else"}}
+WHILE = 'while' !IdentifierPart __ {return {type:"Keyword", word:"while"}}
+TRY = 'try' !IdentifierPart __ {return {type:"Keyword", word:"try"}}
+CATCH = 'catch' !IdentifierPart __ {return {type:"Keyword", word:"catch"}}
+FINALLY = 'finally' !IdentifierPart __ {return {type:"Keyword", word:"finally"}}
+DO = 'do' !IdentifierPart __ {return {type:"Keyword", word:"do"}}
+FOR = 'for' !IdentifierPart __ {return {type:"Keyword", word:"for"}}
+THROW = 'throw' !IdentifierPart __ {return {type:"Keyword", word:"throw"}}
+RETURN = 'return' !IdentifierPart __ {return {type:"Keyword", word:"return"}}
+MATCH = 'match' !IdentifierPart __ {return {type:"Keyword", word:"match"}}
 EQUAL = '=' !opchar ___ {return {type:"Keyword", word:"="}} //==などはEQUALではないとして弾く
 PLUS = '+' !opchar __ {return {type:"Keyword", word:"+"}}
-NEW = 'new' __ {return {type:"Keyword", word:"new"}}
-LAZY = 'lazy' __ {return {type:"Keyword", word:"lazy"}}
-CASE = 'case' __ {return {type:"Keyword", word:"case"}}
+TILDE = '~' !opchar __ {return {type:"Keyword", word:"~"}}
+BANG = '!' !opchar __ {return {type:"Keyword", word:"!"}}
+BAR = '|' !opchar __ {return {type:"Keyword", word:"|"}}
+NEW = 'new' !IdentifierPart __ {return {type:"Keyword", word:"new"}}
+LAZY = 'lazy' !IdentifierPart __ {return {type:"Keyword", word:"lazy"}}
+CASE = 'case' !IdentifierPart __ {return {type:"Keyword", word:"case"}}
+SUPER = 'super' !IdentifierPart __ {return {type:"Keyword", word:"super"}}
 AT = '@' __ {return {type:"Keyword", word:"@"}}
+SHARP = '#' __ {return {type:"Keyword", word:"#"}}
 LEFTANGLE = '>:' __ {return {type:"Keyword", word:">:"}}
 RIGHTANGLE = '<:' __ {return {type:"Keyword", word:"<:"}}
-VAR = 'var' __ {return {type:"Keyword", word:"var"}}
-DEF = 'def' __ {return {type:"Keyword", word:"def"}}
-OBJECT = 'object' __ {return {type:"Keyword", word:"object"}}
-EXTENDS = 'extends' __ {return {type:"Keyword", word:"extends"}}
+VIEW = '<%' __ {return {type:"Keyword", word:"<%"}}
+VAR = 'var' !IdentifierPart __ {return {type:"Keyword", word:"var"}}
+DEF = 'def' !IdentifierPart __ {return {type:"Keyword", word:"def"}}
+OBJECT = 'object' !IdentifierPart __ {return {type:"Keyword", word:"object"}}
+EXTENDS = 'extends' !IdentifierPart __ {return {type:"Keyword", word:"extends"}}
+IMPORT = 'import' !IdentifierPart __ {return {type:"Keyword", word:"import"}}
+FORSOME = 'forSome' !IdentifierPart __ {return {type:"Keyword", word:"forSome"}}
+ABSTRACT = 'abstract' !IdentifierPart __ {return {type:"Keyword", word:"abstract"}}
+FINAL = 'final' !IdentifierPart __ {return {type:"Keyword", word:"final"}}
+CLASS = 'class' !IdentifierPart __ {return {type:"Keyword", word:"class"}}
+TRAIT = 'trait' !IdentifierPart __ {return {type:"Keyword", word:"trait"}}
+OVERRIDE = 'override' !IdentifierPart __ {return {type:"Keyword", word:"override"}}
+SEALED = 'sealed' !IdentifierPart __ {return {type:"Keyword", word:"sealed"}}
+PRIVATE = 'private' !IdentifierPart __ {return {type:"Keyword", word:"private"}}
+PROTECTED = 'protected' !IdentifierPart __ {return {type:"Keyword", word:"protected"}}
 
 
