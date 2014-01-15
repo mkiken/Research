@@ -1,5 +1,6 @@
 
 // Expressions
+AccessModifier: modifier, qual
 AnnotType: simpleType, annotation
 AnonymousFunction: left, right
 AnonymousFunctionWild: right
@@ -41,7 +42,8 @@ Params: params
 ParamClause: params
 ParamClauses: clauses, params
 Paren: elements
-PatDef: patterns, tp, expr
+# PatDef: patterns, tp, expr
+PatDef: patterns, expr
 PatternBinder: id, pt
 PatValDef: body
 PatVarDef: body

@@ -782,7 +782,7 @@ Block = blocks:(BlockStat semi)* res:ResultExpr? {
 
 BlockStat = Import
 / an:Annotation* md:(IMPLICIT / LAZY)? def:Def {return {type:"BlockStat", annotations:an, modifier:ftr(md), def:def}; }
-/ an:Annotation* lm:LocalModifier* td:TmplDef {return {type:"TmplBlockStat", annotations:an, modifier:lm, def:td}; }
+/ an:Annotation* lm:LocalModifier* td:TmplDef {return {type:"BlockStat", annotations:an, modifier:lm, def:td}; }
 / Expr1
 / Empty
 
@@ -927,9 +927,10 @@ Types = tp:Type tps:(COMMA Type)* {
 PatVarDef = dcl:VAL body:PatDef {return {type:"PatValDef", body:body};}
 / dcl:VAR body:VarDef {return {type:"PatVarDef", body:body};}
 
-Def = PatVarDef
-/* / DEF body:FunDef {return {type:"Definition", body:body};} */
-/ DEF body:FunDef {return body;}
+Def =
+/* &{console.error("Def:PatVarDef invoke!");return true;}  */
+PatVarDef
+/ DEF body:FunDef {return {type:"Definition", body:body};}
 / TYPE nl* body:TypeDef {return {type:"TypeDefinition", body:body};}
 / TmplDef
 
@@ -990,7 +991,6 @@ FunDef = fs:FunSig tp:(COLON Type)? EQUAL exp:Expr {return {type:"FunctionDefini
 TmplDef = cs:CASE? CLASS def:ClassDef {return {type:"ClassTemplateDefinition", prefix:ftr(cs), def:def}; }
 / cs:CASE? OBJECT def:ObjectDef {return {type:"ObjectTemplateDefinition", prefix:ftr(cs), def:def}; }
 / TRAIT def:TraitDef {return {type:"TraitTemplateDefinition", def:def}; }
-
 Pattern = pt1:Pattern1 pt1s:( BAR Pattern1 )* {
       var result = [pt1];
 	  for (var i = 0; i < pt1s.length; i++) {
@@ -1248,7 +1248,7 @@ LocalModifier = ABSTRACT
 / LAZY
 
 /* AccessModifier ::= (‘private’ | ‘protected’) [AccessQualifier] */
-AccessModifier = md:(PRIVATE / PROTECTED)  qual:AccessQualifier? {return {type:"AccessModifier", modifier:md, qual:ftr(qual)};}
+AccessModifier = md:(PRIVATE / PROTECTED)  qual:AccessQualifier? {return {type:"AccessModifier", modifier:md};}
 
 /* AccessQualifier ::= ‘[’ (id | ‘this’) ‘]’ */
 AccessQualifier = OPBRACKET id:(id / THIS) CLBRACKET {return {type:"AccessQualifier", id:id};}
@@ -1344,7 +1344,7 @@ WITH = 'with' !IdentifierPart __ {return {type:"Keyword", word:"with"}}
 COLON = ':' __ {return {type:"Keyword", word:":"}}
 UNDER = '_' __ {return {type:"Keyword", word:"_"}}
 STAR = '*' __ {return {type:"Keyword", word:"*"}}
-IMPLICIT = 'implicit' !IdentifierPart __ {return {type:"Keyword", word:"implicit "}}
+IMPLICIT = 'implicit' !IdentifierPart __ {return {type:"Keyword", word:"implicit"}}
 IF = 'if' !IdentifierPart __ {return {type:"Keyword", word:"if"}}
 ELSE = 'else' !IdentifierPart __ {return {type:"Keyword", word:"else"}}
 WHILE = 'while' !IdentifierPart __ {return {type:"Keyword", word:"while"}}
@@ -1362,7 +1362,7 @@ TILDE = '~' !opchar __ {return {type:"Keyword", word:"~"}}
 BANG = '!' !opchar __ {return {type:"Keyword", word:"!"}}
 BAR = '|' !opchar __ {return {type:"Keyword", word:"|"}}
 NEW = 'new' !IdentifierPart __ {return {type:"Keyword", word:"new"}}
-LAZY = 'lazy' !IdentifierPart __ {return {type:"Keyword", word:"lazy "}}
+LAZY = 'lazy' !IdentifierPart __ {return {type:"Keyword", word:"lazy"}}
 CASE = 'case' !IdentifierPart __ {return {type:"Keyword", word:"case"}}
 SUPER = 'super' !IdentifierPart __ {return {type:"Keyword", word:"super"}}
 AT = '@' __ {return {type:"Keyword", word:"@"}}
@@ -1376,13 +1376,49 @@ OBJECT = 'object' !IdentifierPart __ {return {type:"Keyword", word:"object"}}
 EXTENDS = 'extends' !IdentifierPart __ {return {type:"Keyword", word:"extends"}}
 IMPORT = 'import' !IdentifierPart __ {return {type:"Keyword", word:"import"}}
 FORSOME = 'forSome' !IdentifierPart __ {return {type:"Keyword", word:"forSome"}}
-ABSTRACT = 'abstract' !IdentifierPart __ {return {type:"Keyword", word:"abstract "}}
-FINAL = 'final' !IdentifierPart __ {return {type:"Keyword", word:"final "}}
+ABSTRACT = 'abstract' !IdentifierPart __ {return {type:"Keyword", word:"abstract"}}
+FINAL = 'final' !IdentifierPart __ {return {type:"Keyword", word:"final"}}
 CLASS = 'class' !IdentifierPart __ {return {type:"Keyword", word:"class"}}
 TRAIT = 'trait' !IdentifierPart __ {return {type:"Keyword", word:"trait"}}
-OVERRIDE = 'override' !IdentifierPart __ {return {type:"Keyword", word:"override "}}
-SEALED = 'sealed' !IdentifierPart __ {return {type:"Keyword", word:"sealed "}}
-PRIVATE = 'private' !IdentifierPart __ {return {type:"Keyword", word:"private "}}
-PROTECTED = 'protected' !IdentifierPart __ {return {type:"Keyword", word:"protected "}}
+OVERRIDE = 'override' !IdentifierPart __ {return {type:"Keyword", word:"override"}}
+SEALED = 'sealed' !IdentifierPart __ {return {type:"Keyword", word:"sealed"}}
+PRIVATE = 'private' !IdentifierPart __ {return {type:"Keyword", word:"private"}}
+PROTECTED = 'protected' !IdentifierPart __ {return {type:"Keyword", word:"protected"}}
+
+
+CheckOuterMacro
+ = { return outerMacro; }
+
+CharacterStatement
+ = &{}
+
+OneLine
+ = &{}
+
+start
+ = CompilationUnit
+
+ExpressionMacro
+ = (&{ return macroType; } form:(t0:("Decl" !IdentifierPart
+{ return { type: "MacroName", name:"Decl" }; }) __ t1:("(" __ t0:(t0:(","
+{ return { type: "PunctuationMark", value: "," }; }) __ t1:MacroIdentifier { return [t0, t1]; }) __ ")"
+{ return { type: "Paren", elements: t0 }; }) { return [t0, t1]; })
+{ return { type: "MacroForm", inputForm: form }; }) 
+ / (&{ return macroType; } form:(t0:("Decl" !IdentifierPart
+{ return { type: "MacroName", name:"Decl" }; }) __ t1:("(" __ t0:(t0:MacroIdentifier { return [t0]; }) __ ")"
+{ return { type: "Paren", elements: t0 }; }) { return [t0, t1]; })
+{ return { type: "MacroForm", inputForm: form }; }) 
+ / (&{ return macroType; } form:(t0:("Decl" !IdentifierPart
+{ return { type: "MacroName", name:"Decl" }; }) __ t1:("(" __ ")"
+{ return { type: "Paren", elements: [] }; }) { return [t0, t1]; })
+{ return { type: "MacroForm", inputForm: form }; }) 
+ / form:(t0:("Decl" !IdentifierPart
+{ return { type: "MacroName", name:"Decl" }; }) __ t1:("(" __ t0:(t0:Expr __ t1:(","
+{ return { type: "PunctuationMark", value: "," }; }) __ t2:MacroIdentifier { return [t0, t1, t2]; }) __ ")"
+{ return { type: "Paren", elements: t0 }; }) { return [t0, t1]; })
+{ return { type: "MacroForm", inputForm: form }; }
+
+RejectWords
+ = ","
 
 

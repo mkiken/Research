@@ -1,0 +1,56 @@
+{
+  "type": "MacroDefinitions",
+  "defs": [
+    {
+      "type": "ExpressionMacroDefinition",
+      "macroName": "Or",
+      "literals": [],
+      "syntaxRules": [
+        {
+          "type": "SyntaxRule",
+          "pattern": [
+            {
+              "type": "Paren",
+              "elements": [
+                {
+                  "type": "IdentifierVariable",
+                  "name": "miss"
+                }
+              ]
+            }
+          ],
+          "template": [
+            {
+              "type": "PostfixExpression",
+              "infix": {
+                "type": "InfixExpression",
+                "left": {
+                  "type": "PrefixExpression",
+                  "op": null,
+                  "expr": {
+                    "type": "SimpleExpression",
+                    "expr": {
+                      "type": "idSeqSimpleExpression",
+                      "ids": {
+                        "type": "Variable",
+                        "name": "miss"
+                      },
+                      "suffix": {
+                        "type": "Empty"
+                      }
+                    },
+                    "under": null
+                  }
+                },
+                "ops": [],
+                "rights": []
+              },
+              "id": null
+            }
+          ]
+        }
+      ],
+      "marks": []
+    }
+  ]
+}

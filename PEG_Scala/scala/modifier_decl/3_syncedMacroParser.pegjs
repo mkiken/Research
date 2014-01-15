@@ -1386,3 +1386,16 @@ PRIVATE = 'private' !IdentifierPart __ {return {type:"Keyword", word:"private "}
 PROTECTED = 'protected' !IdentifierPart __ {return {type:"Keyword", word:"protected "}}
 
 
+CheckOuterMacro
+ = { return outerMacro; }
+
+CharacterStatement
+ = &{}
+
+OneLine
+ = &{}
+
+start
+ = CompilationUnit
+
+

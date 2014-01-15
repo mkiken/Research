@@ -5,6 +5,16 @@ const DEBUG = false;
 const NULL = "#\\nul";
 var ast = {};
 var bTemplate = false;
+
+//変数定義を格納するための変数
+var blockLevel = 0;
+var varDefines = [];
+
+//lambdaに入れる変数名を格納するための変数
+var lambdaLevel = 0;
+var bSave = false;
+var varNames = [];
+
 fs.readFileSync(__dirname + '/ast.spec', 'utf8').split('\n').forEach(function (line) {
   var spec = line.split(': ');
   if (spec.length === 1) return;
@@ -15,6 +25,9 @@ fs.readFileSync(__dirname + '/ast.spec', 'utf8').split('\n').forEach(function (l
 
 
 function sx_string(s) { return '"' + s + '"'; }
+// function isNull(e) {
+		// return typeof(e) == "object" && e.name == "__nul";
+	// }
 
 var literal_table = [], literal_id = 0;
 function literal(l) {
@@ -64,53 +77,164 @@ function ScalaTag(name, elements){
 function ax(t) {
 	// console.log(JSON.stringify(t));
 	if(DEBUG) console.log("ax( " + JSON.stringify(t) + " ) invoked.");
-	if(t == null || t == "") return NULL;
+	if(t === null || t === "") return null;
 	else if (!t) throw (new Error('Invalid AST node: ' + JSON.stringify(t) ));
   // if (typeof t === 'string') return literal(t);
-  if (typeof(t) === 'string') return sx_string(t);
-  if (Array.isArray(t)) return t.map(ax);
+  else if (typeof(t) === 'string') return sx_string(t);
+  else if (Array.isArray(t)){
+    // console.error("mmap!!");
+  	return t.map(ax);
+  }
 
   var spec = ast[t.type];
   // ArrayLiteralとかが上手く働かない
   // if (literal_re.exec(t.type)) return literal(t);
-	// console.log("TYPE = " + t.type);
+	// console.error("TYPE = " + t.type);
 
   switch (t.type) {
   	//いまのところAnonymousFunction, Bindingなどを隠すと非Hygienic展開になる
   	//Anonymousは左辺が_でもやばいし、おそらくidのときもやばい。応急処置
   	case 'AnonymousFunction':
-  		if(bTemplate){
+      // if(bTemplate){
   			//α変換の影響が出ないように、左辺の変数名と型を分離して、lambdaのbodyにいれておく
-  			var params = [], types = [], bds = t.left.bindings;
-  			console.error("Anonymous: " + JSON.stringify(bds, null, 1));
-  			for(var i = 0; i < bds.length - 1; i++){
-  				params.push(bds[i].id);
-  				types.push(bds[i].tp);
-  			}
-  			if(bds[bds.length-1].type == 'Binding'){
-					params.push(bds[bds.length-1].id);
-  				types.push(bds[bds.length-1].tp);
-  			}
-  			else if(bds[bds.length-1].type == 'Ellipsis'){
-					params.push(bds[bds.length-1]);
-  				types.push(null);
-  			}
-        // console.error("Anonymous: |params| " + params.length);
-        // console.error("Anonymous: |types| " + types.length);
-        // console.error("Anonymous: params " + JSON.stringify(params));
-        // console.error("Anonymous: types " + JSON.stringify(types));
+  			var params = [], types = [];
+				console.error("Anonymous: " + JSON.stringify(bds, null, 1));
+  			//引数が存在すれば
+  			if(t.left.bindings){
+  				var bds = t.left.bindings;
+					for(var i = 0; i < bds.length - 1; i++){
+  					params.push(bds[i].id);
+  					types.push(bds[i].tp);
+  				}
 
-  			return ScalaTag(t.type, [encloses('lambda', ax(params), ax(types), ax(t.right))]);
-  		}
-  		else return ScalaTag(t.type + "Plain", [encloses('lambda', ax(t.left), ax(t.right))]);
+  				if(bds[bds.length-1].type == 'Ellipsis'){
+						params.push(bds[bds.length-1]);
+  					types.push(null);
+  				}
+  				else if(bds[bds.length-1].type == 'Binding'){
+						params.push(bds[bds.length-1].id);
+  					types.push(bds[bds.length-1].tp);
+  				}
+  				else if(bds[bds.length-1].type == 'BindingAny'){
+						// params.push({ type: "Variable", name: "V-_" });
+						// params.push({ type: "WildCard"});
+						params.push({type: "Variable", name:"-WILDCARD-"});
+						// params.push(bds[bds.length-1].ud);
+  					types.push(bds[bds.length-1].tp);
+  				}
+          // else if(bds[bds.length-1] == null){
+          // types.push(NULL);
+          // }
+  				else{
+  					throw new Error("ax . AnonymousFunction:unintended case. => " + bds[bds.length-1].type);
+  				}
+        	// console.error("Anonymous: |params| " + params.length);
+        	// console.error("Anonymous: |types| " + types.length);
+        	// console.error("Anonymous: params " + JSON.stringify(params));
+        	// console.error("Anonymous: types " + JSON.stringify(types));
+          // console.error("ano . types => %j", types);
+          // console.error("ano . types => %j", types.map(ax));
+          // console.error("ano . types => %j", typeof types);
+          // console.error("ano . types => %j", Array.isArray(types));
+          // console.error("ano . ax.types => %j", ax(types));
+          // console.error("anonymousFinction! => %j", ScalaTag(t.type, [encloses('lambda', ax(params), ax(types), ax(t.right))]));
+				return ScalaTag(t.type, [encloses('lambda', ax(params), ax(types), ax(t.right))]);
+  			}
+  			else{ //引数がなかったら
+					// params.push({notDelete:true});
+					// console.error("Anonymous: params " + JSON.stringify(params));
+					// console.error("Anonymous: params " + JSON.stringify(ax(params)));
+					// console.error("Anonymous: types " + JSON.stringify(types));
+          // 型が空だとマクロ展開でinvalidと言われるので適当にnullを入れておく．
+          // types.push(null);
+				return ScalaTag(t.type, [encloses('lambda', [{notDelete:true}], [null], ax(t.right))]);
+  			}
+				// return ScalaTag(t.type, [encloses('lambda', ax(params), ax(types), ax(t.right))]);
+      // }
+      // else return ScalaTag(t.type + "Plain", [encloses('lambda', ax(t.left), ax(t.right))]);
   	case 'AnonymousFunctionId':
  	 		return ScalaTag(t.type, [encloses('lambda', [ax(t.left)], ax(t.right))]);
-    // case 'AnonymousFunctionWild':
-        // return ScalaTag(t.type, ax(t.right));
-    // case 'Binding': return ax(t.id);
-  	case 'Bindings': return t.bindings.map(ax);
+    	// case 'AnonymousFunctionWild':
+      // return ScalaTag(t.type, ax(t.right));
+    	// case 'Binding': return ax(t.id);
+  	case 'Bindings': return t.bindings? t.bindings.map(ax) : null;
+  	case 'Block':
+  									 var res, sts, result;
+  									 blockLevel++;
+  									 //定義を初期化
+  									 varDefines[blockLevel] = [];
+  									 sts = ax(t.states);
+  									 res = ax(t.res);
+                     // result = encloses('begin', varDefines[blockLevel], ax(t.states), ax(t.res));
+  									 if(varDefines[blockLevel].length == 0){
+  									 //空だとnullになってしまうので，消えないようにしておく
+  									 	 varDefines[blockLevel].push({notDelete:true});
+  									 }
+  									 result = encloses('letrec*', varDefines[blockLevel], sts, res);
+  									 blockLevel--;
+  									 return ScalaTag("Block", [result]);
+  	case 'TemplateBody':
+  									 var selftype, sts, result;
+  									 blockLevel++;
+  									 //定義を初期化
+  									 varDefines[blockLevel] = [];
+  									 selftype = ax(t.selftype);
+  									 sts = ax(t.states);
+  									 if(varDefines[blockLevel].length == 0){
+  									 //空だとnullになってしまうので，消えないようにしておく
+  									 	 varDefines[blockLevel].push({notDelete:true});
+  									 }
+  									 result = encloses('letrec*', varDefines[blockLevel], selftype, sts);
+  									 blockLevel--;
+  									 return ScalaTag("TemplateBody", [result]);
+  	case 'TemplateStatement':
+  									 //後付けだけど・・・
+  									 var annotation = ax(t.annotation), modifier = ax(t.modifier), def = ax(t.definition);
+  									 console.error("def => " + def);
+  									 if(def !== null && typeof def.type !== 'undefined'){
+  									 	 if(def.type === "PatValDefInfo"
+  									 	 		 || def.type === "PatVarDefInfo"
+  									 	 		 || def.type === "ValDclInfo"
+  									 	 		 || def.type === "VarDclInfo"
+  									 	 		 || def.type === "TypeDclInfo"
+  									 	 		 || def.type === "TypeDefInfo"
+  									 	 		 ){
+                           // console.error("json2.PatValInfo => " + annotation);
+												varDefines[def.blockLevel][def.index][1][3].push(annotation);
+												varDefines[def.blockLevel][def.index][1][3].push(modifier);
+  									 	 }
+  									 	 else if(def.type === "FuncDefInfo"){
+  									 	 	 console.error("FuncDefInfo!!!");
+												varDefines[def.blockLevel][def.index][1][0][3].push(annotation);
+												varDefines[def.blockLevel][def.index][1][0][3].push(modifier);
+  									 	 }
+  									 	 else{
+  									 	 	 throw new Error("json2.TemplateStat: unintended type => " + def.type);
+  									 	 }
+  									 }
+                     // return ScalaTag(t.type, [annotation, modifier, null])
+  									 return null;
+  	case 'BlockStat':
+  									 //後付けだけど・・・
+  									 var annotation = ax(t.annotations), modifier = ax(t.modifier), def = ax(t.def);
+  									 console.error("def => " + def);
+  									 if(def !== null && typeof def.type !== 'undefined'){
+  									 	 if(def.type === "PatValDefInfo"
+  									 	 		 || def.type === "PatVarDefInfo"
+  									 	 		 || def.type === "TypeDefInfo"){
+  									 	 	 console.error("json2.PatValInfo => " + annotation);
+												varDefines[def.blockLevel][def.index][1][3].push(annotation);
+												varDefines[def.blockLevel][def.index][1][3].push(modifier);
+  									 	 }
+  									 	 else{
+  									 	 	 throw new Error("json2.BlockStat: unintended type => " + def.type);
+  									 	 }
+  									 }
+                     // return ScalaTag(t.type, [annotation, modifier, null])
+  									 return null;
+
   	case 'CompilationUnit': return enclose('begin', ax(t.packages)).concat(ax(t.topStatseq));
-  	case 'Empty': return NULL; //どうしよう。とりあえず空文字列を返しておく
+  	case 'Empty': return null; //どうしよう。とりあえず空文字列を返しておく
   	case 'Ellipsis': return '...';
   	case 'ExpressionMacroDefinition':
 										 // console.error("ExpressionMacroDefinition: %j\n", t.syntaxRules);
@@ -118,7 +242,8 @@ function ax(t) {
 
 										 var srules = t.syntaxRules, output = [];
 										 for(var i = 0; i < srules.length; i++){
-										output.push(sx(ax(srules[i]))); }
+											 output.push(sx(ax(srules[i])));
+										 }
                      // return enclose('define-syntax', [t.macroName + "-Macro", ["syntax-rules", ["V-" + t.literals], ax(t.syntaxRules)]] );
   									 return enclose('define-syntax', [t.macroName + "-Macro", ["syntax-rules", ["V-" + t.literals], output.join(' ')]] );
   	case 'ExpressionVariable':
@@ -128,15 +253,118 @@ function ax(t) {
   	case 'Variable':
                 		 // console.error("t.name = " + "V-" + t.name);
 										 // return ScalaTag('Variable', ["V-" + t.name]);
-										 return "V-" + t.name;
+										 var name = "V-" + t.name;
+										 if(bSave) varNames[lambdaLevel].push(name);
+										 return name;
+  	case 'FunctionDefinition':
+  									 //Signatureを解析して，必要な変数を全て読み出す
+  									 var params = [], sig = t.signature, name = sig.id.name;
+  									 //....
+  									 lambdaLevel++;
+										 bSave = true;
+										 varNames[lambdaLevel] = [];
+  									 sig = ax(sig);
+  									 params = varNames[lambdaLevel];
+  									 lambdaLevel--;
+  									 bSave = false;
+  									 //本体はラムダの中につっこんでおく
+
+										 if(params.length == 0){
+										 	 params.push({notDelete: true});
+										 }
+										 varDefines[blockLevel].push(["V-" + name, [encloses('lambda', params, ["function", "FunctionDefinition"], [], sig, ax(t.tp), ax(t.expr))]]);
+				// return ScalaTag(t.type, [encloses('lambda', params, ax(sig), ax(t.tp), ax(t.expr))]);
+										 // return null;
+										 return {type:"FuncDefInfo", blockLevel: blockLevel, index:varDefines[blockLevel].length-1};
+
+
   	case 'integerLiteral': return t.value;
   	case 'MacroForm': return ax(t.inputForm);
   	case 'MacroName': return t.name + "-Macro";
-  	case 'OneLine': return NULL; //とりあえずnull
+    // case 'notDelete': return t; //最後までとっておく
+  	case 'OneLine': return null; //とりあえずnull
 										// case 'Paren':
 										// console.error("Paren: eles = %j\n", t.elements);
 										// console.error("Paren-2: eles = %j\n", ax(t.elements));
 										// return ScalaTag('Paren2', ax(t.elements)); //fo debug
+		case 'PatValDef':
+										var patterns = t.body.patterns;
+										var expr = t.body.expr;
+										var res = [];
+										for(var i = 0; i < patterns.length; i++){
+											var e = patterns[i];
+											//(define 変数名 ((val or var) (変数名についている情報) (右辺)))
+										// res.push(encloses('define', "V-" + e.id, ["VAL_Variable", [ax(e.tp)], ax(expr)]));
+										// varDefines[blockLevel].push(encloses('define', "V-" + e.id, ["VAL_Variable", [ax(e.tp)], ax(expr)]));
+										varDefines[blockLevel].push(["V-" + e.id, [["val", "variable"], [ax(e.tp)], ax(expr), []]]);
+										}
+										// return res;
+										// 何を返す？とりあえずnull
+										// return null;
+										return {type:"PatValDefInfo", blockLevel: blockLevel, index:varDefines[blockLevel].length-1};
+		case 'PatVarDef':
+										var patterns = t.body.patterns;
+										var expr = t.body.expr;
+										var res = [];
+										for(var i = 0; i < patterns.length; i++){
+											var e = patterns[i];
+											//(define 変数名 ((val or var) (変数名についている情報) (右辺)))
+										varDefines[blockLevel].push(["V-" + e.id, [["var", "variable"], [ax(e.tp)], ax(expr), []]]);
+										}
+										// 何を返す？とりあえずnull
+										return {type:"PatVarDefInfo", blockLevel: blockLevel, index:varDefines[blockLevel].length-1};
+		// case 'TypeDefinition':
+										// var patterns = t.body.patterns;
+										// var expr = t.body.expr;
+										// var res = [];
+										// for(var i = 0; i < patterns.length; i++){
+											// var e = patterns[i];
+											// //(define 変数名 ((val or var) (変数名についている情報) (右辺)))
+										// varDefines[blockLevel].push(["V-" + e.id, [["var", "variable"], [ax(e.tp)], ax(expr)]]);
+										// }
+										// // 何を返す？とりあえずnull
+										// return null;
+		case 'ValueDeclaration':
+										var patterns = t.patterns;
+										// var expr = t.body.expr;
+										var res = [];
+										for(var i = 0; i < patterns.length; i++){
+											var e = patterns[i];
+											//(define 変数名 ((val or var) (変数名についている情報) (右辺)))
+										varDefines[blockLevel].push(["V-" + e.id, [["val", "variable"], [ax(e.tp)], ax(null), []]]);
+										}
+										// return res;
+										// 何を返す？とりあえずnull
+										// return null;
+										return {type:"ValDclInfo", blockLevel: blockLevel, index:varDefines[blockLevel].length-1};
+		case 'VariableDeclaration':
+										var patterns = t.patterns;
+										// var expr = t.body.expr;
+										var res = [];
+										for(var i = 0; i < patterns.length; i++){
+											var e = patterns[i];
+											//(define 変数名 ((val or var) (変数名についている情報) (右辺)))
+										varDefines[blockLevel].push(["V-" + e.id, [["var", "variable"], [ax(e.tp)], ax(null), []]]);
+										}
+										// return res;
+										// 何を返す？とりあえずnull
+										// return null;
+										return {type:"VarDclInfo", blockLevel: blockLevel, index:varDefines[blockLevel].length-1};
+		case 'TypeDeclaration':
+											var e = t.pattern;
+											//(define 変数名 ((val or var) (変数名についている情報) (右辺)))
+										varDefines[blockLevel].push(["V-" + e.id, [["type", "TypeDeclaration"], [ax(e.tpc), ax(e.left), ax(e.right)], ax(null), []]]);
+										// 何を返す？とりあえずnull
+										// return null;
+										return {type:"TypeDclInfo", blockLevel: blockLevel, index:varDefines[blockLevel].length-1};
+	// case 'TypeDefinition':
+	case 'TypeDefinition':
+											var e = t.body.pattern;
+											//(define 変数名 ((val or var) (変数名についている情報) (右辺)))
+										varDefines[blockLevel].push(["V-" + e.id, [["type", "TypeDefinition"], [ax(e.paramClause)], ax(e.tp), []]]);
+										// 何を返す？とりあえずnull
+										// return null;
+										return {type:"TypeDefInfo", blockLevel: blockLevel, index:varDefines[blockLevel].length-1};
   	case 'Program': return enclose('begin', ax(t.elements));
 		case 'PunctuationMark': return ''; //空文字列を返すと、joinで無視される
   	case 'RepBlock':
@@ -159,6 +387,8 @@ function ax(t) {
  	 										 return [enclose("_", ptn), tmpl];
 		case 'TopStatSeq':
  	 										 return ax(t.topstat);
+      // case 'WildCard':
+                         // return "_";
 
 
   	default:
@@ -186,9 +416,15 @@ function ax(t) {
 function sx(t) {
   if (Array.isArray(t)) {
   	if(t.length == 0) return NULL;
+  	if(t.length == 1){
+  		var e = t[0];
+  		if(e !== null && e.notDelete !== undefined) return "()";
+  		else return '(' + sx(e) + ')';
+  	}
   	else return '(' + t.map(sx).join(' ') + ')';
   }
-  return t;
+  else if(t == null) return NULL;
+  else return t;
 }
 
 // for PrettyPrint

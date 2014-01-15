@@ -176,14 +176,27 @@ var trans = {
 		return typeof(e) == "object" && typeof(e.name) != "undefined";
 	},
 	isNull : function(e){
-		return typeof(e) == "object" && e.name == "__nul";
+		return typeof(e) == "object" && typeof e.name !== 'undefined' && e.name == "__nul";
 	},
 	isAt : function(e){
 		return typeof(e) == "object" && e.name == "__@";
 	},
 	isVariable : function(e){
-		if(typeof(e) == "object" && e.name.length >= 3){
+		if(typeof(e) == "object" && typeof e.name == 'string' && e.name.length >= 3){
 			if(e.name[0] == 'V' && e.name[1] == '-') return true;
+		}
+		return false;
+	},
+	isTypeVariable : function(e){
+		if(typeof(e) == "object" && typeof e.name == 'string' && e.name.length >= 3){
+			if(e.name[0] == 'T' && e.name[1] == '-') return true;
+		}
+		return false;
+	},
+	isWildCard : function(e){
+		if(typeof(e) == "object" && typeof e.name == 'string' && e.name.length >= 12){
+			//wildcardはV--WILDCARD-\x60;38*のような形
+			if(e.name.substr(0, 12) == "V--WILDCARD-") return true;
 		}
 		return false;
 	},
@@ -226,22 +239,156 @@ var trans = {
 		console.error("do_lambda: types = " + JSON.stringify(types));
 		B.push("( ");
 		B.push("( ");
-		for(var i = 0; i < params.length; i++){
-			this.do_symbol(params[i], 1); //パラメータはシンボル
-			if(!this.isNull(types[i])) {
-				B.push(" : ");
-		// console.error("do_lambda: types[i] = " + JSON.stringify(types[i]));
-				this.do_scala(types[i], 1);
+		if(params !== null){
+			for(var i = 0; i < params.length; i++){
+				this.do_symbol(params[i], 1); //パラメータはシンボル
+				if(!this.isNull(types[i])) {
+					B.push(" : ");
+					console.error("do_lambda: types[i] = " + JSON.stringify(types[i]));
+					this.do_scala(types[i], 1);
+				}
+				if(i != params.length-1) B.push(", ");
 			}
-			if(i != params.length-1) B.push(", ");
+			// B.separating(e[pos], ", ") //args
 		}
-		// B.separating(e[pos], ", ") //args
 		B.push(" ) => ");
 		this.s2j(e[pos + 2], 0); //body
 		B.push(" )");
 	},
 
+	//letrec*の変数宣言を解析する
+	do_letrec_star : function(e, pos){
+		// if(bDebug) DP("do_letrec*", pos, e, 1);
+		// if(true) DP("do_letrec*", pos, e, 3);
+		//変数宣言の解析
+		var vars = e[pos];
+		if(vars == null) return;
+		for(var i = 0; i < vars.length; i++){
+			var def = vars[i];
+			var prefix = def[1][0];
+			// console.error(prefix);
+			if(prefix[0].name === "val"){
+				if(prefix[1].name === "variable"){
+					var option = def[1][3];
+					// console.error("option = %j\n", option);
+					this.s2j(option[0], 0);
+					this.s2j(option[1], 0);
+				}
+				B.push("val ");
+			}
+			else if(prefix[0].name === "var"){
+				if(prefix[1].name === "variable"){
+					var option = def[1][3];
+					console.error("option = %j\n", option);
+					this.s2j(option[0], 0);
+					this.s2j(option[1], 0);
+				}
+
+				B.push("var ");
+			}
+			else if(prefix[0].name === "type"){
+				if(prefix[1].name === "TypeDeclaration"
+						|| prefix[1].name === "TypeDefinition"){
+					var option = def[1][3];
+					// console.error("option = %j\n", option);
+					this.s2j(option[0], 0);
+					this.s2j(option[1], 0);
+				}
+				B.push("type ");
+			}
+			else if(prefix[0].name === "lambda"){
+				//関数定義
+				if(prefix[2][0].name === "function" && prefix[2][1].name === "FunctionDefinition"){
+					var option = prefix[3];
+					this.s2j(option[0], 0);
+					this.s2j(option[1], 0);
+					B.push("def ");
+					// this.s2j(prefix, 4);
+					// 整形して出力
+					this.s2j(prefix[4], 0); //signature
+					if(!this.isNull(prefix[5])){
+						B.push(':');
+						this.s2j(prefix[5], 0);
+					}
+					B.push(' = ');
+					this.s2j(prefix[6], 0);
+					B.format(';', newline);
+
+					return;
+				}
+				else{
+					throw new Error("sx2scala.do_letrec*: undefined prefix_lambda. => " + prefix[2]);
+				}
+			}
+			else{
+				throw new Error("sx2scala.do_letrec*: undefined prefix0. => " + prefix[0]);
+			}
+
+			this.do_symbol(def[0]); //変数名
+			B.push(" "); //変数名
+			if(prefix[1].name === "variable"){
+				//付加情報を処理する
+				var infos = def[1][1];
+				for(var j = 0; j < infos.length; j++){
+					// console.error("info = %j", infos[j]);
+					if(!this.isNull(infos[j])){
+						// if(infos[j].type === "Type"){
+						if(infos[j][0] === "Scala" && infos[j][1] === "Type"){
+							B.push(':');
+							this.s2j(infos[j], 0);
+						}
+						else{
+							throw new Error("sx2scala.do_letrec*: undefined info. => " + infos[j].type);
+						}
+					}
+					}
+					//右辺
+					if(!this.isNull(def[1][2])){
+						// console.error("info = %j", def[1][2]);
+						B.push(" = ");
+						this.s2j(def[1][2], 0);
+					}
+					B.format(';', newline);
+				}
+				else if(prefix[1].name == "TypeDeclaration"){
+					//付加情報を処理する
+				// var infos = def[1][1];
+				B.format(';', newline);
+
+				}
+				else if(prefix[1].name == "TypeDefinition"){
+					//付加情報を処理する
+					var infos = def[1][1];
+					for(var j = 0; j < infos.length; j++){
+						console.error("info = %j", infos[j]);
+						if(!this.isNull(infos[j])){
+							// if(infos[j].type === "Type"){
+							if(infos[j][0] === "Scala" && infos[j][1] === "Type"){
+								B.push(':');
+								this.s2j(infos[j], 0);
+							}
+							else{
+								throw new Error("sx2scala.do_letrec*: undefined info. => " + infos[j].type);
+							}
+						}
+						}
+						//右辺
+						// if(!this.isNull(def[1][2])){
+							// console.error("info = %j", def[1][2]);
+							B.push(" = ");
+							this.s2j(def[1][2], 0);
+						// }
+						B.format(';', newline);
+
+				}
+				else{
+					throw new Error("sx2scala.do_letrec*: undefined prefix1. => " + prefix[1]);
+				}
+			}
+		},
+
 	do_scala : function(e, pos){
+			// console.error("\ndo_scala: e = %j\n", e);
 		var type = e[pos];
 		var f = trans[type];
 		// if(true){
@@ -282,15 +429,35 @@ var trans = {
 			B.separating(e[pos+1], ", ");
 			B.push(')');
 		}
+		// else if(type == "Block"){
+			// if(!this.isNull(e[pos+1]))
+				// e[pos + 1].forEach(function(stat){
+					// if(!trans.isNull(stat)){trans.s2j(stat, 0);
+						// B.format(';', newline);
+					// }
+				// });
+			// if(!this.isNull(e[pos+2])){
+				// this.s2j(e[pos+2], 0);
+				// B.format(';', newline);
+			// }
+		// }
 		else if(type == "Block"){
-			if(!this.isNull(e[pos+1]))
-				e[pos + 1].forEach(function(stat){
-					if(!trans.isNull(stat)){trans.s2j(stat, 0);
+			if(!this.isNull(e[pos+1])) this.do_letrec_star(e[pos+1], 1);
+			var body = e[pos+1];
+			// console.error("%j", body);
+			//BlockStateの解析
+			if(!this.isNull(body[2]))
+				body[2].forEach(function(stat){
+					if(!trans.isNull(stat)
+						&& !(stat[1] == "BlockStat" && trans.isNull(stat[4]))
+						){
+					// console.error("stat = %j\n", stat);
+						trans.s2j(stat, 0);
 						B.format(';', newline);
 					}
 				});
-			if(!this.isNull(e[pos+2])){
-				this.s2j(e[pos+2], 0);
+			if(!this.isNull(body[3])){
+				this.s2j(body[3], 0);
 				B.format(';', newline);
 			}
 		}
@@ -322,6 +489,16 @@ var trans = {
 			B.push(" = ");
 			this.s2j(e[pos + 3], 0); //expr
 		}
+		// else if(type == "FunctionDefinition"){
+			// var lmd = e[pos + 1];
+			// this.s2j(lmd[2], 0); //signature
+			// if(!this.isNull(lmd[3])){
+				// B.push(": ");
+				// this.s2j(lmd[3], 0); //type
+			// }
+			// B.push(" = ");
+			// this.s2j(lmd[4], 0); //expr
+		// }
 		else if(type == "InfixOperatorPattern"){
 			var ids = e[pos + 2], simplePatterns = e[pos + 3];
 			this.s2j(e[pos + 1], 0); //head
@@ -415,18 +592,43 @@ var trans = {
 		else if(type == "stringLiteral"){
 			B.push('"' + e[pos + 1] + '"');
 		}
+		// else if(type == "TemplateBody"){
+			// B.push('{');
+			// if(!this.isNull(e[pos+1])){ //selftype
+				// this.s2j(e[pos + 1], 0);
+			// }
+			// B.format(newline, 2);
+			// e[pos + 2].forEach(function (stat) {
+				// if(!trans.isNull(stat)){
+					// trans.s2j(stat, 0);
+					// B.format(';', newline);
+				// }
+			// });
+			// B.format(-2, '}');
+		// }
 		else if(type == "TemplateBody"){
-			B.push('{');
-			if(!this.isNull(e[pos+1])){ //selftype
-				this.s2j(e[pos + 1], 0);
+			// console.error("sx2scala.TemplateBody: pos = %d\n%j\n\n", pos, e);
+			B.format('{', newline, 2);
+			//selftypeの解析
+			var body = e[pos + 1];
+			if(!this.isNull(body[2])){
+				this.s2j(body[2], 0);
+				B.format(newline);
 			}
-			B.format(newline, 2);
-			e[pos + 2].forEach(function (stat) {
-				if(!trans.isNull(stat)){
-					trans.s2j(stat, 0);
-					B.format(';', newline);
-				}
-			});
+			// console.error(body);
+			if(!this.isNull(e[pos+1])) this.do_letrec_star(e[pos+1], 1);
+
+			//statsの解析
+			if(!this.isNull(body[3]))
+				body[3].forEach(function(stat){
+					if(!trans.isNull(stat)
+						&& !(stat[1] == "TemplateStatement" && trans.isNull(stat[4]))
+						){
+							// console.error("stat =>%j\n", stat);
+						trans.s2j(stat, 0);
+						B.format(';', newline);
+					}
+				});
 			B.format(-2, '}');
 		}
 		else if(type == "TypeArgs"){
@@ -472,7 +674,8 @@ var trans = {
 			if(e.name == "begin") this.do_begin(es, pos + 1);
 			else if(e.name == "define") this.do_define(es[1], es[2]);
 			else if(e.name == "lambda") this.do_lambda(es, pos + 1);
-			else if(e.name == "letrec") this.do_retlec(es[1]);
+			else if(e.name == "letrec") this.do_retlec(es[1], pos+1);
+			else if(e.name == "letrec*") this.do_letrec_star(es, pos+1);
 			else{
 				this.do_symbol(e);
 				// this.do_list(es, pos+1);
@@ -512,7 +715,14 @@ var trans = {
 	do_symbol : function(e){
 		if(!this.isNull(e) && !this.isAt(e)){
 			// console.error("do_symbol: %j, %s, %s", e, typeof(e), this.isVariable(e));
-			if(this.isVariable(e)) B.push(delete_chars(convertAsterisk(e.name.slice(2))));
+			if(this.isVariable(e)){
+				if(this.isWildCard(e)) B.push("_");
+				else B.push(delete_chars(convertAsterisk(e.name.slice(2))));
+			}
+			// else if(this.isTypeVariable(e)){
+				// if(this.isWildCard(e)) B.push("_");
+				// else B.push(delete_chars(convertAsterisk(e.name.slice(2))));
+			// }
 			else B.push(e.name);
 		}
 	}
@@ -531,7 +741,7 @@ exports.convert = function (t, output) {
 	delete_chars(buff);
 	// console.error(buff.toString());
 	var tt = sexp.parse(buff.toString());
-	console.error("%j", tt);
+	console.error("%j\n\n\n", tt);
 	trans.s2j(tt, 0);
 	// B.format(t);
 	var result = B.flush(fd);
