@@ -15,6 +15,44 @@ var lambdaLevel = 0;
 var bSave = false;
 var varNames = [];
 
+//予約語のリスト．
+//ここに載っているものはHygienic変換を行わない
+const reservedWords = [
+'main',
+'Int',
+'Array',
+'String',
+'Unit',
+'args',
+'Double'
+];
+function isReserved(e) {
+	// reservedWords.forEach(function(word){
+		// console.error("isReserved: " + e + ", " + word + ", " + e === word);
+		// if(e === word) return true;
+	// }
+			// );
+	// return false;
+	var idx = reservedWords.indexOf(e);
+	return idx == -1? false : true;
+}
+
+function convertName(e){
+	var name = e;
+	// console.error("convName: " + e + ", " + typeof e)
+	//ラムダに足す場合は接頭辞がA-になっている
+	if(name.length > 2 && name[0] == 'A' && name[1] == '-'){
+		name = name.splice(2);
+		if(bSave) varNames[lambdaLevel].push(name);
+	}
+
+	if(isReserved(name)){
+		name = "R-" + name + "-";
+	}
+	else name = "V-" + name;
+	return name;
+}
+
 fs.readFileSync(__dirname + '/ast.spec', 'utf8').split('\n').forEach(function (line) {
   var spec = line.split(': ');
   if (spec.length === 1) return;
@@ -189,6 +227,7 @@ function ax(t) {
   									 return ScalaTag("TemplateBody", [result]);
   	case 'TemplateStatement':
   									 //後付けだけど・・・
+  									 //ラムダの情報を補完する
   									 var annotation = ax(t.annotation), modifier = ax(t.modifier), def = ax(t.definition);
   									 console.error("def => " + def);
   									 if(def !== null && typeof def.type !== 'undefined'){
@@ -203,8 +242,10 @@ function ax(t) {
 												varDefines[def.blockLevel][def.index][1][3].push(annotation);
 												varDefines[def.blockLevel][def.index][1][3].push(modifier);
   									 	 }
-  									 	 else if(def.type === "FuncDefInfo"){
-  									 	 	 console.error("FuncDefInfo!!!");
+  									 	 else if(def.type === "FuncDefInfo"
+  									 	 		 || def.type === "FuncDclInfo"
+  									 	 		 || def.type == "ProcedureInfo"){
+                           // console.error("FuncDefInfo!!!");
 												varDefines[def.blockLevel][def.index][1][0][3].push(annotation);
 												varDefines[def.blockLevel][def.index][1][0][3].push(modifier);
   									 	 }
@@ -222,10 +263,17 @@ function ax(t) {
   									 	 if(def.type === "PatValDefInfo"
   									 	 		 || def.type === "PatVarDefInfo"
   									 	 		 || def.type === "TypeDefInfo"){
-  									 	 	 console.error("json2.PatValInfo => " + annotation);
-												varDefines[def.blockLevel][def.index][1][3].push(annotation);
-												varDefines[def.blockLevel][def.index][1][3].push(modifier);
-  									 	 }
+  									 	 	 		 console.error("json2.PatValInfo => " + annotation);
+														 varDefines[def.blockLevel][def.index][1][3].push(annotation);
+														 varDefines[def.blockLevel][def.index][1][3].push(modifier);
+  									 	 		 }
+											 else if(def.type === "FuncDefInfo"
+  									 	 		 || def.type == "ProcedureInfo"){
+                           	 // console.error("FuncDefInfo!!!");
+														 varDefines[def.blockLevel][def.index][1][0][3].push(annotation);
+														 varDefines[def.blockLevel][def.index][1][0][3].push(modifier);
+  									 	 		 }
+
   									 	 else{
   									 	 	 throw new Error("json2.BlockStat: unintended type => " + def.type);
   									 	 }
@@ -244,8 +292,12 @@ function ax(t) {
 										 for(var i = 0; i < srules.length; i++){
 											 output.push(sx(ax(srules[i])));
 										 }
+										 var lits = t.literals;
+										 if(lits.length == 0) lits.push({notDelete: true});
+										 else lits = lits.map(convertName);
                      // return enclose('define-syntax', [t.macroName + "-Macro", ["syntax-rules", ["V-" + t.literals], ax(t.syntaxRules)]] );
-  									 return enclose('define-syntax', [t.macroName + "-Macro", ["syntax-rules", ["V-" + t.literals], output.join(' ')]] );
+										 // return enclose('define-syntax', [t.macroName + "-Macro", ["syntax-rules", ["V-" + t.literals], output.join(' ')]] );
+										 return enclose('define-syntax', [t.macroName + "-Macro", ["syntax-rules", lits, output.join(' ')]] );
   	case 'ExpressionVariable':
   	case 'IdentifierVariable':
   	case 'TypeVariable':
@@ -253,12 +305,30 @@ function ax(t) {
   	case 'Variable':
                 		 // console.error("t.name = " + "V-" + t.name);
 										 // return ScalaTag('Variable', ["V-" + t.name]);
-										 var name = "V-" + t.name;
-										 if(bSave) varNames[lambdaLevel].push(name);
+										 var name = convertName(t.name);
+										 // if(bSave) varNames[lambdaLevel].push(name);
 										 return name;
+  	case 'FunctionDeclaration':
+  									 //Signatureを解析して，必要な変数を全て読み出す
+  									 var params = [], sig = t.signature, name = convertName(sig.id.name);
+  									 lambdaLevel++;
+										 bSave = true;
+										 varNames[lambdaLevel] = [];
+  									 sig = ax(sig);
+  									 params = varNames[lambdaLevel];
+  									 lambdaLevel--;
+  									 bSave = false;
+  									 //本体はラムダの中につっこんでおく
+
+										 if(params.length == 0){
+										 	 params.push({notDelete: true});
+										 }
+										 else if(name === params[0]) params.shift();
+										 varDefines[blockLevel].push([name, [encloses('lambda', params, ["function", "FunctionDeclaration"], [], sig, ax(t.tp), null)]]);
+										 return {type:"FuncDclInfo", blockLevel: blockLevel, index:varDefines[blockLevel].length-1};
   	case 'FunctionDefinition':
   									 //Signatureを解析して，必要な変数を全て読み出す
-  									 var params = [], sig = t.signature, name = sig.id.name;
+  									 var params = [], sig = t.signature, name = convertName(sig.id.name);
   									 //....
   									 lambdaLevel++;
 										 bSave = true;
@@ -272,10 +342,40 @@ function ax(t) {
 										 if(params.length == 0){
 										 	 params.push({notDelete: true});
 										 }
-										 varDefines[blockLevel].push(["V-" + name, [encloses('lambda', params, ["function", "FunctionDefinition"], [], sig, ax(t.tp), ax(t.expr))]]);
+										 else{
+												// console.error("aaaarguments[0] = %j, name = %s\n", params[0], name);
+										 	 if(name === params[0]){
+										 	 	 //解析順序より，最初に入っているのがnameであるはず．．．
+										 	 	 //nameがラムダの引数に入っていると，相互再帰関数を書いたときにバグるので，取り除く
+										 	 	 params.shift();
+										 	 }
+										 }
+										 varDefines[blockLevel].push([name, [encloses('lambda', params, ["function", "FunctionDefinition"], [], sig, ax(t.tp), ax(t.expr))]]);
 				// return ScalaTag(t.type, [encloses('lambda', params, ax(sig), ax(t.tp), ax(t.expr))]);
 										 // return null;
 										 return {type:"FuncDefInfo", blockLevel: blockLevel, index:varDefines[blockLevel].length-1};
+		case 'Procedure':
+  									 //Signatureを解析して，必要な変数を全て読み出す
+  									 var params = [], sig = t.signature, name = convertName(sig.id.name);
+  									 //....
+  									 lambdaLevel++;
+										 bSave = true;
+										 varNames[lambdaLevel] = [];
+  									 sig = ax(sig);
+  									 params = varNames[lambdaLevel];
+  									 lambdaLevel--;
+  									 bSave = false;
+  									 //本体はラムダの中につっこんでおく
+
+										 if(params.length == 0){
+										 	 params.push({notDelete: true});
+										 }
+										 else if(name === params[0]) params.shift();
+										 varDefines[blockLevel].push([name, [encloses('lambda', params, ["function", "Procedure"], [], sig, null, ax(t.block))]]);
+				// return ScalaTag(t.type, [encloses('lambda', params, ax(sig), ax(t.tp), ax(t.expr))]);
+										 // return null;
+										 return {type:"ProcedureInfo", blockLevel: blockLevel, index:varDefines[blockLevel].length-1};
+
 
 
   	case 'integerLiteral': return t.value;
@@ -294,9 +394,9 @@ function ax(t) {
 										for(var i = 0; i < patterns.length; i++){
 											var e = patterns[i];
 											//(define 変数名 ((val or var) (変数名についている情報) (右辺)))
-										// res.push(encloses('define', "V-" + e.id, ["VAL_Variable", [ax(e.tp)], ax(expr)]));
+										// res.push(encloses('define', convertName(e.id), ["VAL_Variable", [ax(e.tp)], ax(expr)]));
 										// varDefines[blockLevel].push(encloses('define', "V-" + e.id, ["VAL_Variable", [ax(e.tp)], ax(expr)]));
-										varDefines[blockLevel].push(["V-" + e.id, [["val", "variable"], [ax(e.tp)], ax(expr), []]]);
+										varDefines[blockLevel].push([convertName(e.id), [["val", "variable"], [ax(e.tp)], ax(expr), []]]);
 										}
 										// return res;
 										// 何を返す？とりあえずnull
@@ -309,7 +409,7 @@ function ax(t) {
 										for(var i = 0; i < patterns.length; i++){
 											var e = patterns[i];
 											//(define 変数名 ((val or var) (変数名についている情報) (右辺)))
-										varDefines[blockLevel].push(["V-" + e.id, [["var", "variable"], [ax(e.tp)], ax(expr), []]]);
+										varDefines[blockLevel].push([convertName(e.id), [["var", "variable"], [ax(e.tp)], ax(expr), []]]);
 										}
 										// 何を返す？とりあえずnull
 										return {type:"PatVarDefInfo", blockLevel: blockLevel, index:varDefines[blockLevel].length-1};
@@ -331,7 +431,7 @@ function ax(t) {
 										for(var i = 0; i < patterns.length; i++){
 											var e = patterns[i];
 											//(define 変数名 ((val or var) (変数名についている情報) (右辺)))
-										varDefines[blockLevel].push(["V-" + e.id, [["val", "variable"], [ax(e.tp)], ax(null), []]]);
+										varDefines[blockLevel].push([convertName(e.id), [["val", "variable"], [ax(e.tp)], ax(null), []]]);
 										}
 										// return res;
 										// 何を返す？とりあえずnull
@@ -344,7 +444,7 @@ function ax(t) {
 										for(var i = 0; i < patterns.length; i++){
 											var e = patterns[i];
 											//(define 変数名 ((val or var) (変数名についている情報) (右辺)))
-										varDefines[blockLevel].push(["V-" + e.id, [["var", "variable"], [ax(e.tp)], ax(null), []]]);
+										varDefines[blockLevel].push([convertName(e.id), [["var", "variable"], [ax(e.tp)], ax(null), []]]);
 										}
 										// return res;
 										// 何を返す？とりあえずnull
@@ -353,7 +453,7 @@ function ax(t) {
 		case 'TypeDeclaration':
 											var e = t.pattern;
 											//(define 変数名 ((val or var) (変数名についている情報) (右辺)))
-										varDefines[blockLevel].push(["V-" + e.id, [["type", "TypeDeclaration"], [ax(e.tpc), ax(e.left), ax(e.right)], ax(null), []]]);
+										varDefines[blockLevel].push([convertName(e.id), [["type", "TypeDeclaration"], [ax(e.tpc), ax(e.left), ax(e.right)], ax(null), []]]);
 										// 何を返す？とりあえずnull
 										// return null;
 										return {type:"TypeDclInfo", blockLevel: blockLevel, index:varDefines[blockLevel].length-1};
@@ -361,7 +461,7 @@ function ax(t) {
 	case 'TypeDefinition':
 											var e = t.body.pattern;
 											//(define 変数名 ((val or var) (変数名についている情報) (右辺)))
-										varDefines[blockLevel].push(["V-" + e.id, [["type", "TypeDefinition"], [ax(e.paramClause)], ax(e.tp), []]]);
+										varDefines[blockLevel].push([convertName(e.id), [["type", "TypeDefinition"], [ax(e.paramClause)], ax(e.tp), []]]);
 										// 何を返す？とりあえずnull
 										// return null;
 										return {type:"TypeDefInfo", blockLevel: blockLevel, index:varDefines[blockLevel].length-1};

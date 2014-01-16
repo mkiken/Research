@@ -1,4 +1,587 @@
 {
   "type": "MacroDefinitions",
-  "defs": []
+  "defs": [
+    {
+      "type": "ExpressionMacroDefinition",
+      "macroName": "Decl",
+      "literals": [],
+      "syntaxRules": [
+        {
+          "type": "SyntaxRule",
+          "pattern": [
+            {
+              "type": "Paren",
+              "elements": [
+                {
+                  "type": "ExpressionVariable",
+                  "name": "base"
+                },
+                {
+                  "type": "PunctuationMark",
+                  "value": ","
+                },
+                {
+                  "type": "IdentifierVariable",
+                  "name": "miss"
+                },
+                {
+                  "type": "PunctuationMark",
+                  "value": ","
+                },
+                {
+                  "type": "TypeVariable",
+                  "name": "tp"
+                }
+              ]
+            }
+          ],
+          "template": [
+            {
+              "type": "PostfixExpression",
+              "infix": {
+                "type": "InfixExpression",
+                "left": {
+                  "type": "PrefixExpression",
+                  "op": null,
+                  "expr": {
+                    "type": "SimpleExpression",
+                    "expr": {
+                      "type": "TupleExpression",
+                      "expr": {
+                        "type": "Exprs",
+                        "contents": [
+                          {
+                            "type": "AnonymousFunction",
+                            "left": {
+                              "type": "Bindings",
+                              "bindings": [
+                                {
+                                  "type": "Binding",
+                                  "id": {
+                                    "type": "Variable",
+                                    "name": "f"
+                                  },
+                                  "tp": null
+                                }
+                              ]
+                            },
+                            "right": {
+                              "type": "PostfixExpression",
+                              "infix": {
+                                "type": "InfixExpression",
+                                "left": {
+                                  "type": "PrefixExpression",
+                                  "op": null,
+                                  "expr": {
+                                    "type": "BlockExpression",
+                                    "block": {
+                                      "type": "Block",
+                                      "states": [
+                                        {
+                                          "type": "BlockStat",
+                                          "annotations": [],
+                                          "modifier": null,
+                                          "def": {
+                                            "type": "TypeDefinition",
+                                            "body": {
+                                              "type": "TypeDef",
+                                              "pattern": {
+                                                "type": "TypeDefVariable",
+                                                "id": "tb",
+                                                "paramClause": null,
+                                                "tp": {
+                                                  "type": "TypeVariable",
+                                                  "name": "tp"
+                                                }
+                                              }
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "type": "BlockStat",
+                                          "annotations": [],
+                                          "modifier": null,
+                                          "def": {
+                                            "type": "PatValDef",
+                                            "body": {
+                                              "type": "PatDef",
+                                              "patterns": [
+                                                {
+                                                  "type": "PatDefVariable",
+                                                  "id": "d",
+                                                  "tp": {
+                                                    "type": "Type",
+                                                    "exClause": null,
+                                                    "inType": {
+                                                      "type": "InfixType",
+                                                      "compoundType": {
+                                                        "type": "CompoundType",
+                                                        "annotType": {
+                                                          "type": "AnnotType",
+                                                          "simpleType": {
+                                                            "type": "SimpleType",
+                                                            "id": {
+                                                              "type": "StableId",
+                                                              "contents": [
+                                                                {
+                                                                  "type": "Variable",
+                                                                  "name": "tb"
+                                                                }
+                                                              ]
+                                                            },
+                                                            "postfix": []
+                                                          },
+                                                          "annotation": []
+                                                        },
+                                                        "withType": null,
+                                                        "ref": null
+                                                      },
+                                                      "ids": [],
+                                                      "compoundTypes": []
+                                                    }
+                                                  }
+                                                }
+                                              ],
+                                              "expr": {
+                                                "type": "PostfixExpression",
+                                                "infix": {
+                                                  "type": "InfixExpression",
+                                                  "left": {
+                                                    "type": "PrefixExpression",
+                                                    "op": null,
+                                                    "expr": {
+                                                      "type": "SimpleExpression",
+                                                      "expr": {
+                                                        "type": "literalSimpleExpression",
+                                                        "literal": {
+                                                          "type": "integerLiteral",
+                                                          "value": "3"
+                                                        },
+                                                        "suffix": {
+                                                          "type": "Empty"
+                                                        }
+                                                      },
+                                                      "under": null
+                                                    }
+                                                  },
+                                                  "ops": [],
+                                                  "rights": []
+                                                },
+                                                "id": null
+                                              }
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "type": "BlockStat",
+                                          "annotations": [],
+                                          "modifier": null,
+                                          "def": {
+                                            "type": "Procedure",
+                                            "signature": {
+                                              "type": "FunctionSignature",
+                                              "id": {
+                                                "type": "Variable",
+                                                "name": "doIt"
+                                              },
+                                              "funtype": null,
+                                              "param": {
+                                                "type": "ParamClauses",
+                                                "clauses": [
+                                                  {
+                                                    "type": "ParamClause",
+                                                    "params": {
+                                                      "type": "Params",
+                                                      "params": [
+                                                        {
+                                                          "type": "Param",
+                                                          "annotations": [],
+                                                          "id": {
+                                                            "type": "Variable",
+                                                            "name": "d"
+                                                          },
+                                                          "paramType": {
+                                                            "type": "RepeatedParamType",
+                                                            "tp": {
+                                                              "type": "Type",
+                                                              "exClause": null,
+                                                              "inType": {
+                                                                "type": "InfixType",
+                                                                "compoundType": {
+                                                                  "type": "CompoundType",
+                                                                  "annotType": {
+                                                                    "type": "AnnotType",
+                                                                    "simpleType": {
+                                                                      "type": "SimpleType",
+                                                                      "id": {
+                                                                        "type": "StableId",
+                                                                        "contents": [
+                                                                          {
+                                                                            "type": "Variable",
+                                                                            "name": "Int"
+                                                                          }
+                                                                        ]
+                                                                      },
+                                                                      "postfix": []
+                                                                    },
+                                                                    "annotation": []
+                                                                  },
+                                                                  "withType": null,
+                                                                  "ref": null
+                                                                },
+                                                                "ids": [],
+                                                                "compoundTypes": []
+                                                              }
+                                                            },
+                                                            "star": null
+                                                          },
+                                                          "expr": null
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                ],
+                                                "params": null
+                                              }
+                                            },
+                                            "block": {
+                                              "type": "Block",
+                                              "states": [
+                                                {
+                                                  "type": "BlockStat",
+                                                  "annotations": [],
+                                                  "modifier": null,
+                                                  "def": {
+                                                    "type": "PatValDef",
+                                                    "body": {
+                                                      "type": "PatDef",
+                                                      "patterns": [
+                                                        {
+                                                          "type": "PatDefVariable",
+                                                          "id": "a",
+                                                          "tp": null
+                                                        }
+                                                      ],
+                                                      "expr": {
+                                                        "type": "PostfixExpression",
+                                                        "infix": {
+                                                          "type": "InfixExpression",
+                                                          "left": {
+                                                            "type": "PrefixExpression",
+                                                            "op": null,
+                                                            "expr": {
+                                                              "type": "SimpleExpression",
+                                                              "expr": {
+                                                                "type": "literalSimpleExpression",
+                                                                "literal": {
+                                                                  "type": "integerLiteral",
+                                                                  "value": "3"
+                                                                },
+                                                                "suffix": {
+                                                                  "type": "Empty"
+                                                                }
+                                                              },
+                                                              "under": null
+                                                            }
+                                                          },
+                                                          "ops": [
+                                                            {
+                                                              "type": "Variable",
+                                                              "name": "+"
+                                                            }
+                                                          ],
+                                                          "rights": [
+                                                            {
+                                                              "type": "InfixExpression",
+                                                              "left": {
+                                                                "type": "PrefixExpression",
+                                                                "op": null,
+                                                                "expr": {
+                                                                  "type": "SimpleExpression",
+                                                                  "expr": {
+                                                                    "type": "idSeqSimpleExpression",
+                                                                    "ids": {
+                                                                      "type": "Variable",
+                                                                      "name": "d"
+                                                                    },
+                                                                    "suffix": {
+                                                                      "type": "Empty"
+                                                                    }
+                                                                  },
+                                                                  "under": null
+                                                                }
+                                                              },
+                                                              "ops": [],
+                                                              "rights": []
+                                                            }
+                                                          ]
+                                                        },
+                                                        "id": null
+                                                      }
+                                                    }
+                                                  }
+                                                },
+                                                {
+                                                  "type": "PostfixExpression",
+                                                  "infix": {
+                                                    "type": "InfixExpression",
+                                                    "left": {
+                                                      "type": "PrefixExpression",
+                                                      "op": null,
+                                                      "expr": {
+                                                        "type": "SimpleExpression",
+                                                        "expr": {
+                                                          "type": "idSeqSimpleExpression",
+                                                          "ids": {
+                                                            "type": "Variable",
+                                                            "name": "println"
+                                                          },
+                                                          "suffix": {
+                                                            "type": "FunctionApplicationPostfix",
+                                                            "argument": {
+                                                              "type": "ArgumentExpression",
+                                                              "exprs": {
+                                                                "type": "Exprs",
+                                                                "contents": [
+                                                                  {
+                                                                    "type": "PostfixExpression",
+                                                                    "infix": {
+                                                                      "type": "InfixExpression",
+                                                                      "left": {
+                                                                        "type": "PrefixExpression",
+                                                                        "op": null,
+                                                                        "expr": {
+                                                                          "type": "SimpleExpression",
+                                                                          "expr": {
+                                                                            "type": "idSeqSimpleExpression",
+                                                                            "ids": {
+                                                                              "type": "Variable",
+                                                                              "name": "a"
+                                                                            },
+                                                                            "suffix": {
+                                                                              "type": "Empty"
+                                                                            }
+                                                                          },
+                                                                          "under": null
+                                                                        }
+                                                                      },
+                                                                      "ops": [],
+                                                                      "rights": []
+                                                                    },
+                                                                    "id": null
+                                                                  }
+                                                                ]
+                                                              }
+                                                            },
+                                                            "postfix": {
+                                                              "type": "Empty"
+                                                            }
+                                                          }
+                                                        },
+                                                        "under": null
+                                                      }
+                                                    },
+                                                    "ops": [],
+                                                    "rights": []
+                                                  },
+                                                  "id": null
+                                                }
+                                              ],
+                                              "res": null
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "type": "IfStatement",
+                                          "condition": {
+                                            "type": "PostfixExpression",
+                                            "infix": {
+                                              "type": "InfixExpression",
+                                              "left": {
+                                                "type": "PrefixExpression",
+                                                "op": null,
+                                                "expr": {
+                                                  "type": "SimpleExpression",
+                                                  "expr": {
+                                                    "type": "idSeqSimpleExpression",
+                                                    "ids": {
+                                                      "type": "Variable",
+                                                      "name": "f"
+                                                    },
+                                                    "suffix": {
+                                                      "type": "Empty"
+                                                    }
+                                                  },
+                                                  "under": null
+                                                }
+                                              },
+                                              "ops": [],
+                                              "rights": []
+                                            },
+                                            "id": null
+                                          },
+                                          "ifStatement": {
+                                            "type": "PostfixExpression",
+                                            "infix": {
+                                              "type": "InfixExpression",
+                                              "left": {
+                                                "type": "PrefixExpression",
+                                                "op": null,
+                                                "expr": {
+                                                  "type": "SimpleExpression",
+                                                  "expr": {
+                                                    "type": "idSeqSimpleExpression",
+                                                    "ids": {
+                                                      "type": "Variable",
+                                                      "name": "base"
+                                                    },
+                                                    "suffix": {
+                                                      "type": "Empty"
+                                                    }
+                                                  },
+                                                  "under": null
+                                                }
+                                              },
+                                              "ops": [],
+                                              "rights": []
+                                            },
+                                            "id": null
+                                          },
+                                          "elseStatement": {
+                                            "type": "PostfixExpression",
+                                            "infix": {
+                                              "type": "InfixExpression",
+                                              "left": {
+                                                "type": "PrefixExpression",
+                                                "op": null,
+                                                "expr": {
+                                                  "type": "SimpleExpression",
+                                                  "expr": {
+                                                    "type": "idSeqSimpleExpression",
+                                                    "ids": {
+                                                      "type": "Variable",
+                                                      "name": "doIt"
+                                                    },
+                                                    "suffix": {
+                                                      "type": "FunctionApplicationPostfix",
+                                                      "argument": {
+                                                        "type": "ArgumentExpression",
+                                                        "exprs": {
+                                                          "type": "Exprs",
+                                                          "contents": [
+                                                            {
+                                                              "type": "PostfixExpression",
+                                                              "infix": {
+                                                                "type": "InfixExpression",
+                                                                "left": {
+                                                                  "type": "PrefixExpression",
+                                                                  "op": null,
+                                                                  "expr": {
+                                                                    "type": "SimpleExpression",
+                                                                    "expr": {
+                                                                      "type": "idSeqSimpleExpression",
+                                                                      "ids": {
+                                                                        "type": "Variable",
+                                                                        "name": "d"
+                                                                      },
+                                                                      "suffix": {
+                                                                        "type": "Empty"
+                                                                      }
+                                                                    },
+                                                                    "under": null
+                                                                  }
+                                                                },
+                                                                "ops": [],
+                                                                "rights": []
+                                                              },
+                                                              "id": null
+                                                            }
+                                                          ]
+                                                        }
+                                                      },
+                                                      "postfix": {
+                                                        "type": "Empty"
+                                                      }
+                                                    }
+                                                  },
+                                                  "under": null
+                                                }
+                                              },
+                                              "ops": [],
+                                              "rights": []
+                                            },
+                                            "id": null
+                                          }
+                                        }
+                                      ],
+                                      "res": null
+                                    }
+                                  }
+                                },
+                                "ops": [],
+                                "rights": []
+                              },
+                              "id": null
+                            }
+                          }
+                        ]
+                      },
+                      "suffix": {
+                        "type": "FunctionApplicationPostfix",
+                        "argument": {
+                          "type": "ArgumentExpression",
+                          "exprs": {
+                            "type": "Exprs",
+                            "contents": [
+                              {
+                                "type": "PostfixExpression",
+                                "infix": {
+                                  "type": "InfixExpression",
+                                  "left": {
+                                    "type": "PrefixExpression",
+                                    "op": null,
+                                    "expr": {
+                                      "type": "SimpleExpression",
+                                      "expr": {
+                                        "type": "idSeqSimpleExpression",
+                                        "ids": {
+                                          "type": "Variable",
+                                          "name": "base"
+                                        },
+                                        "suffix": {
+                                          "type": "Empty"
+                                        }
+                                      },
+                                      "under": null
+                                    }
+                                  },
+                                  "ops": [],
+                                  "rights": []
+                                },
+                                "id": null
+                              }
+                            ]
+                          }
+                        },
+                        "postfix": {
+                          "type": "Empty"
+                        }
+                      }
+                    },
+                    "under": null
+                  }
+                },
+                "ops": [],
+                "rights": []
+              },
+              "id": null
+            }
+          ]
+        }
+      ],
+      "marks": [
+        ","
+      ]
+    }
+  ]
 }

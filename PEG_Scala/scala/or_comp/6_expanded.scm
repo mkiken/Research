@@ -14,153 +14,84 @@
       #\nul
       ("Scala"
        "TemplateBody"
-       #\nul
-       (("Scala"
-         "TemplateStatement"
-         #\nul
-         #\nul
-         ("Scala"
-          "Definition"
-          ("Scala"
-           "FunctionDefinition"
-           ("Scala"
-            "FunctionSignature"
-            V-main
-            #\nul
-            ("Scala"
-             "ParamClauses"
-             (("Scala"
-               "ParamClause"
-               ("Scala"
-                "Params"
-                (("Scala"
-                  "Param"
-                  #\nul
-                  V-args
-                  ("Scala"
-                   "RepeatedParamType"
-                   ("Scala"
-                    "Type"
-                    #\nul
-                    ("Scala"
-                     "InfixType"
-                     ("Scala"
-                      "CompoundType"
+       (letrec* ((R-main-\x60;28*
+                   ((lambda ()
+                      (function FunctionDefinition)
+                      (#\nul #\nul)
                       ("Scala"
-                       "AnnotType"
-                       ("Scala"
-                        "SimpleType"
-                        ("Scala" "StableId" (V-Array))
-                        (("Scala"
-                          "TypeArgs"
-                          ("Scala"
-                           "Types"
-                           (("Scala"
-                             "Type"
-                             #\nul
-                             ("Scala"
-                              "InfixType"
-                              ("Scala"
-                               "CompoundType"
-                               ("Scala"
-                                "AnnotType"
-                                ("Scala" "SimpleType" ("Scala" "StableId" (V-String)) #\nul)
-                                #\nul)
-                               #\nul
-                               #\nul)
-                              #\nul
-                              #\nul)))))))
-                       #\nul)
-                      #\nul
-                      #\nul)
-                     #\nul
-                     #\nul))
-                   #\nul)
-                  #\nul)))))
-             #\nul))
-           ("Scala"
-            "Type"
-            #\nul
-            ("Scala"
-             "InfixType"
-             ("Scala"
-              "CompoundType"
-              ("Scala" "AnnotType" ("Scala" "SimpleType" ("Scala" "StableId" (V-Unit)) #\nul) #\nul)
-              #\nul
-              #\nul)
-             #\nul
-             #\nul))
-           ("Scala"
-            "PostfixExpression"
-            ("Scala"
-             "InfixExpression"
-             ("Scala"
-              "PrefixExpression"
-              #\nul
-              ("Scala"
-               "BlockExpression"
-               ("Scala"
-                "Block"
-                (("Scala"
-                  "BlockStat"
-                  #\nul
-                  #\nul
-                  ("Scala"
-                   "PatValDef"
-                   ("Scala"
-                    "PatDef"
-                    (("Scala" "PatternBinder" "a" #\nul))
-                    #\nul
-                    ("Scala"
-                     "PostfixExpression"
-                     ("Scala"
-                      "InfixExpression"
-                      ("Scala"
-                       "PrefixExpression"
+                       "FunctionSignature"
+                       R-main-\x60;28*
                        #\nul
                        ("Scala"
-                        "SimpleExpression"
-                        ("Scala" "literalSimpleExpression" ("Scala" "booleanLiteral" "false") #\nul)
+                        "ParamClauses"
+                        (("Scala"
+                          "ParamClause"
+                          ("Scala"
+                           "Params"
+                           (("Scala"
+                             "Param"
+                             #\nul
+                             R-args-
+                             ("Scala"
+                              "RepeatedParamType"
+                              ("Scala"
+                               "Type"
+                               #\nul
+                               ("Scala"
+                                "InfixType"
+                                ("Scala"
+                                 "CompoundType"
+                                 ("Scala"
+                                  "AnnotType"
+                                  ("Scala"
+                                   "SimpleType"
+                                   ("Scala" "StableId" (R-Array-))
+                                   (("Scala"
+                                     "TypeArgs"
+                                     ("Scala"
+                                      "Types"
+                                      (("Scala"
+                                        "Type"
+                                        #\nul
+                                        ("Scala"
+                                         "InfixType"
+                                         ("Scala"
+                                          "CompoundType"
+                                          ("Scala"
+                                           "AnnotType"
+                                           ("Scala"
+                                            "SimpleType"
+                                            ("Scala" "StableId" (R-String-))
+                                            #\nul)
+                                           #\nul)
+                                          #\nul
+                                          #\nul)
+                                         #\nul
+                                         #\nul)))))))
+                                  #\nul)
+                                 #\nul
+                                 #\nul)
+                                #\nul
+                                #\nul))
+                              #\nul)
+                             #\nul)))))
                         #\nul))
-                      #\nul
-                      #\nul)
-                     #\nul))))
-                 ("Scala"
-                  "BlockStat"
-                  #\nul
-                  #\nul
-                  ("Scala"
-                   "PatVarDef"
-                   ("Scala"
-                    "PatDef"
-                    (("Scala" "PatternBinder" "f" #\nul))
-                    #\nul
-                    ("Scala"
-                     "PostfixExpression"
-                     ("Scala"
-                      "InfixExpression"
                       ("Scala"
-                       "PrefixExpression"
-                       ("Scala" "Keyword" "-")
+                       "Type"
+                       #\nul
                        ("Scala"
-                        "SimpleExpression"
-                        ("Scala" "literalSimpleExpression" 1 #\nul)
+                        "InfixType"
+                        ("Scala"
+                         "CompoundType"
+                         ("Scala"
+                          "AnnotType"
+                          ("Scala" "SimpleType" ("Scala" "StableId" (R-Unit-)) #\nul)
+                          #\nul)
+                         #\nul
+                         #\nul)
+                        #\nul
                         #\nul))
-                      #\nul
-                      #\nul)
-                     #\nul))))
-                 ("Scala"
-                  "BlockStat"
-                  #\nul
-                  #\nul
-                  ("Scala"
-                   "PatValDef"
-                   ("Scala"
-                    "PatDef"
-                    (("Scala" "PatternBinder" "b" #\nul))
-                    #\nul
-                    (#\nul
-                     (("Scala"
+                      ("Scala"
                        "PostfixExpression"
                        ("Scala"
                         "InfixExpression"
@@ -168,53 +99,228 @@
                          "PrefixExpression"
                          #\nul
                          ("Scala"
-                          "SimpleExpression"
-                          ("Scala" "idSeqSimpleExpression" V-f #\nul)
-                          #\nul))
+                          "BlockExpression"
+                          ("Scala"
+                           "Block"
+                           (letrec* ((V-a\x60;31*
+                                       ((val variable)
+                                        (#\nul)
+                                        ("Scala"
+                                         "PostfixExpression"
+                                         ("Scala"
+                                          "InfixExpression"
+                                          ("Scala"
+                                           "PrefixExpression"
+                                           #\nul
+                                           ("Scala"
+                                            "SimpleExpression"
+                                            ("Scala"
+                                             "literalSimpleExpression"
+                                             ("Scala" "booleanLiteral" "false")
+                                             #\nul)
+                                            #\nul))
+                                          #\nul
+                                          #\nul)
+                                         #\nul)
+                                        (#\nul #\nul)))
+                                     (V-f\x60;31*
+                                       ((var variable)
+                                        (#\nul)
+                                        ("Scala"
+                                         "PostfixExpression"
+                                         ("Scala"
+                                          "InfixExpression"
+                                          ("Scala"
+                                           "PrefixExpression"
+                                           ("Scala" "Keyword" "-")
+                                           ("Scala"
+                                            "SimpleExpression"
+                                            ("Scala" "literalSimpleExpression" 1 #\nul)
+                                            #\nul))
+                                          #\nul
+                                          #\nul)
+                                         #\nul)
+                                        (#\nul #\nul)))
+                                     (V-b\x60;31*
+                                       ((val variable)
+                                        (#\nul)
+                                        (#\nul
+                                         (("Scala"
+                                           "PostfixExpression"
+                                           ("Scala"
+                                            "InfixExpression"
+                                            ("Scala"
+                                             "PrefixExpression"
+                                             #\nul
+                                             ("Scala"
+                                              "SimpleExpression"
+                                              ("Scala"
+                                               "TupleExpression"
+                                               ("Scala"
+                                                "Exprs"
+                                                (("Scala"
+                                                  "AnonymousFunction"
+                                                  (lambda (V-f\x60;32\x60;33*)
+                                                    (#\nul)
+                                                    ("Scala"
+                                                     "PostfixExpression"
+                                                     ("Scala"
+                                                      "InfixExpression"
+                                                      ("Scala"
+                                                       "PrefixExpression"
+                                                       #\nul
+                                                       ("Scala"
+                                                        "BlockExpression"
+                                                        ("Scala"
+                                                         "Block"
+                                                         (let ()
+                                                           (("Scala"
+                                                             "IfStatement"
+                                                             ("Scala"
+                                                              "PostfixExpression"
+                                                              ("Scala"
+                                                               "InfixExpression"
+                                                               ("Scala"
+                                                                "PrefixExpression"
+                                                                #\nul
+                                                                ("Scala"
+                                                                 "SimpleExpression"
+                                                                 ("Scala"
+                                                                  "idSeqSimpleExpression"
+                                                                  V-f\x60;32\x60;33*
+                                                                  #\nul)
+                                                                 #\nul))
+                                                               #\nul
+                                                               #\nul)
+                                                              #\nul)
+                                                             ("Scala"
+                                                              "PostfixExpression"
+                                                              ("Scala"
+                                                               "InfixExpression"
+                                                               ("Scala"
+                                                                "PrefixExpression"
+                                                                #\nul
+                                                                ("Scala"
+                                                                 "SimpleExpression"
+                                                                 ("Scala"
+                                                                  "idSeqSimpleExpression"
+                                                                  V-f\x60;32\x60;33*
+                                                                  #\nul)
+                                                                 #\nul))
+                                                               #\nul
+                                                               #\nul)
+                                                              #\nul)
+                                                             ("Scala"
+                                                              "PostfixExpression"
+                                                              ("Scala"
+                                                               "InfixExpression"
+                                                               ("Scala"
+                                                                "PrefixExpression"
+                                                                #\nul
+                                                                ("Scala"
+                                                                 "SimpleExpression"
+                                                                 ("Scala"
+                                                                  "idSeqSimpleExpression"
+                                                                  V-f\x60;31*
+                                                                  #\nul)
+                                                                 #\nul))
+                                                               #\nul
+                                                               #\nul)
+                                                              #\nul)))
+                                                           #\nul))))
+                                                      #\nul
+                                                      #\nul)
+                                                     #\nul)))))
+                                               ("Scala"
+                                                "FunctionApplicationPostfix"
+                                                ("Scala"
+                                                 "ArgumentExpression"
+                                                 ("Scala"
+                                                  "Exprs"
+                                                  (("Scala"
+                                                    "PostfixExpression"
+                                                    ("Scala"
+                                                     "InfixExpression"
+                                                     ("Scala"
+                                                      "PrefixExpression"
+                                                      #\nul
+                                                      ("Scala"
+                                                       "SimpleExpression"
+                                                       ("Scala"
+                                                        "idSeqSimpleExpression"
+                                                        ("Scala"
+                                                         "PostfixExpression"
+                                                         ("Scala"
+                                                          "InfixExpression"
+                                                          ("Scala"
+                                                           "PrefixExpression"
+                                                           #\nul
+                                                           ("Scala"
+                                                            "SimpleExpression"
+                                                            ("Scala"
+                                                             "literalSimpleExpression"
+                                                             ("Scala" "booleanLiteral" "false")
+                                                             #\nul)
+                                                            #\nul))
+                                                          #\nul
+                                                          #\nul)
+                                                         #\nul)
+                                                        #\nul)
+                                                       #\nul))
+                                                     #\nul
+                                                     #\nul)
+                                                    #\nul))))
+                                                #\nul))
+                                              #\nul))
+                                            #\nul
+                                            #\nul)
+                                           #\nul))
+                                         #\nul)
+                                        (#\nul #\nul))))
+                             (#\nul
+                              #\nul
+                              #\nul
+                              ("Scala"
+                               "PostfixExpression"
+                               ("Scala"
+                                "InfixExpression"
+                                ("Scala"
+                                 "PrefixExpression"
+                                 #\nul
+                                 ("Scala"
+                                  "SimpleExpression"
+                                  ("Scala"
+                                   "idSeqSimpleExpression"
+                                   V-println
+                                   ("Scala"
+                                    "FunctionApplicationPostfix"
+                                    ("Scala"
+                                     "ArgumentExpression"
+                                     ("Scala"
+                                      "Exprs"
+                                      (("Scala"
+                                        "PostfixExpression"
+                                        ("Scala"
+                                         "InfixExpression"
+                                         ("Scala"
+                                          "PrefixExpression"
+                                          #\nul
+                                          ("Scala"
+                                           "SimpleExpression"
+                                           ("Scala" "idSeqSimpleExpression" V-b\x60;31* #\nul)
+                                           #\nul))
+                                         #\nul
+                                         #\nul)
+                                        #\nul))))
+                                    #\nul))
+                                  #\nul))
+                                #\nul
+                                #\nul)
+                               #\nul))
+                             #\nul))))
                         #\nul
                         #\nul)
-                       #\nul))
-                     #\nul))))
-                 ("Scala"
-                  "PostfixExpression"
-                  ("Scala"
-                   "InfixExpression"
-                   ("Scala"
-                    "PrefixExpression"
-                    #\nul
-                    ("Scala"
-                     "SimpleExpression"
-                     ("Scala"
-                      "idSeqSimpleExpression"
-                      V-println
-                      ("Scala"
-                       "FunctionApplicationPostfix"
-                       ("Scala"
-                        "ArgumentExpression"
-                        ("Scala"
-                         "Exprs"
-                         (("Scala"
-                           "PostfixExpression"
-                           ("Scala"
-                            "InfixExpression"
-                            ("Scala"
-                             "PrefixExpression"
-                             #\nul
-                             ("Scala"
-                              "SimpleExpression"
-                              ("Scala" "idSeqSimpleExpression" V-b #\nul)
-                              #\nul))
-                            #\nul
-                            #\nul)
-                           #\nul))))
-                       #\nul))
-                     #\nul))
-                   #\nul
-                   #\nul)
-                  #\nul))
-                #\nul)))
-             #\nul
-             #\nul)
-            #\nul))))
-        #\nul))))))
+                       #\nul)))))
+         #\nul
+         (#\nul #\nul)))))))
   #\nul)

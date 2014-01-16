@@ -182,8 +182,14 @@ var trans = {
 		return typeof(e) == "object" && e.name == "__@";
 	},
 	isVariable : function(e){
-		if(typeof(e) == "object" && typeof e.name == 'string' && e.name.length >= 3){
-			if(e.name[0] == 'V' && e.name[1] == '-') return true;
+		if(typeof(e) == "string" && e.length >= 3){
+			if(e[0] == 'V' && e[1] == '-') return true;
+		}
+		return false;
+	},
+	isReserved : function(e){
+		if(typeof(e) == "string" && e.length >= 3){
+			if(e[0] == 'R' && e[1] == '-') return true;
 		}
 		return false;
 	},
@@ -244,7 +250,7 @@ var trans = {
 				this.do_symbol(params[i], 1); //パラメータはシンボル
 				if(!this.isNull(types[i])) {
 					B.push(" : ");
-					console.error("do_lambda: types[i] = " + JSON.stringify(types[i]));
+					// console.error("do_lambda: types[i] = " + JSON.stringify(types[i]));
 					this.do_scala(types[i], 1);
 				}
 				if(i != params.length-1) B.push(", ");
@@ -263,8 +269,10 @@ var trans = {
 		//変数宣言の解析
 		var vars = e[pos];
 		if(vars == null) return;
+		// console.error("|vars| = %d", vars.length);
 		for(var i = 0; i < vars.length; i++){
 			var def = vars[i];
+		// console.error("def[%d] = %j", i, def);
 			var prefix = def[1][0];
 			// console.error(prefix);
 			if(prefix[0].name === "val"){
@@ -279,7 +287,7 @@ var trans = {
 			else if(prefix[0].name === "var"){
 				if(prefix[1].name === "variable"){
 					var option = def[1][3];
-					console.error("option = %j\n", option);
+					// console.error("option = %j\n", option);
 					this.s2j(option[0], 0);
 					this.s2j(option[1], 0);
 				}
@@ -298,7 +306,7 @@ var trans = {
 			}
 			else if(prefix[0].name === "lambda"){
 				//関数定義
-				if(prefix[2][0].name === "function" && prefix[2][1].name === "FunctionDefinition"){
+				if(prefix[2][0].name === "function"){
 					var option = prefix[3];
 					this.s2j(option[0], 0);
 					this.s2j(option[1], 0);
@@ -310,11 +318,18 @@ var trans = {
 						B.push(':');
 						this.s2j(prefix[5], 0);
 					}
-					B.push(' = ');
-					this.s2j(prefix[6], 0);
+					if(prefix[2][1].name === "FunctionDefinition"){
+						B.push(' = ');
+						this.s2j(prefix[6], 0);
+					}
+					else if(prefix[2][1].name === "Procedure"){
+						B.format('{', newline, 2);
+						this.s2j(prefix[6], 0); //block
+						B.format(-2, '}');
+					}
 					B.format(';', newline);
 
-					return;
+					continue;
 				}
 				else{
 					throw new Error("sx2scala.do_letrec*: undefined prefix_lambda. => " + prefix[2]);
@@ -360,7 +375,7 @@ var trans = {
 					//付加情報を処理する
 					var infos = def[1][1];
 					for(var j = 0; j < infos.length; j++){
-						console.error("info = %j", infos[j]);
+						// console.error("info = %j", infos[j]);
 						if(!this.isNull(infos[j])){
 							// if(infos[j].type === "Type"){
 							if(infos[j][0] === "Scala" && infos[j][1] === "Type"){
@@ -715,15 +730,18 @@ var trans = {
 	do_symbol : function(e){
 		if(!this.isNull(e) && !this.isAt(e)){
 			// console.error("do_symbol: %j, %s, %s", e, typeof(e), this.isVariable(e));
-			if(this.isVariable(e)){
-				if(this.isWildCard(e)) B.push("_");
-				else B.push(delete_chars(convertAsterisk(e.name.slice(2))));
+			var nm = e.name;
+			if(this.isVariable(nm)){
+				if(this.isWildCard(nm)) B.push("_");
+				else B.push(delete_chars(convertAsterisk(nm.slice(2))));
 			}
-			// else if(this.isTypeVariable(e)){
-				// if(this.isWildCard(e)) B.push("_");
-				// else B.push(delete_chars(convertAsterisk(e.name.slice(2))));
-			// }
-			else B.push(e.name);
+			else if(this.isReserved(nm)){
+				var idx = nm.indexOf('-', 3);
+				if(idx == -1) throw new Error("sx2scala . incorrect reserved words => " + nm);
+				// console.error("idx = %d, nm = %s\n", idx, nm);
+				B.push(delete_chars(convertAsterisk(nm.slice(2, idx))));
+			}
+			else B.push(nm);
 		}
 	}
 };

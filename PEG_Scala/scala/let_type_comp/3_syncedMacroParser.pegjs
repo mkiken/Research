@@ -68,6 +68,21 @@
 		}
 	}
 
+//lambdaの引数に加えるべき変数にチェックを付ける
+	function checkMark(obj){
+		switch(obj.type){
+			case 'Identifier':
+			case 'Identifier2':
+		/* obj.type = "Variable"; */
+		/* return obj; */
+				return {type: obj.type, name: "A-" + obj.name};
+			case 'Ellipsis':
+				return obj;
+			default:
+				throw new Error("toVariable: unexpected type: %s", obj.type);
+		}
+	}
+
 	function dbg(){
 		const range = 10;
 		console.error("dbg : offset = %d, input = %s", offset, input.substr(Math.max(0, offset - range), Math.min(input.length - offset, 2*range)));
@@ -782,7 +797,7 @@ Block = blocks:(BlockStat semi)* res:ResultExpr? {
 
 BlockStat = Import
 / an:Annotation* md:(IMPLICIT / LAZY)? def:Def {return {type:"BlockStat", annotations:an, modifier:ftr(md), def:def}; }
-/ an:Annotation* lm:LocalModifier* td:TmplDef {return {type:"BlockStat", annotations:an, modifier:lm, def:td}; }
+/ an:Annotation* lm:LocalModifier* td:TmplDef {return {type:"TmplBlockStat", annotations:an, modifier:lm, def:td}; }
 / Expr1
 / Empty
 
@@ -806,7 +821,7 @@ _Bindings = bd:Binding bds:(COMMA Binding)* el:(COMMA ExprEllipsis)? {
 	return result;
 }
 
-Binding = UNDER tp:(COLON Type)? {return {type:"BindingAny", tp:ftr(tp, 1)}; }
+Binding = ud:UNDER tp:(COLON Type)? {return {type:"BindingAny", tp:ftr(tp, 1), ud:ud}; }
 /* / id:id tp:(COLON Type)? {return {type:"Binding", id:toVariable(id), tp:ftr(tp, 1)}; } */
 / id:id tp:(COLON Type)? {return {type:"Binding", id:id, tp:ftr(tp, 1)}; }
 
@@ -872,6 +887,7 @@ path:Path dot:DOT tp:TYPE  tails:(TypeArgs / withId)* {return {type:"SimplePathT
 withId = SHARP id:id {return {type:"withId", id:id};}
 Annotation = AT stype:SimpleType exprs:ArgumentExprs* {return {type:"Annotation", stype:tp, exprs:exprs};}
 ClassTemplate = ed:EarlyDefs? cp:ClassParents tb:TemplateBody? {return {type:"ClassTemplate", def:ftr(ed), classParent:cp, body:ftr(tb)}; }
+
 TemplateBody = nl? OPBRACE tp:SelfType? nl? ts:TemplateStat tss:(semi TemplateStat)* nl? CLBRACE {
       var result = [ts];
 	  for (var i = 0; i < tss.length; i++) {
@@ -879,6 +895,7 @@ TemplateBody = nl? OPBRACE tp:SelfType? nl? ts:TemplateStat tss:(semi TemplateSt
 	  }
 	  return {type:"TemplateBody", selftype:ftr(tp), states:result};
 }
+
 TemplateStat = Import
 / ats:(Annotation nl?)* modifier:Modifier* def:(Def / Dcl) {
       var result = [];
@@ -924,21 +941,63 @@ Types = tp:Type tps:(COMMA Type)* {
 }
 PatVarDef = dcl:VAL body:PatDef {return {type:"PatValDef", body:body};}
 / dcl:VAR body:VarDef {return {type:"PatVarDef", body:body};}
+
 Def = PatVarDef
-/ DEF body:FunDef {return {type:"Definition", body:body};}
+/* / DEF body:FunDef {return {type:"Definition", body:body};} */
+/ DEF body:FunDef {return body;}
 / TYPE nl* body:TypeDef {return {type:"TypeDefinition", body:body};}
 / TmplDef
 
+/* PatDef = ptn:Pattern2 ptns:(COMMA Pattern2)* tp:(COLON Type)? EQUAL expr:Expr{ */
+	/* var result = [ptn]; */
+	/* for (var i = 0; i < ptns.length; i++) { */
+		/* result.push(ptns[i][1]); */
+	/* } */
+	/* return {type:"PatDef", patterns:result, tp:ftr(tp, 1), expr:expr}; */
+/* } */
 PatDef = ptn:Pattern2 ptns:(COMMA Pattern2)* tp:(COLON Type)? EQUAL expr:Expr{
 	var result = [ptn];
+	var patterns = [];
+	var ttype = ftr(tp, 1);
 	for (var i = 0; i < ptns.length; i++) {
 		result.push(ptns[i][1]);
 	}
-	return {type:"PatDef", patterns:result, tp:ftr(tp, 1), expr:expr};
+	for (var i = 0; i < result.length; i++) {
+		var e = result[i];
+		if(e.type == "InfixOperatorPattern"){
+			if(e.ids.length){
+			throw new Error("ex-scala.PatDef : ids exist. => " + e.type);
+			}
+			if(typeof e.simplePattern !== 'string'){
+			throw new Error("ex-scala.PatDef : pattern is not string type. => " + e.type);
+			}
+			patterns.push({type: "PatDefVariable", id: e.simplePattern, tp: ttype});
+		}
+		else{
+			throw new Error("ex-scala.PatDef : type is not infix operator pattern. => " + e.type);
+		}
+	}
+	return {type:"PatDef", patterns:patterns, expr:expr};
 }
 
 VarDef = PatDef
-/ id:ids COLON tp:Type EQUAL UNDER {return {type:"VarDef", ids:id, tp:tp};}
+/ id:ids COLON tp:Type EQUAL ud:UNDER {
+	var patterns = [];
+		console.error("VarDef0: => %j", id);
+	for (var i = 0; i < id.ids.length; i++) {
+		var e = id.ids[i];
+		console.error("VarDef: => %j", e);
+		if(e.type == "Variable" || e.type == "Variable2"){
+			patterns.push({type: "VarDefVariable", id: e.name, tp: tp});
+		}
+		else{
+			throw new Error("ex-scala.VarDef : type is not infix operator pattern. => " + e.type);
+		}
+	}
+	/* return {type:"VarDef", ids:id, tp:tp}; */
+	return {type:"VarDef", patterns:patterns, expr:ud};
+}
+
 FunDef = fs:FunSig tp:(COLON Type)? EQUAL exp:Expr {return {type:"FunctionDefinition", signature:fs, tp:ftr(tp, 1), expr:exp}; }
 / fs:FunSig nl? OPBRACE bk:Block CLBRACE {return {type:"Procedure", signature:fs, block:bk}; }
 / THIS pc:ParamClause pcs:ParamClauses body:(EQUAL ConstrExpr / nl? ConstrBlock) {return {type:"ConstructorDefinition", param:pc, params:pcs, body:body}; }
@@ -946,6 +1005,7 @@ FunDef = fs:FunSig tp:(COLON Type)? EQUAL exp:Expr {return {type:"FunctionDefini
 TmplDef = cs:CASE? CLASS def:ClassDef {return {type:"ClassTemplateDefinition", prefix:ftr(cs), def:def}; }
 / cs:CASE? OBJECT def:ObjectDef {return {type:"ObjectTemplateDefinition", prefix:ftr(cs), def:def}; }
 / TRAIT def:TraitDef {return {type:"TraitTemplateDefinition", def:def}; }
+
 Pattern = pt1:Pattern1 pt1s:( BAR Pattern1 )* {
       var result = [pt1];
 	  for (var i = 0; i < pt1s.length; i++) {
@@ -959,8 +1019,8 @@ Pattern1 = id:varid COLON tp:TypePat {return {type: "TypedPattern", id:id, tp:tp
 
 /* Pattern2 ::= varid [‘@’ Pattern3] */
 /* | Pattern3 */
-Pattern2 = id:varid pt:(AT Pattern3)? {return {type: "PatternBinder", id:id, pt:ftr(pt, 1)};}
-/ Pattern3
+Pattern2 = Pattern3
+/ id:varid pt:(AT Pattern3)? {return {type: "PatternBinder", id:id, pt:ftr(pt, 1)};}
 
 /* Pattern3 ::= SimplePattern */
 /* | SimplePattern { id [nl] SimplePattern } */
@@ -984,9 +1044,9 @@ head:SimplePattern tails:( !EQUAL id nl? SimplePattern )* {
 /* | XmlPattern */
 SimplePattern = UNDER
 / Literal
-/ varid
 / si:StableId OPPAREN pts:Patterns? CLPAREN {return {type: "ConstructorPattern", id:si, pattern:pts};}
 / id:StableId OPPAREN pts:(Patterns COMMA)? vi:(varid AT)? UNDER STAR CLPAREN {return {type: "PatternSequences", id:si, pattern:ftr(pts, 0), varid:ftr(vi, 0)};}
+/ varid
 / StableId
 / OPPAREN pts:Patterns? CLPAREN {return {type: "TuplePattern", id:null, pattern:ftr(pts)};}
 //todo:Xml...
@@ -1013,10 +1073,11 @@ Param = an:Annotation* id:id pt:(COLON ParamType)? expr:(EQUAL Expr)? {return {t
 ParamType = ar:ARROW tp:Type {return {type:"ByNameParamType", tp:tp}; }
 / tp:Type st:STAR? {return {type:"RepeatedParamType", tp:tp, star:ftr(st)}; }
 
-Dcl = dcl:VAL body:ValDcl {return {type:"Declaration", dcl:dcl, body:body};}
-/ dcl:VAR body:VarDcl {return {type:"Declaration", dcl:dcl, body:body};}
-/ dcl:DEF body:FunDcl {return {type:"Declaration", dcl:dcl, body:body};}
-/ dcl:TYPE nl* body:TypeDcl {return {type:"Declaration", dcl:dcl, body:body};}
+Dcl = VAL body:ValDcl {return body;}
+/ VAR body:VarDcl {return body;}
+/ DEF body:FunDcl {return body;}
+/ TYPE nl* body:TypeDcl {return body;}
+
 TypeParamClause = OPBRACKET param:VariantTypeParam params:(COMMA VariantTypeParam)* CLBRACKET {
       var result = [param];
 	  for (var i = 0; i < params.length; i++) {
@@ -1060,10 +1121,40 @@ TypeParam = id:(id / UNDER) cl:TypeParamClause? lower:(LEFTANGLE Type)? upper:(R
 
 
 /* ValDcl ::= ids ‘:’ Type */
-ValDcl = id:ids COLON tp:Type {return {type:"ValueDeclaration", id:id, tp:tp};}
+/* ValDcl = id:ids COLON tp:Type {return {type:"ValueDeclaration", id:id, tp:tp};} */
+ValDcl = id:ids COLON tp:Type {
+	var patterns = [];
+	for (var i = 0; i < id.ids.length; i++) {
+		var e = id.ids[i];
+		if(e.type == "Variable" || e.type == "Variable2"){
+			patterns.push({type: "VarDefVariable", id: e.name, tp: tp});
+		}
+		else{
+			throw new Error("ex-scala.VarDef : type is not infix operator pattern. => " + e.type);
+		}
+	}
+	/* return {type:"VarDef", ids:id, tp:tp}; */
+	return {type:"ValueDeclaration", patterns:patterns};
+}
+
+
 
 /* VarDcl ::= ids ‘:’ Type */
-VarDcl = id:ids COLON tp:Type {return {type:"VariableDeclaration", id:id, tp:tp};}
+/* VarDcl = id:ids COLON tp:Type {return {type:"VariableDeclaration", id:id, tp:tp};} */
+VarDcl = id:ids COLON tp:Type {
+	var patterns = [];
+	for (var i = 0; i < id.ids.length; i++) {
+		var e = id.ids[i];
+		if(e.type == "Variable" || e.type == "Variable2"){
+			patterns.push({type: "VarDefVariable", id: e.name, tp: tp});
+		}
+		else{
+			throw new Error("ex-scala.VarDef : type is not infix operator pattern. => " + e.type);
+		}
+	}
+	/* return {type:"VarDef", ids:id, tp:tp}; */
+	return {type:"VariableDeclaration", patterns:patterns};
+}
 
 /* FunDcl ::= FunSig [‘:’ Type] */
 FunDcl = sig:FunSig tp:(COLON Type)? {return {type:"FunctionDeclaration", signature:sig, tp:ftr(tp, 1)};}
@@ -1072,7 +1163,13 @@ FunDcl = sig:FunSig tp:(COLON Type)? {return {type:"FunctionDeclaration", signat
 FunSig = id:id funtype:FunTypeParamClause? param:ParamClauses {return {type:"FunctionSignature", id:id, funtype:ftr(funtype), param:param};}
 
 
-TypeDcl = id:id tpc:TypeParamClause? t1:(LEFTANGLE Type)? t2:(RIGHTANGLE Type)? {return {type:"TypeDeclaration", id:id, typeparam:ftr(tpc), type1:ftr(t1), type2:ftr(t2)};}
+/* TypeDcl = id:id tpc:TypeParamClause? t1:(LEFTANGLE Type)? t2:(RIGHTANGLE Type)? {return {type:"TypeDeclaration", id:id, typeparam:ftr(tpc), type1:ftr(t1), type2:ftr(t2)};} */
+TypeDcl = id:id tpc:TypeParamClause? t1:(LEFTANGLE Type)? t2:(RIGHTANGLE Type)? {
+	var pattern = {type: "TypeDclVariable", id: id.name, tpc: ftr(tpc), left:ftr(t1, 1), right:ftr(t2, 1)};
+
+	return {type:"TypeDeclaration", pattern:pattern};
+}
+
 Refinement = nl? OPBRACE ref:RefineStat refs:(semi RefineStat)* CLBRACE {
       var result = [ref];
 	  for (var i = 0; i < refs.length; i++) {
@@ -1166,12 +1263,17 @@ LocalModifier = ABSTRACT
 / LAZY
 
 /* AccessModifier ::= (‘private’ | ‘protected’) [AccessQualifier] */
-AccessModifier = md:(PRIVATE / PROTECTED)  qual:AccessQualifier? {return {type:"AccessModifier", modifier:md};}
+AccessModifier = md:(PRIVATE / PROTECTED)  qual:AccessQualifier? {return {type:"AccessModifier", modifier:md, qual:ftr(qual)};}
 
 /* AccessQualifier ::= ‘[’ (id | ‘this’) ‘]’ */
 AccessQualifier = OPBRACKET id:(id / THIS) CLBRACKET {return {type:"AccessQualifier", id:id};}
 
-TypeDef = id:id pm:TypeParamClause? EQUAL tp:Type {return {type:"TypeDef", id:id, param:ftr(pm), tp:tp}; }
+/* TypeDef = id:id pm:TypeParamClause? EQUAL tp:Type {return {type:"TypeDef", id:id, param:ftr(pm), tp:tp}; } */
+TypeDef = id:id pm:TypeParamClause? EQUAL tp:Type {
+	var pattern = {type: "TypeDefVariable", id: id.name, paramClause: ftr(pm), tp:tp};
+	return {type:"TypeDef", pattern:pattern};
+}
+
 ConstrExpr = SelfInvocation
 / ConstrBlock
 
@@ -1257,7 +1359,7 @@ WITH = 'with' !IdentifierPart __ {return {type:"Keyword", word:"with"}}
 COLON = ':' __ {return {type:"Keyword", word:":"}}
 UNDER = '_' __ {return {type:"Keyword", word:"_"}}
 STAR = '*' __ {return {type:"Keyword", word:"*"}}
-IMPLICIT = 'implicit' !IdentifierPart __ {return {type:"Keyword", word:"implicit"}}
+IMPLICIT = 'implicit' !IdentifierPart __ {return {type:"Keyword", word:"implicit "}}
 IF = 'if' !IdentifierPart __ {return {type:"Keyword", word:"if"}}
 ELSE = 'else' !IdentifierPart __ {return {type:"Keyword", word:"else"}}
 WHILE = 'while' !IdentifierPart __ {return {type:"Keyword", word:"while"}}
@@ -1275,7 +1377,7 @@ TILDE = '~' !opchar __ {return {type:"Keyword", word:"~"}}
 BANG = '!' !opchar __ {return {type:"Keyword", word:"!"}}
 BAR = '|' !opchar __ {return {type:"Keyword", word:"|"}}
 NEW = 'new' !IdentifierPart __ {return {type:"Keyword", word:"new"}}
-LAZY = 'lazy' !IdentifierPart __ {return {type:"Keyword", word:"lazy"}}
+LAZY = 'lazy' !IdentifierPart __ {return {type:"Keyword", word:"lazy "}}
 CASE = 'case' !IdentifierPart __ {return {type:"Keyword", word:"case"}}
 SUPER = 'super' !IdentifierPart __ {return {type:"Keyword", word:"super"}}
 AT = '@' __ {return {type:"Keyword", word:"@"}}
@@ -1289,14 +1391,14 @@ OBJECT = 'object' !IdentifierPart __ {return {type:"Keyword", word:"object"}}
 EXTENDS = 'extends' !IdentifierPart __ {return {type:"Keyword", word:"extends"}}
 IMPORT = 'import' !IdentifierPart __ {return {type:"Keyword", word:"import"}}
 FORSOME = 'forSome' !IdentifierPart __ {return {type:"Keyword", word:"forSome"}}
-ABSTRACT = 'abstract' !IdentifierPart __ {return {type:"Keyword", word:"abstract"}}
-FINAL = 'final' !IdentifierPart __ {return {type:"Keyword", word:"final"}}
+ABSTRACT = 'abstract' !IdentifierPart __ {return {type:"Keyword", word:"abstract "}}
+FINAL = 'final' !IdentifierPart __ {return {type:"Keyword", word:"final "}}
 CLASS = 'class' !IdentifierPart __ {return {type:"Keyword", word:"class"}}
 TRAIT = 'trait' !IdentifierPart __ {return {type:"Keyword", word:"trait"}}
-OVERRIDE = 'override' !IdentifierPart __ {return {type:"Keyword", word:"override"}}
-SEALED = 'sealed' !IdentifierPart __ {return {type:"Keyword", word:"sealed"}}
-PRIVATE = 'private' !IdentifierPart __ {return {type:"Keyword", word:"private"}}
-PROTECTED = 'protected' !IdentifierPart __ {return {type:"Keyword", word:"protected"}}
+OVERRIDE = 'override' !IdentifierPart __ {return {type:"Keyword", word:"override "}}
+SEALED = 'sealed' !IdentifierPart __ {return {type:"Keyword", word:"sealed "}}
+PRIVATE = 'private' !IdentifierPart __ {return {type:"Keyword", word:"private "}}
+PROTECTED = 'protected' !IdentifierPart __ {return {type:"Keyword", word:"protected "}}
 
 
 CheckOuterMacro
@@ -1315,7 +1417,7 @@ ExpressionMacro
  = (&{ return macroType; } form:(t0:("Let" !IdentifierPart
 { return { type: "MacroName", name:"Let" }; }) __ t1:("(" __ t0:(t0:(v:MacroKeyword &{ return v.name === "="; }
 { return v; }) __ t1:Expr __ t2:(","
-{ return { type: "PunctuationMark", value: "," }; }) __ t3:Type __ t4:(","
+{ return { type: "PunctuationMark", value: "," }; }) __ t3:MacroIdentifier __ t4:(","
 { return { type: "PunctuationMark", value: "," }; }) __ t5:MacroIdentifier __ t6:(v:MacroKeyword &{ return v.name === "="; }
 { return v; }) __ t7:Expr __ t8:(","
 { return { type: "PunctuationMark", value: "," }; }) __ t9:Type { return [t0, t1, t2, t3, t4, t5, t6, t7, t8, t9]; }) __ ")"
@@ -1324,7 +1426,7 @@ ExpressionMacro
 { return { type: "MacroForm", inputForm: form }; }) 
  / (&{ return macroType; } form:(t0:("Let" !IdentifierPart
 { return { type: "MacroName", name:"Let" }; }) __ t1:("(" __ t0:(t0:Expr __ t1:(","
-{ return { type: "PunctuationMark", value: "," }; }) __ t2:Type __ t3:(","
+{ return { type: "PunctuationMark", value: "," }; }) __ t2:MacroIdentifier __ t3:(","
 { return { type: "PunctuationMark", value: "," }; }) __ t4:MacroIdentifier __ t5:(v:MacroKeyword &{ return v.name === "="; }
 { return v; }) __ t6:Expr __ t7:(","
 { return { type: "PunctuationMark", value: "," }; }) __ t8:Type { return [t0, t1, t2, t3, t4, t5, t6, t7, t8]; }) __ ")"
@@ -1333,7 +1435,7 @@ ExpressionMacro
 { return { type: "MacroForm", inputForm: form }; }) 
  / (&{ return macroType; } form:(t0:("Let" !IdentifierPart
 { return { type: "MacroName", name:"Let" }; }) __ t1:("(" __ t0:(t0:(","
-{ return { type: "PunctuationMark", value: "," }; }) __ t1:Type __ t2:(","
+{ return { type: "PunctuationMark", value: "," }; }) __ t1:MacroIdentifier __ t2:(","
 { return { type: "PunctuationMark", value: "," }; }) __ t3:MacroIdentifier __ t4:(v:MacroKeyword &{ return v.name === "="; }
 { return v; }) __ t5:Expr __ t6:(","
 { return { type: "PunctuationMark", value: "," }; }) __ t7:Type { return [t0, t1, t2, t3, t4, t5, t6, t7]; }) __ ")"
@@ -1341,7 +1443,7 @@ ExpressionMacro
 { return { type: "Brace", elements: t0 }; }) { return [t0, t1, t2]; })
 { return { type: "MacroForm", inputForm: form }; }) 
  / (&{ return macroType; } form:(t0:("Let" !IdentifierPart
-{ return { type: "MacroName", name:"Let" }; }) __ t1:("(" __ t0:(t0:Type __ t1:(","
+{ return { type: "MacroName", name:"Let" }; }) __ t1:("(" __ t0:(t0:MacroIdentifier __ t1:(","
 { return { type: "PunctuationMark", value: "," }; }) __ t2:MacroIdentifier __ t3:(v:MacroKeyword &{ return v.name === "="; }
 { return v; }) __ t4:Expr __ t5:(","
 { return { type: "PunctuationMark", value: "," }; }) __ t6:Type { return [t0, t1, t2, t3, t4, t5, t6]; }) __ ")"
@@ -1403,7 +1505,7 @@ ExpressionMacro
  / form:(t0:("Let" !IdentifierPart
 { return { type: "MacroName", name:"Let" }; }) __ t1:("(" __ t0:(t0:MacroIdentifier __ t1:(v:MacroKeyword &{ return v.name === "="; }
 { return v; }) __ t2:Expr __ t3:(","
-{ return { type: "PunctuationMark", value: "," }; }) __ t4:Type __ t5:(","
+{ return { type: "PunctuationMark", value: "," }; }) __ t4:MacroIdentifier __ t5:(","
 { return { type: "PunctuationMark", value: "," }; }) __ t6:MacroIdentifier __ t7:(v:MacroKeyword &{ return v.name === "="; }
 { return v; }) __ t8:Expr __ t9:(","
 { return { type: "PunctuationMark", value: "," }; }) __ t10:Type { return [t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10]; }) __ ")"
