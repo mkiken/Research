@@ -14,13 +14,13 @@
       #\nul
       ("Scala"
        "TemplateBody"
-       (letrec* ((V-main\x60;28*
-                   ((lambda (V-main\x60;29* V-args\x60;29* V-Array\x60;29* V-String\x60;29*)
+       (letrec* ((R-main-\x60;28*
+                   ((lambda ()
                       (function FunctionDefinition)
                       (#\nul #\nul)
                       ("Scala"
                        "FunctionSignature"
-                       V-main\x60;29*
+                       R-main-\x60;28*
                        #\nul
                        ("Scala"
                         "ParamClauses"
@@ -31,7 +31,7 @@
                            (("Scala"
                              "Param"
                              #\nul
-                             V-args\x60;29*
+                             R-args-
                              ("Scala"
                               "RepeatedParamType"
                               ("Scala"
@@ -45,7 +45,7 @@
                                   "AnnotType"
                                   ("Scala"
                                    "SimpleType"
-                                   ("Scala" "StableId" (V-Array\x60;29*))
+                                   ("Scala" "StableId" (R-Array-))
                                    (("Scala"
                                      "TypeArgs"
                                      ("Scala"
@@ -61,7 +61,7 @@
                                            "AnnotType"
                                            ("Scala"
                                             "SimpleType"
-                                            ("Scala" "StableId" (V-String\x60;29*))
+                                            ("Scala" "StableId" (R-String-))
                                             #\nul)
                                            #\nul)
                                           #\nul
@@ -85,7 +85,7 @@
                          "CompoundType"
                          ("Scala"
                           "AnnotType"
-                          ("Scala" "SimpleType" ("Scala" "StableId" (V-Unit)) #\nul)
+                          ("Scala" "SimpleType" ("Scala" "StableId" (R-Unit-)) #\nul)
                           #\nul)
                          #\nul
                          #\nul)
@@ -148,8 +148,21 @@
                                                               V-x\x60;33*
                                                               #\nul)
                                                              #\nul))
-                                                           #\nul
-                                                           #\nul)
+                                                           (V-*)
+                                                           (("Scala"
+                                                             "InfixExpression"
+                                                             ("Scala"
+                                                              "PrefixExpression"
+                                                              #\nul
+                                                              ("Scala"
+                                                               "SimpleExpression"
+                                                               ("Scala"
+                                                                "idSeqSimpleExpression"
+                                                                V-y\x60;33*
+                                                                #\nul)
+                                                               #\nul))
+                                                             #\nul
+                                                             #\nul)))
                                                           #\nul)
                                                          #\nul)
                                                         #\nul))
@@ -303,7 +316,7 @@
                                            "SimpleExpression"
                                            ("Scala"
                                             "idSeqSimpleExpression"
-                                            V-args\x60;29*
+                                            R-args-
                                             ("Scala"
                                              "FunctionApplicationPostfix"
                                              ("Scala"

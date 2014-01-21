@@ -20,7 +20,7 @@ object Append1{
     // println($body);
     println(args(2));
     // val a = Let (x = 3 + 5 * 7 - 9, y = 10) { x * y };
-    val a = Let (x = 3 + 5 * 7 - 9, y = 10) { x };
+    val a = Let (x = 3 + 5 * 7 - 9, y = 10) { x*y };
     }
 }
 

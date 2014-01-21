@@ -645,6 +645,11 @@ var trans = {
 					}
 				});
 			B.format(-2, '}');
+		}else if(type == "TupleExpression"){
+			B.push('(');
+			this.s2j(e[pos + 1], 0); //exprs
+			B.push(')');
+			this.s2j(e[pos+2], 0);
 		}
 		else if(type == "TypeArgs"){
 			B.push('[');

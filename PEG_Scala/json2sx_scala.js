@@ -303,6 +303,7 @@ function ax(t) {
   	case 'TypeVariable':
   	case 'LiteralKeyword':
   	case 'Variable':
+  	case 'SymbolVariable':
                 		 // console.error("t.name = " + "V-" + t.name);
 										 // return ScalaTag('Variable', ["V-" + t.name]);
 										 var name = convertName(t.name);

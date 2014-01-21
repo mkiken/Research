@@ -702,8 +702,37 @@
                                                           "under": null
                                                         }
                                                       },
-                                                      "ops": [],
-                                                      "rights": []
+                                                      "ops": [
+                                                        {
+                                                          "type": "Variable",
+                                                          "name": "*"
+                                                        }
+                                                      ],
+                                                      "rights": [
+                                                        {
+                                                          "type": "InfixExpression",
+                                                          "left": {
+                                                            "type": "PrefixExpression",
+                                                            "op": null,
+                                                            "expr": {
+                                                              "type": "SimpleExpression",
+                                                              "expr": {
+                                                                "type": "idSeqSimpleExpression",
+                                                                "ids": {
+                                                                  "type": "Variable",
+                                                                  "name": "y"
+                                                                },
+                                                                "suffix": {
+                                                                  "type": "Empty"
+                                                                }
+                                                              },
+                                                              "under": null
+                                                            }
+                                                          },
+                                                          "ops": [],
+                                                          "rights": []
+                                                        }
+                                                      ]
                                                     },
                                                     "id": null
                                                   }
