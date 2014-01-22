@@ -1,0 +1,139 @@
+{
+  "type": "MacroDefinitions",
+  "defs": [
+    {
+      "type": "ExpressionMacroDefinition",
+      "macroName": "makeArray",
+      "literals": [
+        "~"
+      ],
+      "syntaxRules": [
+        {
+          "type": "SyntaxRule",
+          "pattern": [
+            {
+              "type": "Bracket",
+              "elements": [
+                {
+                  "type": "ExpressionVariable",
+                  "name": "a"
+                },
+                {
+                  "type": "LiteralKeyword",
+                  "name": "~"
+                },
+                {
+                  "type": "ExpressionVariable",
+                  "name": "b"
+                }
+              ]
+            }
+          ],
+          "template": [
+            {
+              "type": "PostfixExpression",
+              "infix": {
+                "type": "InfixExpression",
+                "left": {
+                  "type": "PrefixExpression",
+                  "op": null,
+                  "expr": {
+                    "type": "SimpleExpression",
+                    "expr": {
+                      "type": "idSeqSimpleExpression",
+                      "ids": {
+                        "type": "Variable",
+                        "name": "Array"
+                      },
+                      "suffix": {
+                        "type": "DesignatorPostfix",
+                        "under": null,
+                        "id": {
+                          "type": "Variable",
+                          "name": "range"
+                        },
+                        "postfix": {
+                          "type": "FunctionApplicationPostfix",
+                          "argument": {
+                            "type": "ArgumentExpression",
+                            "exprs": {
+                              "type": "Exprs",
+                              "contents": [
+                                {
+                                  "type": "PostfixExpression",
+                                  "infix": {
+                                    "type": "InfixExpression",
+                                    "left": {
+                                      "type": "PrefixExpression",
+                                      "op": null,
+                                      "expr": {
+                                        "type": "SimpleExpression",
+                                        "expr": {
+                                          "type": "idSeqSimpleExpression",
+                                          "ids": {
+                                            "type": "Variable",
+                                            "name": "a"
+                                          },
+                                          "suffix": {
+                                            "type": "Empty"
+                                          }
+                                        },
+                                        "under": null
+                                      }
+                                    },
+                                    "ops": [],
+                                    "rights": []
+                                  },
+                                  "id": null
+                                },
+                                {
+                                  "type": "PostfixExpression",
+                                  "infix": {
+                                    "type": "InfixExpression",
+                                    "left": {
+                                      "type": "PrefixExpression",
+                                      "op": null,
+                                      "expr": {
+                                        "type": "SimpleExpression",
+                                        "expr": {
+                                          "type": "idSeqSimpleExpression",
+                                          "ids": {
+                                            "type": "Variable",
+                                            "name": "b"
+                                          },
+                                          "suffix": {
+                                            "type": "Empty"
+                                          }
+                                        },
+                                        "under": null
+                                      }
+                                    },
+                                    "ops": [],
+                                    "rights": []
+                                  },
+                                  "id": null
+                                }
+                              ]
+                            }
+                          },
+                          "postfix": {
+                            "type": "Empty"
+                          }
+                        }
+                      }
+                    },
+                    "under": null
+                  }
+                },
+                "ops": [],
+                "rights": []
+              },
+              "id": null
+            }
+          ]
+        }
+      ],
+      "marks": []
+    }
+  ]
+}

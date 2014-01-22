@@ -709,7 +709,10 @@ Expr
 / impl:IMPLICIT? id:id ARROW right:Expr {return {type:"AnonymousFunctionId", impl:ftr(impl), id:id, right:right}; }
 / UNDER ARROW right:Expr {return {type:"AnonymousFunctionWild", right:right}; }
 / Expr1
-Expr1 = IF OPPAREN condition:Expr CLPAREN nl* ifStatement:Expr elseStatement:(semi? ELSE Expr)? {
+
+Expr1 = &{cExpression++;return true;} ExpressionMacro &{cExpression--;return true;}
+
+&{cExpression--;return true;} IF OPPAREN condition:Expr CLPAREN nl* ifStatement:Expr elseStatement:(semi? ELSE Expr)? {
       return {
         type:          "IfStatement",
         condition:     condition,
@@ -811,16 +814,13 @@ _SimpleExpr1 = ud:UNDER? DOT id:id !EQUAL se1:_SimpleExpr1 {return {type:"Design
 / ae:ArgumentExprs !EQUAL se1:_SimpleExpr1 {return {type:"FunctionApplicationPostfix", argument:ae, postfix:se1}; }
 / Empty
 
-Exprs = expr:Expr exprs1:(COMMA Expr)* el:(COMMA ExprEllipsis)? exprs2:(COMMA Expr)*  {
+Exprs = expr:Expr exprs:(COMMA Expr)* el:(COMMA ExprEllipsis)? {
       var result = [expr];
-	  for (var i = 0; i < exprs1.length; i++) {
-        result.push(exprs1[i][1]);
+	  for (var i = 0; i < exprs.length; i++) {
+        result.push(exprs[i][1]);
 	  }
 	  if(!isNull(el)){
 	  	result.push(el[1]);
-	  }
-	  for (var i = 0; i < exprs2.length; i++) {
-        result.push(exprs2[i][1]);
 	  }
 	  return {type:"Exprs", contents:result};
     }
@@ -855,18 +855,14 @@ Bindings = OPPAREN bds:_Bindings? CLPAREN {
 	return {type: "Bindings", bindings:ftr(bds)}
 }
 
-_Bindings = bd:Binding bds1:(COMMA Binding)* el:(COMMA ExprEllipsis)? bds2:(COMMA Binding)* {
+_Bindings = bd:Binding bds:(COMMA Binding)* el:(COMMA ExprEllipsis)? {
   var result = [bd];
-	for (var i = 0; i < bds1.length; i++) {
-    result.push(bds1[i][1]);
+	for (var i = 0; i < bds.length; i++) {
+    result.push(bds[i][1]);
 	}
 	if(!isNull(el)){
 		result.push(el[1]);
 	}
-	for (var i = 0; i < bds2.length; i++) {
-    result.push(bds2[i][1]);
-	}
-
 	return result;
 }
 
@@ -1489,5 +1485,18 @@ PRIVATE = 'private' !IdentifierPart __ {return {type:"Keyword", word:"private "}
 PROTECTED = 'protected' !IdentifierPart __ {return {type:"Keyword", word:"protected "}}
 
 
+
+
+CheckOuterMacro
+ = { return outerMacro; }
+
+CharacterStatement
+ = &{}
+
+OneLine
+ = &{}
+
+start
+ = CompilationUnit
 
 
