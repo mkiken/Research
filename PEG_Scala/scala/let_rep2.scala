@@ -1,4 +1,3 @@
-// 一引数のLetマクロ
 Expression Let {
     Identifier: id, id2;
     Expression: e, body, e2;

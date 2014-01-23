@@ -242,9 +242,10 @@ SourceCharacter
     /* } */
 
 MacroIdentifier
-  = name:IdentifierName {
-      return { type: "Variable", name: name };
-    }
+  /* = name:IdentifierName { */
+      /* return { type: "Variable", name: name }; */
+    /* } */
+  = id
 
 MacroSymbol
   = name:IdentifierName {
@@ -446,14 +447,18 @@ SymbolVariable
         };
     }
 
+//...は禁止しておく
 Punctuator
-  =  puncs:PunctuatorSymbol+ !{ return puncs.join("") === arrow; } { return puncs.join(""); }
+	=  !"..." puncs:PunctuatorSymbol+ !{ return puncs.join("") === arrow; } { return puncs.join(""); }
+  /* =  puncs:opchar+ !{ return puncs.join("") === arrow; } { return puncs.join(""); } */
 
 	//todo:ここはこれでいいのか？
 PunctuatorSymbol
   = "<" / ">" / "=" / "!" / "+"
   / "-" / "*" / "%" / "&" / "/"
   / "^" / "!" / "~" / "?" / ":"
+ //kmori 追加
+  / "$" / "." / "@" / "^" / "_"
 
 // テンプレート(パーザー拡張前)
 Template
@@ -592,7 +597,7 @@ upper = [A-Z] / '$' / '_' / Lu
 lower = [a-z] / Ll
 letter = upper / lower / Lo / Lt / Nl
 digit = [0-9]
-opchar = [\+\-\*/><=!&|%:~\^|]
+opchar = [\+\-\*/><=!&|%:~\^|?]
 op = !("/*" / "//" / EQUAL) chars:opchar+ __ {return chars.join("");}
 varid = start:lower parts:idrest {return start + parts;}
 plainid = start:upper parts:idrest {return start + parts;}

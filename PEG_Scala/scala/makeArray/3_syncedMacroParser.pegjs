@@ -446,14 +446,18 @@ SymbolVariable
         };
     }
 
+//...は禁止しておく
 Punctuator
-  =  puncs:PunctuatorSymbol+ !{ return puncs.join("") === arrow; } { return puncs.join(""); }
+	=  !"..." puncs:PunctuatorSymbol+ !{ return puncs.join("") === arrow; } { return puncs.join(""); }
+  /* =  puncs:opchar+ !{ return puncs.join("") === arrow; } { return puncs.join(""); } */
 
 	//todo:ここはこれでいいのか？
 PunctuatorSymbol
   = "<" / ">" / "=" / "!" / "+"
   / "-" / "*" / "%" / "&" / "/"
   / "^" / "!" / "~" / "?" / ":"
+ //kmori 追加
+  / "$" / "." / "@" / "^" / "_"
 
 // テンプレート(パーザー拡張前)
 Template
@@ -592,7 +596,7 @@ upper = [A-Z] / '$' / '_' / Lu
 lower = [a-z] / Ll
 letter = upper / lower / Lo / Lt / Nl
 digit = [0-9]
-opchar = [\+\-\*/><=!&|%:~\^|]
+opchar = [\+\-\*/><=!&|%:~\^|?]
 op = !("/*" / "//" / EQUAL) chars:opchar+ __ {return chars.join("");}
 varid = start:lower parts:idrest {return start + parts;}
 plainid = start:upper parts:idrest {return start + parts;}
@@ -811,13 +815,16 @@ _SimpleExpr1 = ud:UNDER? DOT id:id !EQUAL se1:_SimpleExpr1 {return {type:"Design
 / ae:ArgumentExprs !EQUAL se1:_SimpleExpr1 {return {type:"FunctionApplicationPostfix", argument:ae, postfix:se1}; }
 / Empty
 
-Exprs = expr:Expr exprs:(COMMA Expr)* el:(COMMA ExprEllipsis)? {
+Exprs = expr:Expr exprs1:(COMMA Expr)* el:(COMMA ExprEllipsis)? exprs2:(COMMA Expr)*  {
       var result = [expr];
-	  for (var i = 0; i < exprs.length; i++) {
-        result.push(exprs[i][1]);
+	  for (var i = 0; i < exprs1.length; i++) {
+        result.push(exprs1[i][1]);
 	  }
 	  if(!isNull(el)){
 	  	result.push(el[1]);
+	  }
+	  for (var i = 0; i < exprs2.length; i++) {
+        result.push(exprs2[i][1]);
 	  }
 	  return {type:"Exprs", contents:result};
     }
@@ -852,14 +859,18 @@ Bindings = OPPAREN bds:_Bindings? CLPAREN {
 	return {type: "Bindings", bindings:ftr(bds)}
 }
 
-_Bindings = bd:Binding bds:(COMMA Binding)* el:(COMMA ExprEllipsis)? {
+_Bindings = bd:Binding bds1:(COMMA Binding)* el:(COMMA ExprEllipsis)? bds2:(COMMA Binding)* {
   var result = [bd];
-	for (var i = 0; i < bds.length; i++) {
-    result.push(bds[i][1]);
+	for (var i = 0; i < bds1.length; i++) {
+    result.push(bds1[i][1]);
 	}
 	if(!isNull(el)){
 		result.push(el[1]);
 	}
+	for (var i = 0; i < bds2.length; i++) {
+    result.push(bds2[i][1]);
+	}
+
 	return result;
 }
 
@@ -1495,28 +1506,5 @@ OneLine
 
 start
  = CompilationUnit
-
-ExpressionMacro
- = (&{ return macroType; } form:(t0:("makeArray" !IdentifierPart
-{ return { type: "MacroName", name:"makeArray" }; }) __ t1:("[" __ t0:(t0:(v:MacroKeyword &{ return v.name === "~"; }
-{ return v; }) __ t1:Expr { return [t0, t1]; }) __ "]"
-{ return { type: "Bracket", elements: t0 }; }) { return [t0, t1]; })
-{ return { type: "MacroForm", inputForm: form }; }) 
- / (&{ return macroType; } form:(t0:("makeArray" !IdentifierPart
-{ return { type: "MacroName", name:"makeArray" }; }) __ t1:("[" __ t0:(t0:Expr { return [t0]; }) __ "]"
-{ return { type: "Bracket", elements: t0 }; }) { return [t0, t1]; })
-{ return { type: "MacroForm", inputForm: form }; }) 
- / (&{ return macroType; } form:(t0:("makeArray" !IdentifierPart
-{ return { type: "MacroName", name:"makeArray" }; }) __ t1:("[" __ "]"
-{ return { type: "Bracket", elements: [] }; }) { return [t0, t1]; })
-{ return { type: "MacroForm", inputForm: form }; }) 
- / form:(t0:("makeArray" !IdentifierPart
-{ return { type: "MacroName", name:"makeArray" }; }) __ t1:("[" __ t0:(t0:Expr __ t1:(v:MacroKeyword &{ return v.name === "~"; }
-{ return v; }) __ t2:Expr { return [t0, t1, t2]; }) __ "]"
-{ return { type: "Bracket", elements: t0 }; }) { return [t0, t1]; })
-{ return { type: "MacroForm", inputForm: form }; }
-
-RejectWords
- = "~"
 
 

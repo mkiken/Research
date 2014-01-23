@@ -147,7 +147,7 @@ function ax(t) {
 
   				if(bds[bds.length-1].type == 'Ellipsis'){
 						params.push(bds[bds.length-1]);
-  					types.push(null);
+  					types.push(bds[bds.length-1]);
   				}
   				else if(bds[bds.length-1].type == 'Binding'){
 						params.push(bds[bds.length-1].id);
@@ -211,6 +211,14 @@ function ax(t) {
   									 result = encloses('letrec*', varDefines[blockLevel], sts, res);
   									 blockLevel--;
   									 return ScalaTag("Block", [result]);
+  	case 'Bracket':
+  	case 'Brace':
+  	case 'Paren':
+  	case 'RepBlock':
+  									 //elementsが空の時でもnulにしない
+  									 if(t.elements.length == 0) return ScalaTag(t.type, {notDelete:true});
+										 else return ScalaTag(t.type, ax(t.elements));
+
   	case 'TemplateBody':
   									 var selftype, sts, result;
   									 blockLevel++;
