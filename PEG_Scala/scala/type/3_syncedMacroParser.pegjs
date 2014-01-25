@@ -478,9 +478,9 @@ ExprEllipsis = &{return cTemplate > 0} "..." __ {return {type: "Ellipsis"};}
 
 //todo: どうする？？とりあえずExpressionでやってみる
 Statement
-	= Expr
+	= &{return macroType === "Expression"} /*&{console.error("macroType = %j", macroType); return true;}*/ Expr
+	/ &{return macroType === "Type"} Type
 	/ CharacterStatement   // added
-  /* = "sss" */
 
 CharacterStatement
 	= !ExcludeWord char:.
@@ -899,8 +899,8 @@ Type	= TypeMacro
 / TypeVariable
 / funcarg:FunctionArgTypes ARROW tp:Type {return {type:"FunctionType", left:funcarg, right:tp};}
 		/ tp:InfixType ext:ExistentialClause? {return {type:"Type", exClause:ftr(ext), inType:tp};}
-FunctionArgTypes	= InfixType
-/ OPPAREN tps:( ParamType (COMMA ParamType )* )? CLPAREN {
+
+FunctionArgTypes	= OPPAREN tps:( ParamType (COMMA ParamType )* )? CLPAREN {
   var result = [];
 	if(!isNull(tps)){
 		result.push(tps[0]);
@@ -910,6 +910,8 @@ FunctionArgTypes	= InfixType
 	}
 	return {type:"FunctionArgTypes", contents:result};
 }
+/ InfixType
+
 ExistentialClause = FORSOME OPBRACE ex:ExistentialDcl exs:(semi ExistentialDcl)* CLBRACE {
   var result = [];
 	result.push(ex);
@@ -1508,139 +1510,28 @@ OneLine
 start
  = CompilationUnit
 
-ExpressionMacro
- = (&{ return macroType; } form:(t0:("Reduce" !IdentifierPart
-{ return { type: "MacroName", name:"Reduce" }; }) __ t1:("(" __ t0:(t0:MacroIdentifier { return [t0]; }) __ ")"
-{ return { type: "Paren", elements: t0 }; }) __ t2:Expr __ t3:("[" __ t0:(t0:Expr __ t1:(","
-{ return { type: "PunctuationMark", value: "," }; }) __ t2:(head:Expr
- tail:(__ "," __ Expr)*
-ellipsis:(__ "," __ "...")
-{ var elements = [head];
-  for (var i=0; i<tail.length; i++) {
-    elements.push(tail[i][3]);
-  }
-  if (ellipsis) elements.push({ type: "Ellipsis" });
-  return { type: "Repeat", elements: elements };
-})
- { return [t0, t1, t2]; }) __ "]"
-{ return { type: "Bracket", elements: t0 }; }) { return [t0, t1, t2, t3]; })
-{ return { type: "MacroForm", inputForm: form }; }) 
- / (&{ return macroType; } form:(t0:("Reduce" !IdentifierPart
-{ return { type: "MacroName", name:"Reduce" }; }) __ t1:("(" __ ")"
-{ return { type: "Paren", elements: [] }; }) __ t2:Expr __ t3:("[" __ t0:(t0:Expr __ t1:(","
-{ return { type: "PunctuationMark", value: "," }; }) __ t2:(head:Expr
- tail:(__ "," __ Expr)*
-ellipsis:(__ "," __ "...")
-{ var elements = [head];
-  for (var i=0; i<tail.length; i++) {
-    elements.push(tail[i][3]);
-  }
-  if (ellipsis) elements.push({ type: "Ellipsis" });
-  return { type: "Repeat", elements: elements };
-})
- { return [t0, t1, t2]; }) __ "]"
-{ return { type: "Bracket", elements: t0 }; }) { return [t0, t1, t2, t3]; })
-{ return { type: "MacroForm", inputForm: form }; }) 
- / (&{ return macroType; } form:(t0:("Reduce" !IdentifierPart
-{ return { type: "MacroName", name:"Reduce" }; }) __ t1:Expr __ t2:("[" __ t0:(t0:Expr __ t1:(","
-{ return { type: "PunctuationMark", value: "," }; }) __ t2:(head:Expr
- tail:(__ "," __ Expr)*
-ellipsis:(__ "," __ "...")
-{ var elements = [head];
-  for (var i=0; i<tail.length; i++) {
-    elements.push(tail[i][3]);
-  }
-  if (ellipsis) elements.push({ type: "Ellipsis" });
-  return { type: "Repeat", elements: elements };
-})
- { return [t0, t1, t2]; }) __ "]"
-{ return { type: "Bracket", elements: t0 }; }) { return [t0, t1, t2]; })
-{ return { type: "MacroForm", inputForm: form }; }) 
- / (&{ return macroType; } form:(t0:("Reduce" !IdentifierPart
-{ return { type: "MacroName", name:"Reduce" }; }) __ t1:("[" __ t0:(t0:Expr __ t1:(","
-{ return { type: "PunctuationMark", value: "," }; }) __ t2:(head:Expr
- tail:(__ "," __ Expr)*
-ellipsis:(__ "," __ "...")
-{ var elements = [head];
-  for (var i=0; i<tail.length; i++) {
-    elements.push(tail[i][3]);
-  }
-  if (ellipsis) elements.push({ type: "Ellipsis" });
-  return { type: "Repeat", elements: elements };
-})
- { return [t0, t1, t2]; }) __ "]"
-{ return { type: "Bracket", elements: t0 }; }) { return [t0, t1]; })
-{ return { type: "MacroForm", inputForm: form }; }) 
- / (&{ return macroType; } form:(t0:("Reduce" !IdentifierPart
-{ return { type: "MacroName", name:"Reduce" }; }) __ t1:("[" __ t0:(t0:(","
-{ return { type: "PunctuationMark", value: "," }; }) __ t1:(head:Expr
- tail:(__ "," __ Expr)*
-ellipsis:(__ "," __ "...")
-{ var elements = [head];
-  for (var i=0; i<tail.length; i++) {
-    elements.push(tail[i][3]);
-  }
-  if (ellipsis) elements.push({ type: "Ellipsis" });
-  return { type: "Repeat", elements: elements };
-})
- { return [t0, t1]; }) __ "]"
-{ return { type: "Bracket", elements: t0 }; }) { return [t0, t1]; })
-{ return { type: "MacroForm", inputForm: form }; }) 
- / (&{ return macroType; } form:(t0:("Reduce" !IdentifierPart
-{ return { type: "MacroName", name:"Reduce" }; }) __ t1:("[" __ t0:(t0:(head:Expr
- tail:(__ "," __ Expr)*
-ellipsis:(__ "," __ "...")
-{ var elements = [head];
-  for (var i=0; i<tail.length; i++) {
-    elements.push(tail[i][3]);
-  }
-  if (ellipsis) elements.push({ type: "Ellipsis" });
-  return { type: "Repeat", elements: elements };
-})
- { return [t0]; }) __ "]"
-{ return { type: "Bracket", elements: t0 }; }) { return [t0, t1]; })
-{ return { type: "MacroForm", inputForm: form }; }) 
- / (&{ return macroType; } form:(t0:("Reduce" !IdentifierPart
-{ return { type: "MacroName", name:"Reduce" }; }) __ t1:("(" __ t0:(t0:MacroIdentifier { return [t0]; }) __ ")"
-{ return { type: "Paren", elements: t0 }; }) __ t2:Expr { return [t0, t1, t2]; })
-{ return { type: "MacroForm", inputForm: form }; }) 
- / (&{ return macroType; } form:(t0:("Reduce" !IdentifierPart
-{ return { type: "MacroName", name:"Reduce" }; }) __ t1:("(" __ ")"
-{ return { type: "Paren", elements: [] }; }) __ t2:Expr { return [t0, t1, t2]; })
-{ return { type: "MacroForm", inputForm: form }; }) 
- / (&{ return macroType; } form:(t0:("Reduce" !IdentifierPart
-{ return { type: "MacroName", name:"Reduce" }; }) __ t1:("[" __ "]"
-{ return { type: "Bracket", elements: [] }; }) { return [t0, t1]; })
-{ return { type: "MacroForm", inputForm: form }; }) 
- / (&{ return macroType; } form:(t0:("Reduce" !IdentifierPart
-{ return { type: "MacroName", name:"Reduce" }; }) __ t1:Expr { return [t0, t1]; })
-{ return { type: "MacroForm", inputForm: form }; }) 
- / form:(t0:("Reduce" !IdentifierPart
-{ return { type: "MacroName", name:"Reduce" }; }) __ t1:("(" __ t0:(t0:MacroIdentifier { return [t0]; }) __ ")"
-{ return { type: "Paren", elements: t0 }; }) __ t2:Expr __ t3:("[" __ t0:(t0:Expr __ t1:(","
-{ return { type: "PunctuationMark", value: "," }; }) __ t2:(head:Expr
- tail:(__ "," __ Expr)*
-{ var elements = [head];
-  for (var i=0; i<tail.length; i++) {
-    elements.push(tail[i][3]);
-  }
-  return { type: "Repeat", elements: elements };
-})
- { return [t0, t1, t2]; }) __ "]"
-{ return { type: "Bracket", elements: t0 }; }) { return [t0, t1, t2, t3]; })
+TypeMacro
+ = form:(t0:("T" !IdentifierPart
+{ return { type: "MacroName", name:"T" }; }) __ t1:(v:MacroKeyword &{ return v.name === "a"; }
+{ return v; }) { return [t0, t1]; })
 { return { type: "MacroForm", inputForm: form }; } 
- / form:(t0:("Reduce" !IdentifierPart
-{ return { type: "MacroName", name:"Reduce" }; }) __ t1:("[" __ t0:(t0:Expr { return [t0]; }) __ "]"
-{ return { type: "Bracket", elements: t0 }; }) __ t2:("(" __ t0:(t0:MacroIdentifier { return [t0]; }) __ ")"
-{ return { type: "Paren", elements: t0 }; }) __ t3:Expr { return [t0, t1, t2, t3]; })
+ / form:(t0:("T" !IdentifierPart
+{ return { type: "MacroName", name:"T" }; }) __ t1:(v:MacroKeyword &{ return v.name === "f"; }
+{ return v; }) { return [t0, t1]; })
 { return { type: "MacroForm", inputForm: form }; } 
- / form:(t0:("Reduce" !IdentifierPart
-{ return { type: "MacroName", name:"Reduce" }; }) __ t1:("[" __ "]"
-{ return { type: "Bracket", elements: [] }; }) __ t2:("(" __ t0:(t0:MacroIdentifier { return [t0]; }) __ ")"
-{ return { type: "Paren", elements: t0 }; }) __ t3:Expr { return [t0, t1, t2, t3]; })
+ / form:(t0:("L" !IdentifierPart
+{ return { type: "MacroName", name:"L" }; }) __ t1:(v:MacroKeyword &{ return v.name === "w"; }
+{ return v; }) { return [t0, t1]; })
+{ return { type: "MacroForm", inputForm: form }; } 
+ / form:(t0:("F" !IdentifierPart
+{ return { type: "MacroName", name:"F" }; }) __ t1:(v:MacroKeyword &{ return v.name === "e"; }
+{ return v; }) { return [t0, t1]; })
 { return { type: "MacroForm", inputForm: form }; }
 
 RejectWords
- = ","
+ = "a" 
+ / "f" 
+ / "w" 
+ / "e"
 
 

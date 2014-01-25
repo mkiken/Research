@@ -102,107 +102,112 @@
                           "BlockExpression"
                           ("Scala"
                            "Block"
-                           (letrec* ((V-ary\x60;31*
+                           (letrec* ((V-a\x60;31*
                                        ((val variable)
                                         (#\nul)
-                                        (#\nul
-                                         ((#\nul
+                                        ("Scala"
+                                         "PostfixExpression"
+                                         ("Scala"
+                                          "InfixExpression"
+                                          ("Scala"
+                                           "PrefixExpression"
+                                           #\nul
                                            ("Scala"
-                                            "PostfixExpression"
+                                            "SimpleExpression"
+                                            ("Scala" "literalSimpleExpression" 1 #\nul)
+                                            #\nul))
+                                          #\nul
+                                          #\nul)
+                                         #\nul)
+                                        (#\nul #\nul)))
+                                     (V-b\x60;31*
+                                       ((val variable)
+                                        (#\nul)
+                                        ("Scala"
+                                         "PostfixExpression"
+                                         ("Scala"
+                                          "InfixExpression"
+                                          ("Scala"
+                                           "PrefixExpression"
+                                           #\nul
+                                           ("Scala"
+                                            "SimpleExpression"
+                                            ("Scala" "literalSimpleExpression" 100 #\nul)
+                                            #\nul))
+                                          #\nul
+                                          #\nul)
+                                         #\nul)
+                                        (#\nul #\nul)))
+                                     (V-ary\x60;31*
+                                       ((val variable)
+                                        (#\nul)
+                                        ("Scala"
+                                         "PostfixExpression"
+                                         ("Scala"
+                                          "InfixExpression"
+                                          ("Scala"
+                                           "PrefixExpression"
+                                           #\nul
+                                           ("Scala"
+                                            "SimpleExpression"
+                                            ("Scala" "idSeqSimpleExpression" V-makeArray #\nul)
+                                            #\nul))
+                                          (V-a\x60;31*)
+                                          (("Scala"
+                                            "InfixExpression"
                                             ("Scala"
-                                             "InfixExpression"
-                                             ("Scala"
-                                              "PrefixExpression"
-                                              #\nul
-                                              ("Scala"
-                                               "SimpleExpression"
-                                               ("Scala"
-                                                "idSeqSimpleExpression"
-                                                R-Array-
-                                                ("Scala"
-                                                 "DesignatorPostfix"
-                                                 #\nul
-                                                 V-range
-                                                 ("Scala"
-                                                  "FunctionApplicationPostfix"
-                                                  ("Scala"
-                                                   "ArgumentExpression"
-                                                   ("Scala"
-                                                    "Exprs"
-                                                    (("Scala"
-                                                      "PostfixExpression"
-                                                      ("Scala"
-                                                       "InfixExpression"
-                                                       ("Scala"
-                                                        "PrefixExpression"
-                                                        #\nul
-                                                        ("Scala"
-                                                         "SimpleExpression"
-                                                         ("Scala"
-                                                          "idSeqSimpleExpression"
-                                                          ("Scala"
-                                                           "PostfixExpression"
-                                                           ("Scala"
-                                                            "InfixExpression"
-                                                            ("Scala"
-                                                             "PrefixExpression"
-                                                             #\nul
-                                                             ("Scala"
-                                                              "SimpleExpression"
-                                                              ("Scala"
-                                                               "literalSimpleExpression"
-                                                               1
-                                                               #\nul)
-                                                              #\nul))
-                                                            #\nul
-                                                            #\nul)
-                                                           #\nul)
-                                                          #\nul)
-                                                         #\nul))
-                                                       #\nul
-                                                       #\nul)
-                                                      #\nul)
-                                                     ("Scala"
-                                                      "PostfixExpression"
-                                                      ("Scala"
-                                                       "InfixExpression"
-                                                       ("Scala"
-                                                        "PrefixExpression"
-                                                        #\nul
-                                                        ("Scala"
-                                                         "SimpleExpression"
-                                                         ("Scala"
-                                                          "idSeqSimpleExpression"
-                                                          ("Scala"
-                                                           "PostfixExpression"
-                                                           ("Scala"
-                                                            "InfixExpression"
-                                                            ("Scala"
-                                                             "PrefixExpression"
-                                                             #\nul
-                                                             ("Scala"
-                                                              "SimpleExpression"
-                                                              ("Scala"
-                                                               "literalSimpleExpression"
-                                                               100
-                                                               #\nul)
-                                                              #\nul))
-                                                            #\nul
-                                                            #\nul)
-                                                           #\nul)
-                                                          #\nul)
-                                                         #\nul))
-                                                       #\nul
-                                                       #\nul)
-                                                      #\nul))))
-                                                  #\nul)))
-                                               #\nul))
+                                             "PrefixExpression"
                                              #\nul
-                                             #\nul)
+                                             ("Scala"
+                                              "SimpleExpression"
+                                              ("Scala" "idSeqSimpleExpression" V-b\x60;31* #\nul)
+                                              #\nul))
+                                            (V-+)
+                                            (("Scala"
+                                              "InfixExpression"
+                                              ("Scala"
+                                               "PrefixExpression"
+                                               #\nul
+                                               ("Scala"
+                                                "SimpleExpression"
+                                                ("Scala" "literalSimpleExpression" 100 #\nul)
+                                                #\nul))
+                                              #\nul
+                                              #\nul)))))
+                                         #\nul)
+                                        (#\nul #\nul)))
+                                     (V-ary2\x60;31*
+                                       ((val variable)
+                                        (#\nul)
+                                        ("Scala"
+                                         "PostfixExpression"
+                                         ("Scala"
+                                          "InfixExpression"
+                                          ("Scala"
+                                           "PrefixExpression"
+                                           #\nul
+                                           ("Scala"
+                                            "SimpleExpression"
+                                            ("Scala" "idSeqSimpleExpression" V-makeArray #\nul)
+                                            #\nul))
+                                          (V-a\x60;31*)
+                                          (("Scala"
+                                            "InfixExpression"
+                                            ("Scala"
+                                             "PrefixExpression"
+                                             #\nul
+                                             ("Scala"
+                                              "SimpleExpression"
+                                              ("Scala" "idSeqSimpleExpression" V-b\x60;31* #\nul)
+                                              #\nul))
+                                            #\nul
                                             #\nul)))
                                          #\nul)
                                         (#\nul #\nul))))
                              (#\nul
+                              #\nul
+                              #\nul
+                              #\nul
                               ("Scala"
                                "PostfixExpression"
                                ("Scala"

@@ -14,8 +14,12 @@ Expression Reduce {
       e1
     }
 
-    { Reduce [e1, e2, ...] (op) init ->
-      (Reduce [e2, ...] (op) init) op e1
+    // { Reduce [e1, e2, ...] (op) init ->
+      // (Reduce [e2, ...] (op) init) op e1
+      // // Reduce [b, ...] (op) init * a
+    // }
+    { Reduce (op) init [e1, e2, ...]  ->
+      (Reduce (op) init [e2, ...] ) op e1
       // Reduce [b, ...] (op) init * a
     }
 }
