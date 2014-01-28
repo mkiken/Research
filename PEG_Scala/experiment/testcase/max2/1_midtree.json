@@ -1,0 +1,119 @@
+{
+  "type": "MacroDefinitions",
+  "defs": [
+    {
+      "type": "ExpressionMacroDefinition",
+      "macroName": "Max",
+      "literals": [],
+      "syntaxRules": [
+        {
+          "type": "SyntaxRule",
+          "pattern": [
+            {
+              "type": "Paren",
+              "elements": [
+                {
+                  "type": "Repetition",
+                  "elements": {
+                    "type": "ExpressionVariable",
+                    "name": "e"
+                  },
+                  "punctuationMark": [
+                    "and"
+                  ]
+                },
+                {
+                  "type": "Ellipsis"
+                }
+              ]
+            }
+          ],
+          "template": [
+            [
+              null,
+              {
+                "type": "PostfixExpression",
+                "infix": {
+                  "type": "InfixExpression",
+                  "seq": [
+                    {
+                      "type": "PrefixExpression",
+                      "op": null,
+                      "expr": {
+                        "type": "SimpleExpression",
+                        "expr": {
+                          "type": "idSeqSimpleExpression",
+                          "ids": {
+                            "type": "Variable",
+                            "name": "List"
+                          },
+                          "suffix": {
+                            "type": "FunctionApplicationPostfix",
+                            "argument": {
+                              "type": "ArgumentExpression",
+                              "exprs": {
+                                "type": "Exprs",
+                                "contents": [
+                                  {
+                                    "type": "PostfixExpression",
+                                    "infix": {
+                                      "type": "InfixExpression",
+                                      "seq": [
+                                        {
+                                          "type": "PrefixExpression",
+                                          "op": null,
+                                          "expr": {
+                                            "type": "SimpleExpression",
+                                            "expr": {
+                                              "type": "idSeqSimpleExpression",
+                                              "ids": {
+                                                "type": "Variable",
+                                                "name": "e"
+                                              },
+                                              "suffix": {
+                                                "type": "Empty"
+                                              }
+                                            },
+                                            "under": null
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    "id": null
+                                  },
+                                  {
+                                    "type": "Ellipsis"
+                                  }
+                                ]
+                              }
+                            },
+                            "postfix": {
+                              "type": "DesignatorPostfix",
+                              "under": null,
+                              "id": {
+                                "type": "Variable",
+                                "name": "max"
+                              },
+                              "postfix": {
+                                "type": "Empty"
+                              }
+                            }
+                          }
+                        },
+                        "under": null
+                      }
+                    }
+                  ]
+                },
+                "id": null
+              }
+            ]
+          ]
+        }
+      ],
+      "marks": [
+        "and"
+      ]
+    }
+  ]
+}

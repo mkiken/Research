@@ -1,0 +1,54 @@
+xxxx
+
+以下では，このファイル（HowToUse.txt）が置かれているディレクトリをホームと呼びます．
+
+
+■他に必要なシステム
+
+・Ypsilon (https://code.google.com/p/ypsilon/)
+
+		http://www.littlewingpinball.net/mediawiki-ja/index.php/Ypsilon_Scheme_Systemのインストール方法に従ってください．
+
+・Node.js
+
+	HomeBrewがあれば，
+		brew install Node
+
+
+・PEG.js (http://pegjs.majda.cz/)
+
+	ホームで
+		npm install pegjs
+
+
+・sexpression (https://github.com/f-kubotar/sexpression)
+
+	ホームで
+		npm install sexpression
+
+
+
+
+■動作確認
+
+OS					: Mac OS X 10.9.1
+Ypsilon			: Ypsilon 0.9.6-trunk/r506
+Node.js			: v0.10.24
+PEG.js			  	: PEG.js 0.8.0
+sexpression		: sexpression 0.0.4
+
+
+
+■使い方
+
+環境変数SCALAX_HOMEにホームの絶対パスを入れてください．
+例：export SCALAX_HOME=/Users/USER_NAME/Desktop/PEG_Scala
+
+scalaディレクトリで
+
+	./convert.sh [ファイル名].scala
+
+とコマンドを呼ぶことで[ファイル名]ディレクトリが作られ，その下にマクロ展開の結果とその中間ファイルが生成されます．
+
+
+2014/01/27

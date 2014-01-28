@@ -1,0 +1,229 @@
+{
+  "type": "MacroDefinitions",
+  "defs": [
+    {
+      "type": "ExpressionMacroDefinition",
+      "macroName": ">>",
+      "literals": [],
+      "syntaxRules": [
+        {
+          "type": "SyntaxRule",
+          "pattern": [
+            {
+              "type": "SymbolVariable",
+              "name": "s"
+            },
+            {
+              "type": "SymbolVariable",
+              "name": "from"
+            }
+          ],
+          "template": [
+            [
+              null,
+              {
+                "type": "PostfixExpression",
+                "infix": {
+                  "type": "InfixExpression",
+                  "seq": [
+                    {
+                      "type": "PrefixExpression",
+                      "op": null,
+                      "expr": {
+                        "type": "SimpleExpression",
+                        "expr": {
+                          "type": "idSeqSimpleExpression",
+                          "ids": {
+                            "type": "Variable",
+                            "name": "println"
+                          },
+                          "suffix": {
+                            "type": "FunctionApplicationPostfix",
+                            "argument": {
+                              "type": "ArgumentExpression",
+                              "exprs": {
+                                "type": "Exprs",
+                                "contents": [
+                                  {
+                                    "type": "PostfixExpression",
+                                    "infix": {
+                                      "type": "InfixExpression",
+                                      "seq": [
+                                        {
+                                          "type": "PrefixExpression",
+                                          "op": null,
+                                          "expr": {
+                                            "type": "SimpleExpression",
+                                            "expr": {
+                                              "type": "idSeqSimpleExpression",
+                                              "ids": {
+                                                "type": "Variable",
+                                                "name": "s"
+                                              },
+                                              "suffix": {
+                                                "type": "Empty"
+                                              }
+                                            },
+                                            "under": null
+                                          }
+                                        },
+                                        {
+                                          "type": "Variable",
+                                          "name": "+"
+                                        },
+                                        {
+                                          "type": "InfixExpression",
+                                          "seq": [
+                                            {
+                                              "type": "PrefixExpression",
+                                              "op": null,
+                                              "expr": {
+                                                "type": "SimpleExpression",
+                                                "expr": {
+                                                  "type": "literalSimpleExpression",
+                                                  "literal": {
+                                                    "type": "stringLiteral",
+                                                    "value": " from "
+                                                  },
+                                                  "suffix": {
+                                                    "type": "Empty"
+                                                  }
+                                                },
+                                                "under": null
+                                              }
+                                            },
+                                            {
+                                              "type": "Variable",
+                                              "name": "+"
+                                            },
+                                            {
+                                              "type": "InfixExpression",
+                                              "seq": [
+                                                {
+                                                  "type": "PrefixExpression",
+                                                  "op": null,
+                                                  "expr": {
+                                                    "type": "SimpleExpression",
+                                                    "expr": {
+                                                      "type": "idSeqSimpleExpression",
+                                                      "ids": {
+                                                        "type": "Variable",
+                                                        "name": "from"
+                                                      },
+                                                      "suffix": {
+                                                        "type": "Empty"
+                                                      }
+                                                    },
+                                                    "under": null
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    "id": null
+                                  }
+                                ]
+                              }
+                            },
+                            "postfix": {
+                              "type": "Empty"
+                            }
+                          }
+                        },
+                        "under": null
+                      }
+                    }
+                  ]
+                },
+                "id": null
+              }
+            ]
+          ]
+        },
+        {
+          "type": "SyntaxRule",
+          "pattern": [
+            {
+              "type": "SymbolVariable",
+              "name": "s"
+            }
+          ],
+          "template": [
+            [
+              null,
+              {
+                "type": "PostfixExpression",
+                "infix": {
+                  "type": "InfixExpression",
+                  "seq": [
+                    {
+                      "type": "PrefixExpression",
+                      "op": null,
+                      "expr": {
+                        "type": "SimpleExpression",
+                        "expr": {
+                          "type": "idSeqSimpleExpression",
+                          "ids": {
+                            "type": "Variable",
+                            "name": "println"
+                          },
+                          "suffix": {
+                            "type": "FunctionApplicationPostfix",
+                            "argument": {
+                              "type": "ArgumentExpression",
+                              "exprs": {
+                                "type": "Exprs",
+                                "contents": [
+                                  {
+                                    "type": "PostfixExpression",
+                                    "infix": {
+                                      "type": "InfixExpression",
+                                      "seq": [
+                                        {
+                                          "type": "PrefixExpression",
+                                          "op": null,
+                                          "expr": {
+                                            "type": "SimpleExpression",
+                                            "expr": {
+                                              "type": "idSeqSimpleExpression",
+                                              "ids": {
+                                                "type": "Variable",
+                                                "name": "s"
+                                              },
+                                              "suffix": {
+                                                "type": "Empty"
+                                              }
+                                            },
+                                            "under": null
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    "id": null
+                                  }
+                                ]
+                              }
+                            },
+                            "postfix": {
+                              "type": "Empty"
+                            }
+                          }
+                        },
+                        "under": null
+                      }
+                    }
+                  ]
+                },
+                "id": null
+              }
+            ]
+          ]
+        }
+      ],
+      "marks": []
+    }
+  ]
+}

@@ -1,0 +1,607 @@
+{
+  "type": "CompilationUnit",
+  "packages": [],
+  "topStatseq": {
+    "type": "TopStatSeq",
+    "topstat": [
+      {
+        "type": "TypeMacroDefinition",
+        "macroName": "T",
+        "literals": [
+          "1.1",
+          "1.2"
+        ],
+        "syntaxRules": [
+          {
+            "type": "SyntaxRule",
+            "pattern": [
+              {
+                "type": "floatingPointLiteral",
+                "value": "1.1"
+              }
+            ],
+            "template": [
+              {
+                "type": "Type",
+                "exClause": null,
+                "inType": {
+                  "type": "InfixType",
+                  "compoundType": {
+                    "type": "CompoundType",
+                    "annotType": {
+                      "type": "AnnotType",
+                      "simpleType": {
+                        "type": "SimpleType",
+                        "id": {
+                          "type": "StableId",
+                          "contents": [
+                            {
+                              "type": "Variable",
+                              "name": "Int"
+                            }
+                          ]
+                        },
+                        "postfix": []
+                      },
+                      "annotation": []
+                    },
+                    "withType": null,
+                    "ref": null
+                  },
+                  "ids": [],
+                  "compoundTypes": []
+                }
+              }
+            ]
+          },
+          {
+            "type": "SyntaxRule",
+            "pattern": [
+              {
+                "type": "floatingPointLiteral",
+                "value": "1.2"
+              }
+            ],
+            "template": [
+              {
+                "type": "Type",
+                "exClause": null,
+                "inType": {
+                  "type": "InfixType",
+                  "compoundType": {
+                    "type": "CompoundType",
+                    "annotType": {
+                      "type": "AnnotType",
+                      "simpleType": {
+                        "type": "SimpleType",
+                        "id": {
+                          "type": "StableId",
+                          "contents": [
+                            {
+                              "type": "Variable",
+                              "name": "Double"
+                            }
+                          ]
+                        },
+                        "postfix": []
+                      },
+                      "annotation": []
+                    },
+                    "withType": null,
+                    "ref": null
+                  },
+                  "ids": [],
+                  "compoundTypes": []
+                }
+              }
+            ]
+          }
+        ],
+        "marks": []
+      },
+      {
+        "type": "TypeMacroDefinition",
+        "macroName": "L",
+        "literals": [
+          "str"
+        ],
+        "syntaxRules": [
+          {
+            "type": "SyntaxRule",
+            "pattern": [
+              {
+                "type": "symbolLiteral",
+                "value": "str"
+              }
+            ],
+            "template": [
+              {
+                "type": "MacroForm",
+                "inputForm": [
+                  {
+                    "type": "MacroName",
+                    "name": "F"
+                  },
+                  {
+                    "type": "Paren",
+                    "elements": [
+                      {
+                        "type": "Variable",
+                        "name": "String"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "marks": []
+      },
+      {
+        "type": "TypeMacroDefinition",
+        "macroName": "F",
+        "literals": [],
+        "syntaxRules": [
+          {
+            "type": "SyntaxRule",
+            "pattern": [
+              {
+                "type": "Paren",
+                "elements": [
+                  {
+                    "type": "IdentifierVariable",
+                    "name": "s"
+                  }
+                ]
+              }
+            ],
+            "template": [
+              {
+                "type": "FunctionType",
+                "left": {
+                  "type": "FunctionArgTypes",
+                  "contents": [
+                    {
+                      "type": "RepeatedParamType",
+                      "tp": {
+                        "type": "Type",
+                        "exClause": null,
+                        "inType": {
+                          "type": "InfixType",
+                          "compoundType": {
+                            "type": "CompoundType",
+                            "annotType": {
+                              "type": "AnnotType",
+                              "simpleType": {
+                                "type": "SimpleType",
+                                "id": {
+                                  "type": "StableId",
+                                  "contents": [
+                                    {
+                                      "type": "Variable",
+                                      "name": "s"
+                                    }
+                                  ]
+                                },
+                                "postfix": []
+                              },
+                              "annotation": []
+                            },
+                            "withType": null,
+                            "ref": null
+                          },
+                          "ids": [],
+                          "compoundTypes": []
+                        }
+                      },
+                      "star": null
+                    },
+                    {
+                      "type": "RepeatedParamType",
+                      "tp": {
+                        "type": "MacroForm",
+                        "inputForm": [
+                          {
+                            "type": "MacroName",
+                            "name": "T"
+                          },
+                          {
+                            "type": "floatingPointLiteral",
+                            "value": "1.1"
+                          }
+                        ]
+                      },
+                      "star": null
+                    }
+                  ]
+                },
+                "right": {
+                  "type": "MacroForm",
+                  "inputForm": [
+                    {
+                      "type": "MacroName",
+                      "name": "T"
+                    },
+                    {
+                      "type": "floatingPointLiteral",
+                      "value": "1.2"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ],
+        "marks": []
+      },
+      {
+        "type": "TopStat",
+        "annotation": [],
+        "modifier": [],
+        "def": {
+          "type": "ObjectTemplateDefinition",
+          "prefix": null,
+          "def": {
+            "type": "ObjectDefinition",
+            "id": {
+              "type": "Variable",
+              "name": "makeArray"
+            },
+            "classTemplate": {
+              "type": "ClassTemplateOpt",
+              "extend": null,
+              "body": {
+                "type": "TemplateBody",
+                "selftype": null,
+                "states": [
+                  {
+                    "type": "TemplateStatement",
+                    "annotation": [],
+                    "modifier": [],
+                    "definition": {
+                      "type": "FunctionDefinition",
+                      "signature": {
+                        "type": "FunctionSignature",
+                        "id": {
+                          "type": "Variable",
+                          "name": "main"
+                        },
+                        "funtype": null,
+                        "param": {
+                          "type": "ParamClauses",
+                          "clauses": [
+                            {
+                              "type": "ParamClause",
+                              "params": {
+                                "type": "Params",
+                                "params": [
+                                  {
+                                    "type": "Param",
+                                    "annotations": [],
+                                    "id": {
+                                      "type": "Variable",
+                                      "name": "args"
+                                    },
+                                    "paramType": {
+                                      "type": "RepeatedParamType",
+                                      "tp": {
+                                        "type": "Type",
+                                        "exClause": null,
+                                        "inType": {
+                                          "type": "InfixType",
+                                          "compoundType": {
+                                            "type": "CompoundType",
+                                            "annotType": {
+                                              "type": "AnnotType",
+                                              "simpleType": {
+                                                "type": "SimpleType",
+                                                "id": {
+                                                  "type": "StableId",
+                                                  "contents": [
+                                                    {
+                                                      "type": "Variable",
+                                                      "name": "Array"
+                                                    }
+                                                  ]
+                                                },
+                                                "postfix": [
+                                                  {
+                                                    "type": "TypeArgs",
+                                                    "types": {
+                                                      "type": "Types",
+                                                      "contents": [
+                                                        {
+                                                          "type": "Type",
+                                                          "exClause": null,
+                                                          "inType": {
+                                                            "type": "InfixType",
+                                                            "compoundType": {
+                                                              "type": "CompoundType",
+                                                              "annotType": {
+                                                                "type": "AnnotType",
+                                                                "simpleType": {
+                                                                  "type": "SimpleType",
+                                                                  "id": {
+                                                                    "type": "StableId",
+                                                                    "contents": [
+                                                                      {
+                                                                        "type": "Variable",
+                                                                        "name": "String"
+                                                                      }
+                                                                    ]
+                                                                  },
+                                                                  "postfix": []
+                                                                },
+                                                                "annotation": []
+                                                              },
+                                                              "withType": null,
+                                                              "ref": null
+                                                            },
+                                                            "ids": [],
+                                                            "compoundTypes": []
+                                                          }
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                ]
+                                              },
+                                              "annotation": []
+                                            },
+                                            "withType": null,
+                                            "ref": null
+                                          },
+                                          "ids": [],
+                                          "compoundTypes": []
+                                        }
+                                      },
+                                      "star": null
+                                    },
+                                    "expr": null
+                                  }
+                                ]
+                              }
+                            }
+                          ],
+                          "params": null
+                        }
+                      },
+                      "tp": {
+                        "type": "Type",
+                        "exClause": null,
+                        "inType": {
+                          "type": "InfixType",
+                          "compoundType": {
+                            "type": "CompoundType",
+                            "annotType": {
+                              "type": "AnnotType",
+                              "simpleType": {
+                                "type": "SimpleType",
+                                "id": {
+                                  "type": "StableId",
+                                  "contents": [
+                                    {
+                                      "type": "Variable",
+                                      "name": "Unit"
+                                    }
+                                  ]
+                                },
+                                "postfix": []
+                              },
+                              "annotation": []
+                            },
+                            "withType": null,
+                            "ref": null
+                          },
+                          "ids": [],
+                          "compoundTypes": []
+                        }
+                      },
+                      "expr": {
+                        "type": "PostfixExpression",
+                        "infix": {
+                          "type": "InfixExpression",
+                          "seq": [
+                            {
+                              "type": "PrefixExpression",
+                              "op": null,
+                              "expr": {
+                                "type": "BlockExpression",
+                                "block": {
+                                  "type": "Block",
+                                  "states": [
+                                    {
+                                      "type": "BlockStat",
+                                      "annotations": [],
+                                      "modifier": null,
+                                      "def": {
+                                        "type": "TypeDefinition",
+                                        "body": {
+                                          "type": "TypeDef",
+                                          "pattern": {
+                                            "type": "TypeDefVariable",
+                                            "id": "c",
+                                            "paramClause": null,
+                                            "tp": {
+                                              "type": "Type",
+                                              "exClause": null,
+                                              "inType": {
+                                                "type": "InfixType",
+                                                "compoundType": {
+                                                  "type": "CompoundType",
+                                                  "annotType": {
+                                                    "type": "AnnotType",
+                                                    "simpleType": {
+                                                      "type": "SimpleType",
+                                                      "id": {
+                                                        "type": "StableId",
+                                                        "contents": [
+                                                          {
+                                                            "type": "Variable",
+                                                            "name": "Int"
+                                                          }
+                                                        ]
+                                                      },
+                                                      "postfix": []
+                                                    },
+                                                    "annotation": []
+                                                  },
+                                                  "withType": null,
+                                                  "ref": null
+                                                },
+                                                "ids": [],
+                                                "compoundTypes": []
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "type": "BlockStat",
+                                      "annotations": [],
+                                      "modifier": null,
+                                      "def": {
+                                        "type": "TypeDefinition",
+                                        "body": {
+                                          "type": "TypeDef",
+                                          "pattern": {
+                                            "type": "TypeDefVariable",
+                                            "id": "b",
+                                            "paramClause": null,
+                                            "tp": {
+                                              "type": "MacroForm",
+                                              "inputForm": [
+                                                {
+                                                  "type": "MacroName",
+                                                  "name": "T"
+                                                },
+                                                {
+                                                  "type": "floatingPointLiteral",
+                                                  "value": "1.1"
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "type": "BlockStat",
+                                      "annotations": [],
+                                      "modifier": null,
+                                      "def": {
+                                        "type": "TypeDefinition",
+                                        "body": {
+                                          "type": "TypeDef",
+                                          "pattern": {
+                                            "type": "TypeDefVariable",
+                                            "id": "d",
+                                            "paramClause": null,
+                                            "tp": {
+                                              "type": "MacroForm",
+                                              "inputForm": [
+                                                {
+                                                  "type": "MacroName",
+                                                  "name": "T"
+                                                },
+                                                {
+                                                  "type": "floatingPointLiteral",
+                                                  "value": "1.2"
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "type": "BlockStat",
+                                      "annotations": [],
+                                      "modifier": null,
+                                      "def": {
+                                        "type": "TypeDefinition",
+                                        "body": {
+                                          "type": "TypeDef",
+                                          "pattern": {
+                                            "type": "TypeDefVariable",
+                                            "id": "z",
+                                            "paramClause": null,
+                                            "tp": {
+                                              "type": "MacroForm",
+                                              "inputForm": [
+                                                {
+                                                  "type": "MacroName",
+                                                  "name": "F"
+                                                },
+                                                {
+                                                  "type": "Paren",
+                                                  "elements": [
+                                                    {
+                                                      "type": "Variable",
+                                                      "name": "Double"
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "type": "BlockStat",
+                                      "annotations": [],
+                                      "modifier": null,
+                                      "def": {
+                                        "type": "TypeDefinition",
+                                        "body": {
+                                          "type": "TypeDef",
+                                          "pattern": {
+                                            "type": "TypeDefVariable",
+                                            "id": "aa",
+                                            "paramClause": null,
+                                            "tp": {
+                                              "type": "MacroForm",
+                                              "inputForm": [
+                                                {
+                                                  "type": "MacroName",
+                                                  "name": "L"
+                                                },
+                                                {
+                                                  "type": "symbolLiteral",
+                                                  "value": "str"
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  ],
+                                  "res": null
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        "id": null
+                      }
+                    }
+                  },
+                  {
+                    "type": "Empty"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
+        "type": "Empty"
+      }
+    ]
+  }
+}

@@ -1,0 +1,84 @@
+{
+  "type": "MacroDefinitions",
+  "defs": [
+    {
+      "type": "ExpressionMacroDefinition",
+      "macroName": "Abs",
+      "literals": [],
+      "syntaxRules": [
+        {
+          "type": "SyntaxRule",
+          "pattern": [
+            {
+              "type": "IdentifierVariable",
+              "name": "num"
+            }
+          ],
+          "template": [
+            [
+              null,
+              {
+                "type": "PostfixExpression",
+                "infix": {
+                  "type": "InfixExpression",
+                  "seq": [
+                    {
+                      "type": "PrefixExpression",
+                      "op": null,
+                      "expr": {
+                        "type": "BlockExpression",
+                        "block": {
+                          "type": "Block",
+                          "states": [
+                            {
+                              "type": "AssignmentExpression",
+                              "prefix": null,
+                              "id": {
+                                "type": "Variable",
+                                "name": "num"
+                              },
+                              "right": {
+                                "type": "PostfixExpression",
+                                "infix": {
+                                  "type": "InfixExpression",
+                                  "seq": [
+                                    {
+                                      "type": "PrefixExpression",
+                                      "op": null,
+                                      "expr": {
+                                        "type": "SimpleExpression",
+                                        "expr": {
+                                          "type": "literalSimpleExpression",
+                                          "literal": {
+                                            "type": "integerLiteral",
+                                            "value": "10"
+                                          },
+                                          "suffix": {
+                                            "type": "Empty"
+                                          }
+                                        },
+                                        "under": null
+                                      }
+                                    }
+                                  ]
+                                },
+                                "id": null
+                              }
+                            }
+                          ],
+                          "res": null
+                        }
+                      }
+                    }
+                  ]
+                },
+                "id": null
+              }
+            ]
+          ]
+        }
+      ],
+      "marks": []
+    }
+  ]
+}

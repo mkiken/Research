@@ -1,0 +1,422 @@
+{
+  "type": "MacroDefinitions",
+  "defs": [
+    {
+      "type": "TypeMacroDefinition",
+      "macroName": "T",
+      "literals": [
+        "1.1",
+        "1.2"
+      ],
+      "syntaxRules": [
+        {
+          "type": "SyntaxRule",
+          "pattern": [
+            {
+              "type": "floatingPointLiteral",
+              "value": "1.1"
+            }
+          ],
+          "template": [
+            [
+              null,
+              {
+                "type": "Type",
+                "exClause": null,
+                "inType": {
+                  "type": "InfixType",
+                  "compoundType": {
+                    "type": "CompoundType",
+                    "annotType": {
+                      "type": "AnnotType",
+                      "simpleType": {
+                        "type": "SimpleType",
+                        "id": {
+                          "type": "StableId",
+                          "contents": [
+                            {
+                              "type": "Variable",
+                              "name": "Int"
+                            }
+                          ]
+                        },
+                        "postfix": []
+                      },
+                      "annotation": []
+                    },
+                    "withType": null,
+                    "ref": null
+                  },
+                  "ids": [],
+                  "compoundTypes": []
+                }
+              }
+            ]
+          ]
+        },
+        {
+          "type": "SyntaxRule",
+          "pattern": [
+            {
+              "type": "floatingPointLiteral",
+              "value": "1.2"
+            }
+          ],
+          "template": [
+            [
+              null,
+              {
+                "type": "Type",
+                "exClause": null,
+                "inType": {
+                  "type": "InfixType",
+                  "compoundType": {
+                    "type": "CompoundType",
+                    "annotType": {
+                      "type": "AnnotType",
+                      "simpleType": {
+                        "type": "SimpleType",
+                        "id": {
+                          "type": "StableId",
+                          "contents": [
+                            {
+                              "type": "Variable",
+                              "name": "Double"
+                            }
+                          ]
+                        },
+                        "postfix": []
+                      },
+                      "annotation": []
+                    },
+                    "withType": null,
+                    "ref": null
+                  },
+                  "ids": [],
+                  "compoundTypes": []
+                }
+              }
+            ]
+          ]
+        }
+      ],
+      "marks": []
+    },
+    {
+      "type": "TypeMacroDefinition",
+      "macroName": "L",
+      "literals": [
+        "str"
+      ],
+      "syntaxRules": [
+        {
+          "type": "SyntaxRule",
+          "pattern": [
+            {
+              "type": "symbolLiteral",
+              "value": "str"
+            }
+          ],
+          "template": [
+            [
+              null,
+              {
+                "type": "Type",
+                "exClause": null,
+                "inType": {
+                  "type": "InfixType",
+                  "compoundType": {
+                    "type": "CompoundType",
+                    "annotType": {
+                      "type": "AnnotType",
+                      "simpleType": {
+                        "type": "SimpleType",
+                        "id": {
+                          "type": "StableId",
+                          "contents": [
+                            {
+                              "type": "Variable",
+                              "name": "F"
+                            }
+                          ]
+                        },
+                        "postfix": []
+                      },
+                      "annotation": []
+                    },
+                    "withType": null,
+                    "ref": null
+                  },
+                  "ids": [],
+                  "compoundTypes": []
+                }
+              }
+            ],
+            [
+              null,
+              {
+                "type": "Type",
+                "exClause": null,
+                "inType": {
+                  "type": "InfixType",
+                  "compoundType": {
+                    "type": "CompoundType",
+                    "annotType": {
+                      "type": "AnnotType",
+                      "simpleType": {
+                        "type": "SimpleTypes",
+                        "types": {
+                          "type": "Types",
+                          "contents": [
+                            {
+                              "type": "Type",
+                              "exClause": null,
+                              "inType": {
+                                "type": "InfixType",
+                                "compoundType": {
+                                  "type": "CompoundType",
+                                  "annotType": {
+                                    "type": "AnnotType",
+                                    "simpleType": {
+                                      "type": "SimpleType",
+                                      "id": {
+                                        "type": "StableId",
+                                        "contents": [
+                                          {
+                                            "type": "Variable",
+                                            "name": "String"
+                                          }
+                                        ]
+                                      },
+                                      "postfix": []
+                                    },
+                                    "annotation": []
+                                  },
+                                  "withType": null,
+                                  "ref": null
+                                },
+                                "ids": [],
+                                "compoundTypes": []
+                              }
+                            }
+                          ]
+                        },
+                        "postfix": []
+                      },
+                      "annotation": []
+                    },
+                    "withType": null,
+                    "ref": null
+                  },
+                  "ids": [],
+                  "compoundTypes": []
+                }
+              }
+            ]
+          ]
+        }
+      ],
+      "marks": []
+    },
+    {
+      "type": "TypeMacroDefinition",
+      "macroName": "F",
+      "literals": [],
+      "syntaxRules": [
+        {
+          "type": "SyntaxRule",
+          "pattern": [
+            {
+              "type": "Paren",
+              "elements": [
+                {
+                  "type": "IdentifierVariable",
+                  "name": "s"
+                }
+              ]
+            }
+          ],
+          "template": [
+            {
+              "type": "Characterstmt",
+              "value": "("
+            },
+            [
+              null,
+              {
+                "type": "Type",
+                "exClause": null,
+                "inType": {
+                  "type": "InfixType",
+                  "compoundType": {
+                    "type": "CompoundType",
+                    "annotType": {
+                      "type": "AnnotType",
+                      "simpleType": {
+                        "type": "SimpleType",
+                        "id": {
+                          "type": "StableId",
+                          "contents": [
+                            {
+                              "type": "Variable",
+                              "name": "s"
+                            }
+                          ]
+                        },
+                        "postfix": []
+                      },
+                      "annotation": []
+                    },
+                    "withType": null,
+                    "ref": null
+                  },
+                  "ids": [],
+                  "compoundTypes": []
+                }
+              }
+            ],
+            {
+              "type": "Characterstmt",
+              "value": ","
+            },
+            [
+              null,
+              {
+                "type": "Type",
+                "exClause": null,
+                "inType": {
+                  "type": "InfixType",
+                  "compoundType": {
+                    "type": "CompoundType",
+                    "annotType": {
+                      "type": "AnnotType",
+                      "simpleType": {
+                        "type": "SimpleType",
+                        "id": {
+                          "type": "StableId",
+                          "contents": [
+                            {
+                              "type": "Variable",
+                              "name": "T"
+                            }
+                          ]
+                        },
+                        "postfix": []
+                      },
+                      "annotation": []
+                    },
+                    "withType": null,
+                    "ref": null
+                  },
+                  "ids": [],
+                  "compoundTypes": []
+                }
+              }
+            ],
+            {
+              "type": "Characterstmt",
+              "value": "1"
+            },
+            {
+              "type": "Characterstmt",
+              "value": "."
+            },
+            {
+              "type": "Characterstmt",
+              "value": "1"
+            },
+            {
+              "type": "Characterstmt",
+              "value": ")"
+            },
+            {
+              "type": "Characterstmt",
+              "value": "="
+            },
+            [
+              null,
+              {
+                "type": "Type",
+                "exClause": null,
+                "inType": {
+                  "type": "InfixType",
+                  "compoundType": {
+                    "type": "CompoundType",
+                    "annotType": {
+                      "type": "AnnotType",
+                      "simpleType": {
+                        "type": "SimpleType",
+                        "id": {
+                          "type": "StableId",
+                          "contents": [
+                            {
+                              "type": "Variable",
+                              "name": ">"
+                            }
+                          ]
+                        },
+                        "postfix": []
+                      },
+                      "annotation": []
+                    },
+                    "withType": null,
+                    "ref": null
+                  },
+                  "ids": [],
+                  "compoundTypes": []
+                }
+              }
+            ],
+            [
+              null,
+              {
+                "type": "Type",
+                "exClause": null,
+                "inType": {
+                  "type": "InfixType",
+                  "compoundType": {
+                    "type": "CompoundType",
+                    "annotType": {
+                      "type": "AnnotType",
+                      "simpleType": {
+                        "type": "SimpleType",
+                        "id": {
+                          "type": "StableId",
+                          "contents": [
+                            {
+                              "type": "Variable",
+                              "name": "T"
+                            }
+                          ]
+                        },
+                        "postfix": []
+                      },
+                      "annotation": []
+                    },
+                    "withType": null,
+                    "ref": null
+                  },
+                  "ids": [],
+                  "compoundTypes": []
+                }
+              }
+            ],
+            {
+              "type": "Characterstmt",
+              "value": "1"
+            },
+            {
+              "type": "Characterstmt",
+              "value": "."
+            },
+            {
+              "type": "Characterstmt",
+              "value": "2"
+            }
+          ]
+        }
+      ],
+      "marks": []
+    }
+  ]
+}
