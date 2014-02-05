@@ -1,4 +1,9 @@
-xxxx
+eXtensible-Scala(X-Scala)
+
+Scala言語向けHygienic構文マクロシステム
+
+
+
 
 以下では，このファイル（HowToUse.txt）が置かれているディレクトリをホームと呼びます．
 
@@ -41,8 +46,10 @@ sexpression		: sexpression 0.0.4
 
 ■使い方
 
-環境変数SCALAX_HOMEにホームの絶対パスを入れてください．
-例：export SCALAX_HOME=/Users/USER_NAME/Desktop/PEG_Scala
+環境変数XSCALA_HOMEにホームの絶対パスを入れてください．
+
+例：
+export XSCALA_HOME=/Users/USER_NAME/Desktop/PEG_Scala
 
 scalaディレクトリで
 
@@ -51,4 +58,4 @@ scalaディレクトリで
 とコマンドを呼ぶことで[ファイル名]ディレクトリが作られ，その下にマクロ展開の結果とその中間ファイルが生成されます．
 
 
-2014/01/27
+2014/02/04

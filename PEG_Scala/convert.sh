@@ -23,8 +23,8 @@ echo "working directory is ${name}."
 mkdir ${name}
 
 echo "${midTree} making..."
-echo "node ${SCALAX_HOME}/lib/makeMidtree.js ${inputScala} > ${midTree}"
-node ${SCALAX_HOME}/lib/makeMidtree.js ${inputScala} > ${midTree}
+echo "node ${XSCALA_HOME}/lib/makeMidtree.js ${inputScala} > ${midTree}"
+node ${XSCALA_HOME}/lib/makeMidtree.js ${inputScala} > ${midTree}
 ret=$?
 if test ${ret} -ne 0
 then
@@ -33,8 +33,8 @@ fi
 echo "scala -> midtree : [${midTree}] output.\n\n"
 
 echo "${macroParser} making..."
-echo "node ${SCALAX_HOME}/lib/makeMacroParser.js ${midTree} > ${macroParser}"
-node ${SCALAX_HOME}/lib/makeMacroParser.js ${midTree} > ${macroParser}
+echo "node ${XSCALA_HOME}/lib/makeMacroParser.js ${midTree} > ${macroParser}"
+node ${XSCALA_HOME}/lib/makeMacroParser.js ${midTree} > ${macroParser}
 ret=$?
 if test ${ret} -ne 0
 then
@@ -43,13 +43,13 @@ fi
 echo "midtree -> pegjs : [${macroParser}] output.\n\n"
 
 echo "${syncedParser} making..."
-cat "${SCALAX_HOME}/lib/scala-parser.pegjs" > ${syncedParser}
+cat "${XSCALA_HOME}/lib/scala-parser.pegjs" > ${syncedParser}
 cat ${macroParser} >> ${syncedParser}
 echo "pegjs -> pegjs : [${syncedParser}] output.\n\n"
 
 echo "${Tree} making..."
-echo "node ${SCALAX_HOME}/lib/makeTree.js ${inputScala} ${syncedParser} > ${Tree}"
-node ${SCALAX_HOME}/lib/makeTree.js ${inputScala} ${syncedParser} > ${Tree}
+echo "node ${XSCALA_HOME}/lib/makeTree.js ${inputScala} ${syncedParser} > ${Tree}"
+node ${XSCALA_HOME}/lib/makeTree.js ${inputScala} ${syncedParser} > ${Tree}
 ret=$?
 if test ${ret} -ne 0
 then
@@ -58,8 +58,8 @@ fi
 echo "midtree, pegjs -> tree : [${Tree}] output.\n\n"
 
 echo "${scala_sexp} making..."
-echo "node ${SCALAX_HOME}/lib/doJson2Sx.js ${Tree} > ${scala_sexp}"
-node ${SCALAX_HOME}/lib/doJson2Sx.js ${Tree} > ${scala_sexp}
+echo "node ${XSCALA_HOME}/lib/doJson2Sx.js ${Tree} > ${scala_sexp}"
+node ${XSCALA_HOME}/lib/doJson2Sx.js ${Tree} > ${scala_sexp}
 ret=$?
 if test ${ret} -ne 0
 then
@@ -68,8 +68,8 @@ fi
 echo "tree -> sform(scm) : [${scala_sexp}] output.\n\n"
 
 echo "${expanded_sexp} making..."
-ypsilon ${SCALAX_HOME}/lib/expand.scm ${scala_sexp} ${expanded_sexp}
-echo "ypsilon ${SCALAX_HOME}/lib/expand.scm ${scala_sexp} ${expanded_sexp}"
+ypsilon ${XSCALA_HOME}/lib/expand.scm ${scala_sexp} ${expanded_sexp}
+echo "ypsilon ${XSCALA_HOME}/lib/expand.scm ${scala_sexp} ${expanded_sexp}"
 ret=$?
 if test ${ret} -ne 0
 then
@@ -78,8 +78,8 @@ fi
 echo "sform(scm) -> expanded_sform(scm) : [${expanded_sexp}] output.\n\n"
 
 echo "${expanded_scala} making..."
-node ${SCALAX_HOME}/lib/doSx2Scala.js ${expanded_sexp} > ${expanded_scala}
-echo "node ${SCALAX_HOME}/lib/doSx2Scala.js ${expanded_sexp} > ${expanded_scala}"
+node ${XSCALA_HOME}/lib/doSx2Scala.js ${expanded_sexp} > ${expanded_scala}
+echo "node ${XSCALA_HOME}/lib/doSx2Scala.js ${expanded_sexp} > ${expanded_scala}"
 ret=$?
 if test ${ret} -ne 0
 then

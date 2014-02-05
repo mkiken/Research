@@ -299,6 +299,10 @@ var trans = {
 							B.push(':');
 							this.s2j(infos[j], 0);
 						}
+						else if(infos[j][0][0] === "Scala" && infos[j][0][1] === "Type"){ //マクロの場合
+							B.push(':');
+							this.s2j(infos[j], 0);
+						}
 						else{
 							throw new Error("sx2scala.do_letrec*: undefined info. => " + infos[j].type);
 						}
@@ -322,6 +326,10 @@ var trans = {
 				for(var j = 0; j < infos.length; j++){
 					if(!this.isNull(infos[j])){
 						if(infos[j][0] === "Scala" && infos[j][1] === "Type"){
+							B.push(':');
+							this.s2j(infos[j], 0);
+						}
+						else if(infos[j][0][0] === "Scala" && infos[j][0][1] === "Type"){ //マクロの場合
 							B.push(':');
 							this.s2j(infos[j], 0);
 						}
@@ -440,6 +448,12 @@ var trans = {
 			this.s2j(e[pos + 2], 0); //expr
 			this.s2j(e[pos + 3], 0); //guard
 		}
+		else if(type == "ImportStatement"){
+		    B.push('import ');
+			var exprs = e[pos + 1];
+			B.separating(exprs, ', ');
+			B.push(';');
+		}
 		else if(type == "InfixOperatorPattern"){
 			var ids = e[pos + 2], simplePatterns = e[pos + 3];
 			this.s2j(e[pos + 1], 0); //head
@@ -532,6 +546,10 @@ var trans = {
 			B.format('{', newline, 2);
 			this.s2j(e[pos + 2], 0); //block
 			B.format(-2, '}');
+		}
+        else if(type == "StableId"){
+            var contents = e[pos + 1]; //contents
+            B.separating(contents, '.');
 		}
 		else if(type == "stringLiteral"){
 			B.push('"' + e[pos + 1] + '"');

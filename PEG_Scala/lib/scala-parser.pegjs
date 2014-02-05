@@ -603,7 +603,7 @@ TypeMacro
 
 
 Expr
-= &{cExpression++;return true;} ExpressionMacro &{cExpression--;return true;}
+= &{cExpression++;return true;} m:ExpressionMacro &{cExpression--;return true;} __ {return m;}
 /&{cExpression--;return true;} left:Bindings ARROW right:Expr {return {type:"AnonymousFunction", left:left, right:right}; }
 / impl:IMPLICIT? id:id ARROW right:Expr {return {type:"AnonymousFunctionId", impl:ftr(impl), id:id, right:right}; }
 / UNDER ARROW right:Expr {return {type:"AnonymousFunctionWild", right:right}; }
@@ -801,7 +801,7 @@ Generator = pt1:Pattern1 LEFTARROW expr:Expr guard:Guard? {return {type: "Genera
 CaseClauses = cls:CaseClause+ {return {type: "CaseClauses", cls:cls};}
 CaseClause = CASE pt:Pattern guard:Guard? ARROW block:Block {return {type: "CaseClause", pt:pt, guard:ftr(guard), block:block}; }
 Guard = IF postfix:PostfixExpr {return {type: "Guard", postfix:postfix};}
-Type	= TypeMacro
+Type	= m:TypeMacro __ {return m;}
 / TypeVariable
 / funcarg:FunctionArgTypes ARROW tp:Type {return {type:"FunctionType", left:funcarg, right:tp};}
 		/ tp:InfixType ext:ExistentialClause? {return {type:"Type", exClause:ftr(ext), inType:tp};}
@@ -1123,7 +1123,7 @@ StableId	= base:id accessors:(DOT id)* {
       for (var i = 0; i < accessors.length; i++) {
         result.push(accessors[i][1]);
 	  }
-	  return {type:"StableId", contents:result};
+	  return {type:"StableId2", contents:result};
     }
 / pre:(id DOT)? sp:SUPER cl:ClassQualifier? accessors:(DOT id)+ {
   var result = !isNull(pre) ? [pre[0], sp] : [sp];
@@ -1133,7 +1133,7 @@ StableId	= base:id accessors:(DOT id)* {
 	for (var i = 0; i < accessors.length; i++) {
     result.push(accessors[i][1]);
 	}
-	return {type:"StableId", contents:result};
+	return {type:"StableId3", contents:result};
 }
 EarlyDefs = OPBRACE eds:(EarlyDef (semi EarlyDef)*)? CLBRACE WITH {
       var result = ftr(eds);
