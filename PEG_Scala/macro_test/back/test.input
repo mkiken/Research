@@ -1,4 +1,0 @@
-var a = Let (x = 3) { x * x };
-
-Let (x = 3) { x * x };
-

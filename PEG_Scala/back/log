@@ -1,1 +1,0 @@
-"(begin (define-syntax Let-Macro syntax-rules (V-=) (((((((((id) (=) (e))) (,)) ...)) (((body)))) \"[object Object]\"))) (begin (define V-a (((Let) ((((((V-x (=) \"[object Object]\")) ((V-y (=) \"[object Object]\")))))) (((* V-x V-y))))))))"
