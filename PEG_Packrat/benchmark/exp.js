@@ -9,7 +9,7 @@ var grm = args[2];
 contents = fs.readFileSync(grm, 'utf8');
 
 console.log("grammar = " + grm);
-var rep = 1;
+var rep = 10;
 var res = [];
 console.log("PEG parser build start.");
 var sum = 0, m, s;
@@ -23,7 +23,7 @@ for(var i = 0; i < rep; i++){
 }
 m = getMean(res);
 s = getSD(res, m);
-console.log("time = %d, SD = %d, rep = %d", m / 1000, s / 1000, rep);
+console.log("time = %d, SD = %d, rep = %d", m, s, rep);
 console.log(parser);
 
 
@@ -57,5 +57,3 @@ function getSD(ary, m){
 	}
 	return Math.sqrt(ret / ary.length);
 }
-
-
